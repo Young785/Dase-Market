@@ -1,0 +1,390 @@
+.header-title{
+    font-size: 20px !important;
+    font-weight: 500 !important;
+    color: #2B3B5A;
+}
+.upgrade-title{
+    font-size: 16px;
+    font-weight: 600;
+
+}
+.airtime-text{
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+}
+.display-center{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+
+}
+.bg-bell{
+    
+    background-color: #F7F9FD !important;
+    padding: 8px;
+    text-align: center !important;
+    color: #4169E1 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-tabs .nav-link {
+    position: relative;
+  }
+  
+  .tab-loader {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 3px;
+    background-color: transparent;
+    transition: background-color 0.3s ease;
+  }
+  
+  .active-loader {
+    background-color: #4169E1; 
+  }
+  .form{
+    color:  #6882B6 !important;
+  }
+  .form input, .form select{
+    color: #6882B6;
+  }
+  .proceed-btn{
+    background-color: #4169E1 !important;
+    border: 1px solid #4169E1 !important;
+    color: #fff !important;
+  }
+  .airtime-card{
+    background-color: #F7F9FD  !important;
+    border: 1px solid #D7E1F4 !important;
+  }
+  
+  .sidebar-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Full height */
+    background-color: #EFF3FB; 
+  }
+  
+  /* Content that should be scrollable */
+  .scrollable-sidebar-content {
+    flex: 1; 
+    overflow-y: auto; 
+  }
+  .sidebar-footer {
+    padding: 10px;
+
+    text-align: center; 
+    
+    bottom: 30px !important;
+    position: absolute !important;
+    width: 100%;
+  }
+
+
+  .file-upload-container {
+    width: 300px;
+    height: 200px;
+    border: 2px dashed #007bff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+  }
+  
+  .file-upload-container:hover {
+    background-color: #f0f8ff;
+  }
+  
+  .upload-message {
+    color: #007bff;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
+  .file-input {
+    display: none;
+  }
+  
+  #fileName {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #333;
+  }
+  
+  .login-breadcrum{
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+
+  .loginImg{
+    background-image: url('../../assets/images//left-section.png');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+
+    height: 100%;
+    width: 100%;
+  }
+
+
+  /* .app-menu.navbar-menu {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh !important; 
+    width: 20% !important;  
+    background-color: #f8f9fa; 
+  } */
+  
+  .sidebar-image-container {
+    width: 100%;
+    height: 100% !important;
+  }
+  
+  .sidebar-image {
+    width: 100%;
+    min-height: 100vh !important;
+    object-fit: cover;
+  }
+  
+
+
+
+
+
+.nav-item{
+  padding-top: px !important;
+}
+  .nav-link {
+    transition: all 0.3s ease;
+  }
+
+.nav-item.active .nav-link {
+    background-color: #4169E1 !important; 
+    color: white !important; 
+    border-radius: 12px;
+}
+.nav-item:hover .nav-link {
+  
+  color: white !important; 
+  border-radius: 12px;
+}
+.nav-item.active .nav-link svg {
+ 
+  color: #fff !important; 
+}
+
+.nav-link:hover {
+    transform: scale(1.05);
+}
+
+.nav-link {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+/* Default icon color */
+.nav-icon path {
+  
+}
+
+/* Change SVG icon color when the nav-link is active */
+.nav-item.active .nav-icon path {
+  fill: white !important;
+}
+
+.sidebar-image{
+  background-position: center !important;
+  background-repeat: no-repeat;
+  height: 100%;
+  width: 100%;
+}
+
+
+
+
+
+
+/* 
+.nav-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+} */
+
+
+.mtn-svg{
+  /* padding-top: 10px !important;
+  padding-left: 0 !important;
+  margin: 0 !important; */
+  margin-top: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+
+}
+
+
+
+
+
+
+
+/* style.css */
+
+/* General Sidebar Styling */
+.app-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* width: 320px !important; */
+  height: 100%;
+  background-color: #333;
+
+  color: white;
+  overflow: hidden;
+  transition: transform 0.3s ease-in-out;
+}
+.login-sidebar{
+  
+}
+
+.sidebar-image-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px; 
+}
+
+.sidebar-image {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+
+/* .header-item {
+  display: none;
+} */
+
+@media (max-width: 768px) {
+  .header-item {
+    display: block;
+  }
+
+  .app-menu.navbar-menu {
+    position: fixed;
+    top: 0;
+    left: -250px; 
+    width: 250px;
+    height: 100%;
+    background-color: #333; 
+    transition: all 0.3s ease-in-out;
+  }
+
+  .app-menu.navbar-menu.open {
+    left: 0;
+  }
+
+  .sidebar-content {
+    display: none; /* Hidden by default */
+  }
+
+  .sidebar-content.show {
+    display: block; /* Show sidebar content when sidebar is open */
+  }
+}
+
+/* Close button styles */
+.close-sidebar-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 45px !important;
+  color: #000;
+  font-weight: 700;
+  cursor: pointer !important;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.close-sidebar-btn:hover {
+  color: #ccc;
+  font-weight: 700;
+  cursor: pointer !important;
+}
+
+/* Sidebar and responsive styles */
+@media (max-width: 768px) {
+  .app-menu.navbar-menu {
+    position: fixed;
+    top: 0;
+    left: -250px; /* Sidebar initially off-screen */
+    width: 250px;
+    height: 100%;
+    background-color: #333; /* Adjust as needed */
+    transition: all 0.3s ease-in-out;
+  }
+
+  .app-menu.navbar-menu.open {
+    left: 0; /* Sidebar slides in when open */
+  }
+
+  .sidebar-content {
+    display: none; /* Hidden by default */
+  }
+
+  .sidebar-content.show {
+    display: block; /* Show sidebar content when sidebar is open */
+  }
+}
+
+/* Hide the toggle and close buttons by default */
+.toggle-button, .close-sidebar-btn {
+  display: none;
+}
+
+/* Show the toggle button and close button on mobile devices (screens <= 768px) */
+@media (max-width: 768px) {
+  .toggle-button {
+    display: block;
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    font-size: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .close-sidebar-btn {
+    display: block;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    color: #fff;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+}

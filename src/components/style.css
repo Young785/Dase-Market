@@ -1,0 +1,54 @@
+.avatar-xl {
+  width: 100px !important;
+  height: 100px !important;
+}
+
+.cursor{
+  cursor: pointer !important;
+}
+
+a{
+  cursor: pointer !important;
+}
+.termsModalEngineer{
+width: 100% !important;
+}
+
+
+
+
+.valid {
+  color: #0ab39c; 
+}
+
+.invalid {
+  color: #dc3545; 
+}
+
+.password-addon {
+  background: transparent;
+}
+
+.password-input {
+  padding-right: 2.5rem; 
+}
+
+.form-text {
+  margin-top: .5rem;
+  color: #6c757d;
+}
+
+.auth-pass-inputgroup {
+  position: relative;
+}
+
+.btn-link {
+  cursor: pointer;
+  z-index: 1;
+}
+
+
+.login-title{
+  font-weight: 600;
+  font-size: 25px !important;
+}
