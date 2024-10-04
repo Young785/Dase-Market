@@ -1,11 +1,7 @@
-// import { Link } from 'react-router-dom';
-// import { LogoDark } from '../../../assets/images';
-// import { LogoLight } from '../../../assets/images';
-import React, { useState,  } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogoDark, LogoLight } from '../../../assets/images';
 import axiosInstance from '../../../axiosInstance';
-// import { notifySuccess, notifyError } from '../../../utils/toastUtils';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 
@@ -29,6 +25,7 @@ export default function CreateInvoice() {
         draggable: true,
         progress: undefined,
     });
+    const [items, setItems] = useState([]); // Initialize items state
     const [formData, setFormData] = useState({
         image: '',
         company_address: '',
@@ -59,58 +56,42 @@ export default function CreateInvoice() {
         }));
     };
     const handleItemChange = (index, field, value) => {
-        const updatedItems = [...formData.items];
+        const updatedItems = [...items];
         updatedItems[index][field] = value;
         if (field === 'rate' || field === 'quantity') {
             updatedItems[index].amount = (updatedItems[index].rate * updatedItems[index].quantity).toFixed(2);
         }
-        setFormData(prevState => {
-            const newState = {
-                ...prevState,
-                items: updatedItems
-            };
-            console.log('State after item change:', newState);
-            return newState;
-        });
+        setItems(updatedItems);
     };
 
     const addItem = () => {
-        setFormData(prevState => {
-            const newState = {
-                ...prevState,
-                items: [...prevState.items, {
-                    item_name: 'Beans',
-                    item_description: 'I love you na',
-                    rate: 0,
-                    quantity: 0,
-                    amount: '5000'
-                }]
-            };
-            console.log('State after adding item:', newState);
-            return newState;
-        });
+        const newItem = {
+            item_name: '',
+            item_description: '',
+            rate: 0,
+            quantity: 0,
+            amount: 0,
+        };
+        setItems(prevItems => [...prevItems, newItem]);
     };
 
     const removeItem = (index) => {
-        const updatedItems = formData.items.filter((_, i) => i !== index);
-        setFormData(prevState => ({
-            ...prevState,
-            items: updatedItems
-        }));
+        const updatedItems = items.filter((_, i) => i !== index);
+        setItems(updatedItems);
     };
+
+    const calculateTotals = () => {
+        const subtotal = items.reduce((acc, item) => acc + parseFloat(item.amount || 0), 0);
+        const estimatedTax = (subtotal * 0.125).toFixed(2); // Assuming 12.5% tax
+        const totalAmount = (subtotal + parseFloat(estimatedTax)).toFixed(2);
+        return { subtotal, estimatedTax, totalAmount };
+    };
+
+    const { subtotal, estimatedTax, totalAmount } = calculateTotals();
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // const authData = JSON.parse(localStorage.getItem('auth_data'));
-            // const token = authData?.access_token;
-
-            // if (!token) {
-            //     notifyError("No token found. User is not authenticated.");
-            //     setError("Authentication failed");
-            //     setLoading(false);
-            //     return;
-            // }
-            
             const dataToSend = {
                 company_address: formData.company_address || "TheCodeGiant Agency",
                 postal_code: formData.postal_code || "120301",
@@ -128,22 +109,7 @@ export default function CreateInvoice() {
                 shipping_address: formData.shipping_address || "305 S San Gabriel Blvd",
                 shipping_phone_no: formData.shipping_phone_no || "+(123) 456-7890",
                 shipping_tax_no: formData.shipping_tax_no || null,
-                items: JSON.stringify([
-                    {
-                        "item_name": "Sweatshirt for Men (Pink)",
-                        "item_description": "Graphic Print Men & Women Sweatshirt",
-                        "rate": 500,
-                        "quantity": 4,
-                        "amount": "239.98"
-                    },
-                    {
-                        "item_name": "Sweatshirt for Men (Pink)",
-                        "item_description": "Graphic Print Men & Women Sweatshirt",
-                        "rate": 500,
-                        "quantity": 4,
-                        "amount": "239.98"
-                    }
-                ]),
+                items: JSON.stringify(items),
                 general_note: formData.general_note || "No Note",
                 image: formData.image || "",
                 invoice_id: `INV${Math.floor(Math.random() * 90000) + 10000}`,
@@ -191,7 +157,7 @@ export default function CreateInvoice() {
 
                                             <div className="page-title-right">
                                                 <ol className="breadcrumb m-0">
-                                                    <li className="breadcrumb-item"><Link to="/invoice" >Invoices</Link></li>
+                                                    <li className="breadcrumb-item"><Link to="/dase/invoice" >Invoices</Link></li>
                                                     <li className="breadcrumb-item active">Create Invoice</li>
                                                 </ol>
                                             </div>
@@ -402,48 +368,77 @@ export default function CreateInvoice() {
                                                                     <th scope="col" className="text-end" style={{width: "105px"}}></th>
                                                                 </tr>
                                                             </thead>
-                                                            <tbody id="newlink" >
-                                                                <tr id="1" className="product">
-                                                                    <th scope="row" className="product-id">1</th>
-                                                                    <td className="text-start">
-                                                                        <div className="mb-2">
-                                                                            <input type="text" className="form-control bg-light border-0" id="productName-1" placeholder="Product Name" required   />
-                                                                            <div className="invalid-feedback">
-                                                                                Please enter a product name
+                                                            <tbody>
+                                                                {items.map((item, index) => (
+                                                                    <tr key={index} className="product">
+                                                                        <th scope="row" className="product-id">{index + 1}</th>
+                                                                        <td className="text-start">
+                                                                            <div className="mb-2">
+                                                                                <input
+                                                                                    type="text"
+                                                                                    className="form-control bg-light border-0"
+                                                                                    placeholder="Product Name"
+                                                                                    value={item.item_name}
+                                                                                    onChange={(e) => handleItemChange(index, 'item_name', e.target.value)}
+                                                                                    required
+                                                                                />
+                                                                                <div className="invalid-feedback">
+                                                                                    Please enter a product name
+                                                                                </div>
                                                                             </div>
-                                                                        </div>
-                                                                        <textarea className="form-control bg-light border-0" id="productDetails-1" rows="2" placeholder="Product Details"></textarea>
-                                                                    </td>
-                                                                    <td>
-                                                                        <input type="number" className="form-control product-price bg-light border-0" id="productRate-1" step="0.01" placeholder="0.00" required />
-                                                                        <div className="invalid-feedback">
-                                                                            Please enter a rate
-                                                                        </div>
-                                                                    </td>
-                                                                    <td>
-                                                                        <div className="input-step">
-                                                                            <button type="button" className='minus'>–</button>
-                                                                            <input type="number" className="product-quantity" id="product-qty-1" value="0" readOnly/>
-                                                                            <button type="button" className='plus'>+</button>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="text-end">
-                                                                        <div>
-                                                                            <input type="text" className="form-control bg-light border-0 product-line-price" id="productPrice-1" placeholder="$0.00" readOnly />
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="product-removal">
-                                                                        <a href="javascript:void(0)" className="btn btn-success">Delete</a>
+                                                                            <textarea
+                                                                                className="form-control bg-light border-0"
+                                                                                rows="2"
+                                                                                placeholder="Product Details"
+                                                                                value={item.item_description}
+                                                                                onChange={(e) => handleItemChange(index, 'item_description', e.target.value)}
+                                                                            />
+                                                                        </td>
+                                                                        <td>
+                                                                            <input
+                                                                                type="number"
+                                                                                className="form-control product-price bg-light border-0"
+                                                                                step="0.01"
+                                                                                placeholder="0.00"
+                                                                                value={item.rate}
+                                                                                onChange={(e) => handleItemChange(index, 'rate', e.target.value)}
+                                                                                required
+                                                                            />
+                                                                            <div className="invalid-feedback">
+                                                                                Please enter a rate
+                                                                            </div>
+                                                                        </td>
+                                                                        <td>
+                                                                            <input
+                                                                                type="number"
+                                                                                className="form-control product-quantity"
+                                                                                value={item.quantity}
+                                                                                onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                                                                                required
+                                                                            />
+                                                                        </td>
+                                                                        <td className="text-end">
+                                                                            <input
+                                                                                type="text"
+                                                                                className="form-control bg-light border-0 product-line-price"
+                                                                                value={item.amount}
+                                                                                readOnly
+                                                                            />
+                                                                        </td>
+                                                                        <td className="product-removal">
+                                                                            <button type="button" className="btn btn-danger" onClick={() => removeItem(index)}>Delete</button>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
+                                                                <tr>
+                                                                    <td colSpan="5">
+                                                                        <button type="button" id="add-item" className="btn btn-soft-secondary fw-medium" onClick={addItem}>
+                                                                            <i className="ri-add-fill me-1 align-bottom"></i> Add Item
+                                                                        </button>
                                                                     </td>
                                                                 </tr>
                                                             </tbody>
                                                             <tbody>
-                                                                <tr id="newForm" style={{display: "none"}}><td className="d-none" colSpan="5"><p>Add New Form</p></td></tr>
-                                                                <tr>
-                                                                    <td colSpan="5">
-                                                                        <a href="#" id="add-item" className="btn btn-soft-secondary fw-medium"><i className="ri-add-fill me-1 align-bottom"></i> Add Item</a>
-                                                                    </td>
-                                                                </tr>
                                                                 <tr className="border-top border-top-dashed mt-2">
                                                                     <td colSpan="3"></td>
                                                                     <td colSpan="2" className="p-0">
@@ -452,13 +447,13 @@ export default function CreateInvoice() {
                                                                                 <tr>
                                                                                     <th scope="row">Sub Total</th>
                                                                                     <td style={{width:"150px"}}>
-                                                                                        <input type="text" className="form-control bg-light border-0" id="cart-subtotal" placeholder="$0.00" readOnly />
+                                                                                        <input type="text" className="form-control bg-light border-0" value={subtotal.toFixed(2)} readOnly />
                                                                                     </td>
                                                                                 </tr>
                                                                                 <tr>
                                                                                     <th scope="row">Estimated Tax (12.5%)</th>
                                                                                     <td>
-                                                                                        <input type="text" className="form-control bg-light border-0" id="cart-tax" placeholder="$0.00" readOnly />
+                                                                                        <input type="text" className="form-control bg-light border-0" value={estimatedTax} readOnly />
                                                                                     </td>
                                                                                 </tr>
                                                                                 <tr>
@@ -476,7 +471,7 @@ export default function CreateInvoice() {
                                                                                 <tr className="border-top border-top-dashed">
                                                                                     <th scope="row">Total Amount</th>
                                                                                     <td>
-                                                                                        <input type="text" className="form-control bg-light border-0" id="cart-total" placeholder="$0.00" readOnly />
+                                                                                        <input type="text" className="form-control bg-light border-0" value={totalAmount} readOnly />
                                                                                     </td>
                                                                                 </tr>
                                                                             </tbody>

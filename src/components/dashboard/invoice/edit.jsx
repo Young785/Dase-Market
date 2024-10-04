@@ -1,12 +1,8 @@
-// import { Link } from 'react-router-dom';
-// import { LogoDark } from '../../../assets/images';
-// import { LogoLight } from '../../../assets/images';
 import React, { useState, useEffect } from 'react';
 import {Link, useParams, useNavigate } from 'react-router-dom';
 import { LogoDark, LogoLight } from '../../../assets/images';
 import axiosInstance from '../../../axiosInstance';
 import Footer from '../footer';
-// import { notifySuccess, notifyError } from '../../../utils/toastUtils';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 
@@ -53,7 +49,8 @@ export default function EditInvoice() {
         general_note: '',
         
     });
-
+    const [items, setItems] = useState([]); // Initialize items state
+    const [invoiceData, setInvoiceData] = useState(null); // To hold the fetched invoice data
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -64,72 +61,84 @@ export default function EditInvoice() {
     };
 
     const handleItemChange = (index, field, value) => {
-        const updatedItems = [...formData.items];
+        const updatedItems = [...items];
         updatedItems[index][field] = value;
         if (field === 'rate' || field === 'quantity') {
             updatedItems[index].amount = (updatedItems[index].rate * updatedItems[index].quantity).toFixed(2);
         }
-        setFormData(prevState => ({
-            ...prevState,
-            items: updatedItems
-        }));
-    };
-
-
-    const addItem = () => {
-        setFormData(prevState => {
-            const newState = {
-                ...prevState,
-                items: [...prevState.items, {
-                    item_name: 'Beans',
-                    item_description: 'I love you na',
-                    rate: 0,
-                    quantity: 0,
-                    amount: '5000'
-                }]
-            };
-            console.log('State after adding item:', newState);
-            return newState;
-        });
+        setItems(updatedItems);
     };
 
     const removeItem = (index) => {
-        const updatedItems = formData.items.filter((_, i) => i !== index);
-        setFormData(prevState => ({
-            ...prevState,
-            items: updatedItems
-        }));
+        const updatedItems = items.filter((_, i) => i !== index);
+        setItems(updatedItems);
     };
 
+    const addItem = () => {
+        const newItem = {
+            item_name: '',
+            item_description: '',
+            rate: 0,
+            quantity: 0,
+            amount: 0,
+        };
+        setItems(prevItems => [...prevItems, newItem]);
+    };
 
+    const calculateTotals = () => {
+        const subtotal = items.reduce((acc, item) => acc + parseFloat(item.amount || 0), 0);
+        const estimatedTax = (subtotal * 0.125).toFixed(2); // Assuming 12.5% tax
+        const totalAmount = (subtotal + parseFloat(estimatedTax)).toFixed(2);
+        return { subtotal, estimatedTax, totalAmount };
+    };
 
-
-
+    const { subtotal, estimatedTax, totalAmount } = calculateTotals();
 
     useEffect(() => {
+        const fetchInvoiceData = async () => {
+            try {
+                const response = await axiosInstance.get(`/user/invoices/${invoiceId}`);
+                console.log(response.data); 
+                const { data } = response.data;
+                setInvoiceData(data);
+                setItems(JSON.parse(data.items)); // Assuming items are stored as a JSON string
+                setFormData({
+                    company_address: data.company_address,
+                    postal_code: data.postal_code,
+                    email_address: data.email_address,
+                    phone_number: data.phone_number,
+                    invoice_number: data.invoice_number,
+                    image: data.image,     
+                    date: data.date,
+                    payment_status: data.payment_status,
+                    total_amount: data.total_amount,
+                    billing_full_name: data.billing_full_name,
+                    billing_address: data.billing_address,
+                    billing_phone_no: data.billing_tax_no,
+                    billing_tax_no: data.billing_tax_no,
+                    shipping_full_name: data.shipping_full_name,
+                    shipping_address: data.shipping_address,
+                    shipping_phone_no: data.shipping_phone_no,
+                    shipping_tax_no: data.shipping_tax_no,
+                    items: [],
+                    general_note: data.general_note,
+                    // Initialize other fields as necessary
+                });
+            } catch (error) {
+                console.error('Error fetching invoice data:', error);
+            }
+        };
         fetchInvoiceData();
     }, [invoiceId]);
 
-    const fetchInvoiceData = async () => {
-        try {
-            const response = await axiosInstance.get(`/user/invoices/${invoiceId}`);
-            const { data } = response.data;
-            setFormData(data);
-            setFormData(prevState => ({
-                ...prevState,
-                items: JSON.parse(data.items)
-            }));
-        } catch (error) {
-            toast.error('Error fetching invoice data');
-        }
-    };
+   
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const response = await axiosInstance.put(`/user/invoices/edit/${invoiceId}`, {
                 ...formData,
-                items: JSON.stringify(formData.items)
+                items: JSON.stringify(items)
             });
             
             if (response.data.status === false) {
@@ -167,7 +176,7 @@ export default function EditInvoice() {
 
                                             <div className="page-title-right">
                                                 <ol className="breadcrumb m-0">
-                                                    <li className="breadcrumb-item"><Link to="/invoice" >Invoices</Link></li>
+                                                    <li className="breadcrumb-item"><Link to="/dase/invoice" >Invoices</Link></li>
                                                     <li className="breadcrumb-item active">Create Invoice</li>
                                                 </ol>
                                             </div>
@@ -181,6 +190,7 @@ export default function EditInvoice() {
                                 <div className="row justify-content-center">
                                     <div className="col-xxl-9">
                                         <div className="card">
+                                        {invoiceData ? (
                                             <form onSubmit={handleSubmit} className="needs-validation" id="invoice_form">
                                                 <div className="card-body border-bottom border-bottom-dashed p-4">
                                                     <div className="row">
@@ -372,45 +382,81 @@ export default function EditInvoice() {
                                                                 </tr>
                                                             </thead>
                                                             <tbody id="newlink" >
-                                                                <tr id="1" className="product">
-                                                                    <th scope="row" className="product-id">1</th>
-                                                                    <td className="text-start">
-                                                                        <div className="mb-2">
-                                                                            <input type="text" className="form-control bg-light border-0" id="productName-1" placeholder="Product Name"    />
-                                                                            <div className="invalid-feedback">
-                                                                                Please enter a product name
+                                                                {items.map((item, index) => (
+                                                                    <tr key={index} className="product">
+                                                                        <th scope="row" className="product-id">{index + 1}</th>
+                                                                        <td className="text-start">
+                                                                            <div className="mb-2">
+                                                                                <input
+                                                                                    type="text"
+                                                                                    className="form-control bg-light border-0"
+                                                                                    placeholder="Product Name"
+                                                                                    value={item.item_name}
+                                                                                    onChange={(e) => handleItemChange(index, 'item_name', e.target.value)}
+                                                                                    required
+                                                                                />
+                                                                                <div className="invalid-feedback">
+                                                                                    Please enter a product name
+                                                                                </div>
                                                                             </div>
-                                                                        </div>
-                                                                        <textarea className="form-control bg-light border-0" id="productDetails-1" rows="2" placeholder="Product Details"></textarea>
-                                                                    </td>
-                                                                    <td>
-                                                                        <input type="number" className="form-control product-price bg-light border-0" id="productRate-1" step="0.01" placeholder="0.00"  />
-                                                                        <div className="invalid-feedback">
-                                                                            Please enter a rate
-                                                                        </div>
-                                                                    </td>
-                                                                    <td>
-                                                                        <div className="input-step">
-                                                                            <button type="button" className='minus'>–</button>
-                                                                            <input type="number" className="product-quantity" id="product-qty-1" value="0" readOnly/>
-                                                                            <button type="button" className='plus'>+</button>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="text-end">
-                                                                        <div>
-                                                                            <input type="text" className="form-control bg-light border-0 product-line-price" id="productPrice-1" placeholder="$0.00" readOnly />
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="product-removal">
-                                                                        <a href="javascript:void(0)" className="btn btn-success">Delete</a>
-                                                                    </td>
-                                                                </tr>
+                                                                            <textarea
+                                                                                className="form-control bg-light border-0"
+                                                                                rows="2"
+                                                                                placeholder="Product Details"
+                                                                                value={item.item_description}
+                                                                                onChange={(e) => handleItemChange(index, 'item_description', e.target.value)}
+                                                                            />
+                                                                        </td>
+                                                                        <td>
+                                                                            <input
+                                                                                type="number"
+                                                                                className="form-control product-price bg-light border-0"
+                                                                                step="0.01"
+                                                                                placeholder="0.00"
+                                                                                value={item.rate}
+                                                                                onChange={(e) => handleItemChange(index, 'rate', e.target.value)}
+                                                                                required
+                                                                            />
+                                                                            <div className="invalid-feedback">
+                                                                                Please enter a rate
+                                                                            </div>
+                                                                        </td>
+                                                                        <td>
+                                                                            <div className="input-step">
+                                                                                <button type="button" className='minus' onClick={() => handleItemChange(index, 'quantity', Math.max(0, item.quantity - 1))}>–</button>
+                                                                                <input
+                                                                                    type="number"
+                                                                                    className="product-quantity"
+                                                                                    value={item.quantity}
+                                                                                    onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                                                                                    required
+                                                                                />
+                                                                                <button type="button" className='plus' onClick={() => handleItemChange(index, 'quantity', item.quantity + 1)}>+</button>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className="text-end">
+                                                                            <div>
+                                                                                <input
+                                                                                    type="text"
+                                                                                    className="form-control bg-light border-0 product-line-price"
+                                                                                    value={item.amount}
+                                                                                    readOnly
+                                                                                />
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className="product-removal">
+                                                                            <button type="button" className="btn btn-danger" onClick={() => removeItem(index)}>Delete</button>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
                                                             </tbody>
                                                             <tbody>
                                                                 <tr id="newForm" style={{display: "none"}}><td className="d-none" colSpan="5"><p>Add New Form</p></td></tr>
                                                                 <tr>
                                                                     <td colSpan="5">
-                                                                        <a href="#" id="add-item" className="btn btn-soft-secondary fw-medium"><i className="ri-add-fill me-1 align-bottom"></i> Add Item</a>
+                                                                        <button type="button" id="add-item" className="btn btn-soft-secondary fw-medium" onClick={addItem}>
+                                                                            <i className="ri-add-fill me-1 align-bottom"></i> Add Item
+                                                                        </button>
                                                                     </td>
                                                                 </tr>
                                                                 <tr className="border-top border-top-dashed mt-2">
@@ -421,13 +467,13 @@ export default function EditInvoice() {
                                                                                 <tr>
                                                                                     <th scope="row">Sub Total</th>
                                                                                     <td style={{width:"150px"}}>
-                                                                                        <input type="text" className="form-control bg-light border-0" id="cart-subtotal" placeholder="$0.00" readOnly />
+                                                                                        <input type="text" value={subtotal.toFixed(2)} className="form-control bg-light border-0" id="cart-subtotal" placeholder="$0.00" readOnly />
                                                                                     </td>
                                                                                 </tr>
                                                                                 <tr>
                                                                                     <th scope="row">Estimated Tax (12.5%)</th>
                                                                                     <td>
-                                                                                        <input type="text" className="form-control bg-light border-0" id="cart-tax" placeholder="$0.00" readOnly />
+                                                                                        <input type="text" value={estimatedTax} className="form-control bg-light border-0" id="cart-tax" placeholder="$0.00" readOnly />
                                                                                     </td>
                                                                                 </tr>
                                                                                 <tr>
@@ -445,7 +491,7 @@ export default function EditInvoice() {
                                                                                 <tr className="border-top border-top-dashed">
                                                                                     <th scope="row">Total Amount</th>
                                                                                     <td>
-                                                                                        <input type="text" className="form-control bg-light border-0" id="cart-total" placeholder="$0.00" readOnly />
+                                                                                        <input type="text" value={totalAmount} className="form-control bg-light border-0" id="cart-total" placeholder="$0.00" readOnly />
                                                                                     </td>
                                                                                 </tr>
                                                                             </tbody>
@@ -486,7 +532,7 @@ export default function EditInvoice() {
                                                     
                                                     <div className="mt-4">
                                                         <label  className="form-label text-muted text-uppercase fw-semibold">NOTES</label>
-                                                        <textarea className="form-control alert alert-info" id="exampleFormControlTextarea1" placeholder="Notes" rows="2" required>All accounts are to be paid within 7 days from receipt of invoice. To be paid by cheque or credit card or direct payment online. If account is not paid within 7 days the credits details supplied as confirmation of work undertaken will be charged the agreed quoted fee noted above.</textarea>
+                                                        <textarea className="form-control alert alert-info" id="exampleFormControlTextarea1" placeholder="Notes" rows="2" onChange={handleInputChange}  value={formData.general_note} required> </textarea>
                                                     </div>
                                                     <div className="hstack gap-2 justify-content-end d-print-none mt-4">
                                                         <button type="submit" className="btn btn-success"><i className="ri-printer-line align-bottom me-1"></i>Update</button>
@@ -495,6 +541,9 @@ export default function EditInvoice() {
                                                     </div>
                                                 </div>
                                             </form>
+                                        ) : (
+                                            <p className='p-5'>Loading...</p>
+                                        )}
                                         </div>
                                     </div>
                                 
