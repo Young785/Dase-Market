@@ -1,4 +1,4 @@
-import LoginPage from '../src/components/login'
+import LoginPage from '../components/auth/login'
 
 
 // import Footer from "../components/dashboard/footer"

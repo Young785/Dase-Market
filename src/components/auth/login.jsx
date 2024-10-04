@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import './style.css';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
-import axiosInstance from '../axiosInstance';
+import axiosInstance from '../../axiosInstance';
 
 export default function LogIn() {
   const [showPassword, setShowPassword] = useState(false);
@@ -49,7 +49,7 @@ export default function LogIn() {
     if (formData.login && formData.password) {
       formData.login = formData.login.trim();
       formData.password = formData.password.trim();
-      setIsUploading(true);
+      setIsUploading(true); // Set loading state to true
   
       try {
         const response = await axiosInstance.post('/login', formData);
@@ -91,13 +91,12 @@ export default function LogIn() {
           notifyError('Network error or server not responding');
         }
       } finally {
-        setIsUploading(false);
+        setIsUploading(false); // Reset loading state
       }
     } else {
       notifyError("All fields are required!");
     }
   };
-  
 
   return (
     <div>
@@ -194,7 +193,15 @@ export default function LogIn() {
                         </div>
 
                         <div className="mt-4">
-                          <button className="btn btn-success w-100" type="submit">Sign In</button>
+                          <button className="btn btn-success w-100" type="submit" disabled={isUploading}>
+                            {isUploading ? (
+                              <div className="spinner-border spinner-border-sm text-light" role="status">
+                                <span className="sr-only">Loading...</span>
+                              </div>
+                            ) : (
+                              'Sign In'
+                            )}
+                          </button>
                         </div>
 
                         <div className="mt-4 text-center">

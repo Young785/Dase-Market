@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './style.css';
 import toast from 'react-hot-toast';
-import axiosInstance from '../axiosInstance.js';
+import axiosInstance from '../../axiosInstance.js';
 
 export default function VerifyCode() {
   
@@ -87,7 +87,7 @@ export default function VerifyCode() {
           notifySuccess(response.data.message);
           setTimeout(() => {
             navigate('/dashboard'); // Redirect to the dashboard on success
-          }, 1500);
+          }, 3500);
         } else {
           notifyError(response.data.message);
         }

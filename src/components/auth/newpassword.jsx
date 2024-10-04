@@ -2,7 +2,7 @@
 import  { useState, useEffect } from 'react';
 import './style.css';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../axiosInstance';
+import axiosInstance from '../../axiosInstance';
 import toast from 'react-hot-toast';
 
 export default function NewPassword() {

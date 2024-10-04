@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import './register.css'
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
-import axiosInstance from '../axiosInstance';
+import axiosInstance from '../../axiosInstance';
 
 // import CircularProgress from '@mui/material/CircularProgress';
 
@@ -141,7 +141,7 @@ export default function Register() {
 
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent default form submission
     setIsUploading(true);
     setLoading(true); 
 
@@ -201,26 +201,24 @@ export default function Register() {
                         }
                     });
 
-                    if (response.data.status === false) {
+                    // Check for response status
+                    if (response.data.status) {
+                        // Handle successful registration
+                        notifySuccess(response.data.message);
+                        localStorage.setItem('signup_record', JSON.stringify(response.data.user));
+                        setTimeout(() => {
+                            navigate('/dase/verifyotp');
+                        }, 2000);
+                    } else {
                         notifyError(response.data.message);
-                        notifyError(data.message);
-                        
-                        
-                        
-                        return;
                     }
-
-                    const data = response.data;
-                    notifySuccess(data.message);
-                    localStorage.setItem('signup_record', JSON.stringify(data.user));
-                   console.log("payload inside try", formData);
-                   
-                    setTimeout(() => {
-                      navigate('/dase/verifyotp');
-                    }, 2000);
                 } catch (error) {
-                    notifyError(`An error occurred: ${error.response.data.message}`);
-                    console.log("Payload 1", formData);
+                    // Handle errors
+                    if (error.response) {
+                        notifyError(error.response.data.message || 'An unexpected error occurred');
+                    } else {
+                        notifyError('Network error or server not responding');
+                    }
                 } finally {
                     setIsUploading(false);
                     setLoading(false);

@@ -1,8 +1,35 @@
 // import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import axiosInstance from '../../../axiosInstance';
 
 import { LogoDark } from '../../../assets/images';
 import { LogoLight } from '../../../assets/images';
 export default function ViewInvoice() {
+    const { invoiceId } = useParams();
+    const [invoice, setInvoice] = useState(null);
+
+    useEffect(() => {
+        fetchInvoiceData();
+    }, [invoiceId]);
+
+
+    const fetchInvoiceData = async () => {
+        try {
+            const response = await axiosInstance.get(`/user/invoices/${invoiceId}`);
+            const { data } = response.data;
+            setInvoice({
+                ...data,
+                items: JSON.parse(data.items)
+            });
+        } catch (error) {
+            toast.error('Error fetching invoice data');
+        }
+    };
+
+    if (!invoice) return <div>Loading...</div>;
+
     return (
         <>
             <div>
@@ -44,15 +71,15 @@ export default function ViewInvoice() {
                                                                 <img src={LogoLight} className="card-logo card-logo-light" alt="logo light" height="17"/>
                                                                 <div className="mt-sm-5 mt-4">
                                                                     <h6 className="text-muted text-uppercase fw-semibold">Address</h6>
-                                                                    <p className="text-muted mb-1" id="address-details">California, United States</p>
-                                                                    <p className="text-muted mb-0" id="zip-code"><span>Zip-code:</span> 90201</p>
+                                                                    <p className="text-muted mb-1" id="address-details">{invoice.company_address}</p>
+                                                                    <p className="text-muted mb-0" id="zip-code"><span>Zip-code:</span> {invoice.postal_code}</p>
                                                                 </div>
                                                             </div>
                                                             <div className="flex-shrink-0 mt-sm-0 mt-3">
-                                                                <h6><span className="text-muted fw-normal">Legal Registration No:</span><span id="legal-register-no">987654</span></h6>
-                                                                <h6><span className="text-muted fw-normal">Email:</span><span id="email">velzon@themesbrand.com</span></h6>
+                                                                {/* <h6><span className="text-muted fw-normal">Legal Registration No:</span><span id="legal-register-no">{invoice.company_registration_no}</span></h6> */}
+                                                                <h6><span className="text-muted fw-normal">Email:</span><span id="email">{invoice.email_address}</span></h6>
                                                                 <h6><span className="text-muted fw-normal">Website:</span> <a href="https://themesbrand.com/" className="link-primary" target="_blank" id="website">www.themesbrand.com</a></h6>
-                                                                <h6 className="mb-0"><span className="text-muted fw-normal">Contact No: </span><span id="contact-no"> +(01) 234 6789</span></h6>
+                                                                <h6 className="mb-0"><span className="text-muted fw-normal">Contact No: </span><span id="contact-no"> {invoice.phone_number}</span></h6>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -63,22 +90,22 @@ export default function ViewInvoice() {
                                                         <div className="row g-3">
                                                             <div className="col-lg-3 col-6">
                                                                 <p className="text-muted mb-2 text-uppercase fw-semibold">Invoice No</p>
-                                                                <h5 className="fs-14 mb-0">#VL<span id="invoice-no">25000355</span></h5>
+                                                                <h5 className="fs-14 mb-0">#VL<span id="invoice-no">{invoice.invoice_number}</span></h5>
                                                             </div>
                                                             
                                                             <div className="col-lg-3 col-6">
                                                                 <p className="text-muted mb-2 text-uppercase fw-semibold">Date</p>
-                                                                <h5 className="fs-14 mb-0"><span id="invoice-date">23 Nov, 2021</span> <small className="text-muted" id="invoice-time">02:36PM</small></h5>
+                                                                <h5 className="fs-14 mb-0"><span id="invoice-date">{invoice.invoice_date}</span> <small className="text-muted" id="invoice-time">02:36PM</small></h5>
                                                             </div>
                                                             
                                                             <div className="col-lg-3 col-6">
                                                                 <p className="text-muted mb-2 text-uppercase fw-semibold">Payment Status</p>
-                                                                <span className="badge bg-success-subtle text-success fs-11" id="payment-status">Paid</span>
+                                                                <span className="badge bg-success-subtle text-success fs-11" id="payment-status">{invoice.payment_status}</span>
                                                             </div>
                                                             
                                                             <div className="col-lg-3 col-6">
                                                                 <p className="text-muted mb-2 text-uppercase fw-semibold">Total Amount</p>
-                                                                <h5 className="fs-14 mb-0">$<span id="total-amount">755.96</span></h5>
+                                                                <h5 className="fs-14 mb-0">$<span id="total-amount">{invoice.total_amount}</span></h5>
                                                             </div>
                                                             
                                                         </div>
@@ -91,10 +118,10 @@ export default function ViewInvoice() {
                                                         <div className="row g-3">
                                                             <div className="col-6">
                                                                 <h6 className="text-muted text-uppercase fw-semibold mb-3">Billing Address</h6>
-                                                                <p className="fw-medium mb-2" id="billing-name">David Nichols</p>
-                                                                <p className="text-muted mb-1" id="billing-address-line-1">305 S San Gabriel Blvd</p>
-                                                                <p className="text-muted mb-1"><span>Phone: +</span><span id="billing-phone-no">(123) 456-7890</span></p>
-                                                                <p className="text-muted mb-0"><span>Tax: </span><span id="billing-tax-no">12-3456789</span> </p>
+                                                                <p className="fw-medium mb-2" id="billing-name">Name:  {invoice.billing_full_name}</p>
+                                                                <p className="text-muted mb-1" id="billing-address-line-1">Address: {invoice.billing_address}</p>
+                                                                <p className="text-muted mb-1"><span>Phone: +</span><span id="billing-phone-no">{invoice.billing_phone_no}</span></p>
+                                                                <p className="text-muted mb-0"><span>Tax: </span><span id="billing-tax-no">{invoice.billing_tax_no}</span> </p>
                                                             </div>
                                                             
                                                             <div className="col-6">
@@ -123,46 +150,18 @@ export default function ViewInvoice() {
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody id="products-list">
-                                                                    <tr>
-                                                                        <th scope="row">01</th>
-                                                                        <td className="text-start">
-                                                                            <span className="fw-medium">Sweatshirt for Men (Pink)</span>
-                                                                            <p className="text-muted mb-0">Graphic Print Men & Women Sweatshirt</p>
-                                                                        </td>
-                                                                        <td>$119.99</td>
-                                                                        <td>02</td>
-                                                                        <td className="text-end">$239.98</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <th scope="row">02</th>
-                                                                        <td className="text-start">
-                                                                            <span className="fw-medium">Noise NoiseFit Endure Smart Watch</span>
-                                                                            <p className="text-muted mb-0">32.5mm (1.28 Inch) TFT Color Touch Display</p>
-                                                                        </td>
-                                                                        <td>$94.99</td>
-                                                                        <td>01</td>
-                                                                        <td className="text-end">$94.99</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <th scope="row">03</th>
-                                                                        <td className="text-start">
-                                                                            <span className="fw-medium">350 ml Glass Grocery Container</span>
-                                                                            <p className="text-muted mb-0">Glass Grocery Container (Pack of 3, White)</p>
-                                                                        </td>
-                                                                        <td>$24.99</td>
-                                                                        <td>01</td>
-                                                                        <td className="text-end">$24.99</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <th scope="row">04</th>
-                                                                        <td className="text-start">
-                                                                            <span className="fw-medium">Fabric Dual Tone Living Room Chair</span>
-                                                                            <p className="text-muted mb-0">Chair (White)</p>
-                                                                        </td>
-                                                                        <td>$340.00</td>
-                                                                        <td>01</td>
-                                                                        <td className="text-end">$340.00</td>
-                                                                    </tr>
+                                                                    {invoice.items.map((item, index) => (
+                                                                        <tr key={index}>
+                                                                            <th scope="row">{index + 1}</th>
+                                                                            <td className="text-start">
+                                                                                <span className="fw-medium">{item.item_name}</span>
+                                                                                <p className="text-muted mb-0">{item.item_description}</p>
+                                                                            </td>
+                                                                            <td>${item.rate}</td>
+                                                                            <td>{item.quantity}</td>
+                                                                            <td className="text-end">${item.amount}</td>
+                                                                        </tr>
+                                                                    ))}
                                                                 </tbody>
                                                             </table>
                                                         </div>
@@ -171,27 +170,27 @@ export default function ViewInvoice() {
                                                                 <tbody>
                                                                     <tr>
                                                                         <td>Sub Total</td>
-                                                                        <td className="text-end">$699.96</td>
+                                                                        <td className="text-end">${invoice.total_amount}</td>
                                                                     </tr>
+                                                                    {/* You may need to adjust these based on your data structure */}
                                                                     <tr>
                                                                         <td>Estimated Tax (12.5%)</td>
-                                                                        <td className="text-end">$44.99</td>
+                                                                        <td className="text-end">${(invoice.total_amount * 0.125).toFixed(2)}</td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Discount <small className="text-muted">(VELZON15)</small></td>
-                                                                        <td className="text-end">- $53.99</td>
+                                                                        <td className="text-end">- $0.00</td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Shipping Charge</td>
-                                                                        <td className="text-end">$65.00</td>
+                                                                        <td className="text-end">$0.00</td>
                                                                     </tr>
                                                                     <tr className="border-top border-top-dashed fs-15">
                                                                         <th scope="row">Total Amount</th>
-                                                                        <th className="text-end">$755.96</th>
+                                                                        <th className="text-end">${invoice.total_amount}</th>
                                                                     </tr>
                                                                 </tbody>
                                                             </table>
-                                                        
                                                         </div>
                                                         <div className="mt-3">
                                                             <h6 className="text-muted text-uppercase fw-semibold mb-3">Payment Details:</h6>
@@ -202,11 +201,8 @@ export default function ViewInvoice() {
                                                         </div>
                                                         <div className="mt-4">
                                                             <div className="alert alert-info">
-                                                                <p className="mb-0"><span className="fw-semibold">NOTES:</span>
-                                                                    <span id="note">All accounts are to be paid within 7 days from receipt of invoice. To be paid by cheque or
-                                                                        credit card or direct payment online. If account is not paid within 7
-                                                                        days the credits details supplied as confirmation of work undertaken
-                                                                        will be charged the agreed quoted fee noted above.
+                                                                <p className="mb-0"><span className="fw-semibold px-3">NOTES:</span>
+                                                                    <span id="note">{invoice.general_note}
                                                                     </span>
                                                                 </p>
                                                             </div>
@@ -230,20 +226,7 @@ export default function ViewInvoice() {
                         </div>
 
 
-                        <footer className="footer">
-                            <div className="container-fluid">
-                                <div className="row">
-                                    <div className="col-sm-6">
-                                        <script>document.write(new Date().getFullYear())</script> © Velzon.
-                                    </div>
-                                    <div className="col-sm-6">
-                                        <div className="text-sm-end d-none d-sm-block">
-                                            Design & Develop by Themesbrand
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </footer>
+                       
                     </div>
                 </div>
             </div>

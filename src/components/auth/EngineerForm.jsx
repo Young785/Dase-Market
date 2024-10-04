@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 // import PhoneCode from './phone_code';
 import toast from 'react-hot-toast';
 import './register.css'
-import axiosInstance from '../axiosInstance';
+import axiosInstance from '../../axiosInstance';
 // import CircularProgress from '@mui/material/CircularProgress';
 
 export default function Register() {

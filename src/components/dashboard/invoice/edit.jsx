@@ -1,15 +1,17 @@
 // import { Link } from 'react-router-dom';
 // import { LogoDark } from '../../../assets/images';
 // import { LogoLight } from '../../../assets/images';
-import React, { useState,  } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import {Link, useParams, useNavigate } from 'react-router-dom';
 import { LogoDark, LogoLight } from '../../../assets/images';
 import axiosInstance from '../../../axiosInstance';
+import Footer from '../footer';
 // import { notifySuccess, notifyError } from '../../../utils/toastUtils';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 
-export default function CreateInvoice() {
+export default function EditInvoice() {
+    const { invoiceId } = useParams();
     const navigate = useNavigate();
     const notifyError = (text) => toast.error(text, {
         position: 'top-right',
@@ -51,6 +53,8 @@ export default function CreateInvoice() {
         general_note: '',
         
     });
+
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prevState => ({
@@ -58,21 +62,19 @@ export default function CreateInvoice() {
             [name]: value
         }));
     };
+
     const handleItemChange = (index, field, value) => {
         const updatedItems = [...formData.items];
         updatedItems[index][field] = value;
         if (field === 'rate' || field === 'quantity') {
             updatedItems[index].amount = (updatedItems[index].rate * updatedItems[index].quantity).toFixed(2);
         }
-        setFormData(prevState => {
-            const newState = {
-                ...prevState,
-                items: updatedItems
-            };
-            console.log('State after item change:', newState);
-            return newState;
-        });
+        setFormData(prevState => ({
+            ...prevState,
+            items: updatedItems
+        }));
     };
+
 
     const addItem = () => {
         setFormData(prevState => {
@@ -98,76 +100,50 @@ export default function CreateInvoice() {
             items: updatedItems
         }));
     };
+
+
+
+
+
+
+    useEffect(() => {
+        fetchInvoiceData();
+    }, [invoiceId]);
+
+    const fetchInvoiceData = async () => {
+        try {
+            const response = await axiosInstance.get(`/user/invoices/${invoiceId}`);
+            const { data } = response.data;
+            setFormData(data);
+            setFormData(prevState => ({
+                ...prevState,
+                items: JSON.parse(data.items)
+            }));
+        } catch (error) {
+            toast.error('Error fetching invoice data');
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // const authData = JSON.parse(localStorage.getItem('auth_data'));
-            // const token = authData?.access_token;
-
-            // if (!token) {
-            //     notifyError("No token found. User is not authenticated.");
-            //     setError("Authentication failed");
-            //     setLoading(false);
-            //     return;
-            // }
-            
-            const dataToSend = {
-                company_address: formData.company_address || "TheCodeGiant Agency",
-                postal_code: formData.postal_code || "120301",
-                email_address: formData.email_address || "ayomikunariyo@gmail.com",
-                phone_number: formData.phone_number || "08061163188",
-                invoice_number: formData.invoice_number || "INV1234",
-                date: formData.date || "2024-09-16",
-                payment_status: formData.payment_status || "PENDING",
-                total_amount: formData.total_amount || "479.96",
-                billing_full_name: formData.billing_full_name || "Ariyo Ayomikun",
-                billing_address: formData.billing_address || "305 S San Gabriel Blvd",
-                billing_phone_no: formData.billing_phone_no || "+(123) 456-7890",
-                billing_tax_no: formData.billing_tax_no || "12-3456789",
-                shipping_full_name: formData.shipping_full_name || "Ariyo Ayomikun",
-                shipping_address: formData.shipping_address || "305 S San Gabriel Blvd",
-                shipping_phone_no: formData.shipping_phone_no || "+(123) 456-7890",
-                shipping_tax_no: formData.shipping_tax_no || null,
-                items: JSON.stringify([
-                    {
-                        "item_name": "Sweatshirt for Men (Pink)",
-                        "item_description": "Graphic Print Men & Women Sweatshirt",
-                        "rate": 500,
-                        "quantity": 4,
-                        "amount": "239.98"
-                    },
-                    {
-                        "item_name": "Sweatshirt for Men (Pink)",
-                        "item_description": "Graphic Print Men & Women Sweatshirt",
-                        "rate": 500,
-                        "quantity": 4,
-                        "amount": "239.98"
-                    }
-                ]),
-                general_note: formData.general_note || "No Note",
-                image: formData.image || "",
-                invoice_id: `INV${Math.floor(Math.random() * 90000) + 10000}`,
-                account_id: localStorage.getItem('account_id') || "DU31320"
-            };
-            console.log('Data being sent to API:', dataToSend);
-
-            const response = await axiosInstance.post('/user/invoices/create', dataToSend);
-               
-          
+            const response = await axiosInstance.put(`/user/invoices/edit/${invoiceId}`, {
+                ...formData,
+                items: JSON.stringify(formData.items)
+            });
             
             if (response.data.status === false) {
-                    notifyError(response.data.message);
-                    notifyError(data.message);
-                    
-                    return;
-            } 
+                notifyError(response.data.message);
+                notifyError(data.message);
+                
+                return;
+        } 
             const data = response.data;
             notifySuccess(data.message);
-            setTimeout(() => {
+                setTimeout(() => {
                 navigate('/dase/invoice');
-              }, 2000);
+            }, 2000);
         } catch (error) {
-            // console.error('Error creating invoice:', error);
             notifyError(`An error occurred: ${error.response.data.message}`);
         }
     };
@@ -220,15 +196,18 @@ export default function CreateInvoice() {
                                                             </div>
                                                             <div>
                                                                 <div>
-                                                                    <label>Address</label>
+                                                                    <label>CompanyAddress</label>
                                                                 </div>
                                                                 <div className="mb-2">
                                                                     <textarea onChange={handleInputChange} name="company_address" value={formData.company_address} className="form-control bg-light border-0" id="companyAddress" rows="3" placeholder="Company Address" required></textarea>
                                                                     <div className="invalid-feedback">
-                                                                        Please enter a address
+                                                                        Please enter company address
                                                                     </div>
                                                                 </div>
-                                                                <div>
+                                                                <div className="mb-2">
+                                                                    <label>Postal Code</label>
+                                                                </div>
+                                                                <div >
                                                                     <input onChange={handleInputChange} name="postal_code" value={formData.postal_code} type="text" className="form-control bg-light border-0" id="companyaddpostalcode" minLength="5" maxLength="6" placeholder="Enter Postal Code" required />
                                                                     <div className="invalid-feedback">
                                                                         The US zip code must contain 5 digits, Ex. 45678
@@ -238,24 +217,14 @@ export default function CreateInvoice() {
                                                         </div>
                                                     
                                                         <div className="col-lg-4 ms-auto">
-                                                            <div className="mb-2">
-                                                                <input onChange={handleInputChange} name="registration_number" value={formData.registration_number} type="text" className="form-control bg-light border-0" id="registrationNumber" maxLength="12" placeholder="Legal Registration No" required />
-                                                                <div className="invalid-feedback">
-                                                                    Please enter a registration no, Ex., 012345678912
-                                                                </div>
-                                                            </div>
+                                                            
                                                             <div className="mb-2">
                                                                 <input onChange={handleInputChange} name="email_address" value={formData.email_address} type="email" className="form-control bg-light border-0" id="companyEmail" placeholder="Email Address" required />
                                                                 <div className="invalid-feedback">
                                                                     Please enter a valid email, Ex., example@gamil.com
                                                                 </div>
                                                             </div>
-                                                            <div className="mb-2">
-                                                                <input onChange={handleInputChange} name="website" value={formData.website} type="text" className="form-control bg-light border-0" id="companyWebsite" placeholder="Website" required />
-                                                                <div className="invalid-feedback">
-                                                                    Please enter a website, Ex., www.example.com
-                                                                </div>
-                                                            </div>
+                                                            
                                                             <div>
                                                                 <input onChange={handleInputChange} name="phone_number" value={formData.phone_number} type="text" className="form-control bg-light border-0" data-plugin="cleave-phone" id="compnayContactno" placeholder="Contact No" required />
                                                                 <div className="invalid-feedback">
@@ -407,7 +376,7 @@ export default function CreateInvoice() {
                                                                     <th scope="row" className="product-id">1</th>
                                                                     <td className="text-start">
                                                                         <div className="mb-2">
-                                                                            <input type="text" className="form-control bg-light border-0" id="productName-1" placeholder="Product Name" required   />
+                                                                            <input type="text" className="form-control bg-light border-0" id="productName-1" placeholder="Product Name"    />
                                                                             <div className="invalid-feedback">
                                                                                 Please enter a product name
                                                                             </div>
@@ -415,7 +384,7 @@ export default function CreateInvoice() {
                                                                         <textarea className="form-control bg-light border-0" id="productDetails-1" rows="2" placeholder="Product Details"></textarea>
                                                                     </td>
                                                                     <td>
-                                                                        <input type="number" className="form-control product-price bg-light border-0" id="productRate-1" step="0.01" placeholder="0.00" required />
+                                                                        <input type="number" className="form-control product-price bg-light border-0" id="productRate-1" step="0.01" placeholder="0.00"  />
                                                                         <div className="invalid-feedback">
                                                                             Please enter a rate
                                                                         </div>
@@ -520,7 +489,7 @@ export default function CreateInvoice() {
                                                         <textarea className="form-control alert alert-info" id="exampleFormControlTextarea1" placeholder="Notes" rows="2" required>All accounts are to be paid within 7 days from receipt of invoice. To be paid by cheque or credit card or direct payment online. If account is not paid within 7 days the credits details supplied as confirmation of work undertaken will be charged the agreed quoted fee noted above.</textarea>
                                                     </div>
                                                     <div className="hstack gap-2 justify-content-end d-print-none mt-4">
-                                                        <button type="submit" className="btn btn-success"><i className="ri-printer-line align-bottom me-1"></i> Save</button>
+                                                        <button type="submit" className="btn btn-success"><i className="ri-printer-line align-bottom me-1"></i>Update</button>
                                                         {/* <a href="javascript:void(0);" className="btn btn-primary"><i className="ri-download-2-line align-bottom me-1"></i> Download Invoice</a>
                                                         <a href="javascript:void(0);" className="btn btn-danger"><i className="ri-send-plane-fill align-bottom me-1"></i> Send Invoice</a> */}
                                                     </div>
@@ -537,20 +506,7 @@ export default function CreateInvoice() {
                         </div>
 
 
-                        <footer className="footer">
-                            <div className="container-fluid">
-                                <div className="row">
-                                    <div className="col-sm-6">
-                                        <script>document.write(new Date().getFullYear())</script> © Velzon.
-                                    </div>
-                                    <div className="col-sm-6">
-                                        <div className="text-sm-end d-none d-sm-block">
-                                            Design & Develop by Themesbrand
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </footer>
+                        <Footer/>
                     </div>
                 </div>
             </div>

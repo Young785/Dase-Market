@@ -1,20 +1,40 @@
-import { Routes, Route } from 'react-router-dom';
-import LoginPage from './login';
-import RegisterPage from './register';
-import ForgotPassword from './components/forgotpassword';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import LoginPage from './auth/login';
+import RegisterPage from './auth/register';
+import ForgotPassword from './components/auth/forgotpassword';
 import DashboardHome from './dashboard/page';
 import Invoice from './dashboard/invoice/App';
 import Chat from './dashboard/chat/App';
 import CreateInvoice from './dashboard/invoice/create/App';
 import ViewInvoice from './dashboard/invoice/view/App';
-import VerifyOtp from './components/verify-code';
-import ConfirmAccount from './components/confirm-account';
+import EditInvoice from './dashboard/invoice/edit/App';
+import VerifyOtp from './components/auth/verify-code';
+import ConfirmAccount from './components/auth/confirm-account';
 import Profile from './dashboard/profile/App';
 import Setting from './dashboard/settings/App'
-import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 import Waveform from './dashboard/voice/App';
 import Social from './dashboard/social/App'
 
+// New component to wrap dashboard routes
+const DashboardWrapper = () => {
+  return (
+    <Routes>
+      <Route index path="dashboard" element={<DashboardHome />} />
+      <Route path="invoice" element={<Invoice />} />
+      <Route path="invoice/create" element={<CreateInvoice />} />
+      <Route path="invoice/edit/:invoiceId" element={<EditInvoice />} />
+      <Route path="invoice/view/:invoiceId" element={<ViewInvoice />} />
+      <Route path="chat" element={<Chat />} />
+      <Route path="profile" element={<Profile />} />
+      <Route path="setting" element={<Setting />} />
+      <Route path="voice" element={<Waveform />} />
+      <Route path="social" element={<Social />} />
+      {/* Redirect to dashboard home for any unmatched routes */}
+      <Route path="*" element={<Navigate to="/dase/dashboard" replace />} />
+    </Routes>
+  );
+};
 
 function App() {
   return (
@@ -27,80 +47,16 @@ function App() {
 
       {/* Protected routes */}
       <Route 
-        path="/dase/dashboard" 
+        path="/dase/*" 
         element={
           <ProtectedRoute>
-            <DashboardHome />
+            <DashboardWrapper />
           </ProtectedRoute>
         } 
       />
-      <Route 
-        path="/dase/invoice" 
-        element={
-          <ProtectedRoute>
-            <Invoice />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/dase/invoice/create" 
-        element={
-          <ProtectedRoute>
-            <CreateInvoice />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/dase/invoice/view" 
-        element={
-          <ProtectedRoute>
-            <ViewInvoice />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/dase/chat" 
-        element={
-          <ProtectedRoute>
-            <Chat />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/dase/profile" 
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/dase/setting" 
-        element={
-          <ProtectedRoute>
-            <Setting />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/dase/voice" 
-        element={
-          <ProtectedRoute>
-            <Waveform />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/dase/social" 
-        element={
-          <ProtectedRoute>
-            <Social />
-          </ProtectedRoute>
-        } 
-      />
-      <Route path="*" element={<LoginPage />} />
 
-
+      {/* Redirect to login for any unmatched routes */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

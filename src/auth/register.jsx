@@ -1,4 +1,4 @@
-import RegisterPage from '../src/components/register'
+import RegisterPage from '../components/auth/register'
 
 
 // import Footer from "../components/dashboard/footer"

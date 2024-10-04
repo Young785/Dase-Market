@@ -6,7 +6,7 @@ import LordIcon from './lordIcon.jsx';
 import './style.css'
 
 import toast from 'react-hot-toast';
-import axiosInstance from '../axiosInstance';
+import axiosInstance from '../../axiosInstance.js';
 
 
 export default function ForgotPassword() {
