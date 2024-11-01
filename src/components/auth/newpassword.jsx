@@ -1,18 +1,17 @@
 
 import  { useState, useEffect } from 'react';
 import './style.css';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../axiosInstance';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function NewPassword() {
+  const location = useLocation();
   const navigate = useNavigate();
-  let getAuth
-  let FPEmail = localStorage.getItem('fp_email');
-  let FP_OTP = localStorage.getItem('FP_OTP');
-  const [ setIsUploading] = useState(null);
+  const { email, code } = location.state || {};
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validations, setValidations] = useState({
@@ -50,15 +49,13 @@ export default function NewPassword() {
     setValidations({ length, lower, upper, number });
   }, [password]);
 
+  // Redirect if email or code is not present
   useEffect(() => {
-    getAuth = JSON.parse(localStorage.getItem('auth_data'));
-    if (getAuth) {
-      notifySuccess("Authorized!");
-      setTimeout(() => {
-        window.location.href = '/dase/dashboard';
-      }, 2000);
+    if (!email || !code) {
+        toast.error("Unauthorized access. Please go back to the login page.");
+        navigate('/'); 
     }
-  }, []);
+  }, [email, code, navigate]);    
 
   // Handle password input change
   const handlePasswordChange = (e) => {
@@ -79,48 +76,38 @@ export default function NewPassword() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (password && confirmPassword) {
-      if (isPasswordMatching()) {
-        const dataToSend = {
-          code: FP_OTP,
-          business_email: FPEmail,
-          password: password.trim(),
-          password_confirmation: confirmPassword.trim(),
-        };
+  
 
-        setIsUploading(true);
-
-        try {
-          const response = await axiosInstance.post('/dase/reset-password', {
-            
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(dataToSend),
-          });
-
-          const data = await response.json();
-
-          if (response.ok) {
-            notifySuccess(data.message);
-            setTimeout(() => {
-              navigate('/');
-            }, 1500);
-          } else {
-            notifyError(data.message);
-            console.error('Process failed:', data);
-          }
-        } catch (error) {
-          console.error('Error:', error);
-        } finally {
-          setIsUploading(false);
-        }
-      } else {
-        notifyError('Passwords do not match');
-      }
-    } else {
-      notifyError('Please fill in all fields');
+    if (password !== confirmPassword) {
+        toast.error("Passwords do not match.");
+        return;
     }
+
+    setIsUploading(true); // Set loading state to true
+
+    try {
+        const response = await axiosInstance.post('/reset-password', {
+            code,
+            business_email: email,
+            password: password.trim(),
+            password_confirmation: confirmPassword.trim(),
+        });
+
+        if (response.data.success) {
+            toast.success(response.data.message);
+            // Redirect to login or another page
+            navigate('/');
+        } else {
+            toast.error(response.data.message);
+        }
+    } catch (error) {
+        toast.error(`An error occurred: ${error.response?.data?.message || error.message}`);
+    } finally {
+        setIsUploading(false); // Reset loading state
+    }
+
+
+
   };
 
   // Toggle password visibility

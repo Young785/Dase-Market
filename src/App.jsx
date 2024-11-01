@@ -1,16 +1,22 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './auth/login';
+
 import RegisterPage from './auth/register';
+import LoginPage from './auth/login';
+import VerifyOtp from './components/auth/verify-code';
+import ConfirmAccount from './components/auth/confirm-account';
 import ForgotPassword from './components/auth/forgotpassword';
+import VerifyPasswordOtp from './components/auth/verifypasswordotp';
+import NewPassword from './components/auth/newpassword'
+
+
 import DashboardHome from './dashboard/page';
 import Invoice from './dashboard/invoice/App';
 import Chat from './dashboard/chat/App';
 import CreateInvoice from './dashboard/invoice/create/App';
 import ViewInvoice from './dashboard/invoice/view/App';
 import EditInvoice from './dashboard/invoice/edit/App';
-import VerifyOtp from './components/auth/verify-code';
-import ConfirmAccount from './components/auth/confirm-account';
 import Profile from './dashboard/profile/App';
+import ProfileEdit from './dashboard/profile/edit';
 import Setting from './dashboard/settings/App'
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Waveform from './dashboard/voice/App';
@@ -27,6 +33,7 @@ const DashboardWrapper = () => {
       <Route path="invoice/view/:invoiceId" element={<ViewInvoice />} />
       <Route path="chat" element={<Chat />} />
       <Route path="profile" element={<Profile />} />
+      <Route path="profile/edit" element={<ProfileEdit />} />
       <Route path="setting" element={<Setting />} />
       <Route path="voice" element={<Waveform />} />
       <Route path="social" element={<Social />} />
@@ -44,6 +51,8 @@ function App() {
       <Route path="/dase/verifyotp" element={<VerifyOtp/>} />
       <Route path="/dase/confirm-account" element={<ConfirmAccount/>} />
       <Route path="/dase/forget-password" element={<ForgotPassword/>} />
+      <Route path="/dase/verifypasswordotp" element={<VerifyPasswordOtp/>} />
+      <Route path="dase/newpassword" element={<NewPassword/>} />
 
       {/* Protected routes */}
       <Route 

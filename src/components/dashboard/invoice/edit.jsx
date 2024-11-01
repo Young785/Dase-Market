@@ -172,12 +172,12 @@ export default function EditInvoice() {
                                 <div className="row">
                                     <div className="col-12">
                                         <div className="page-title-box d-sm-flex align-items-center justify-content-between">
-                                            <h4 className="mb-sm-0">Create Invoice</h4>
+                                            <h4 className="mb-sm-0">Edit Invoice</h4>
 
                                             <div className="page-title-right">
                                                 <ol className="breadcrumb m-0">
                                                     <li className="breadcrumb-item"><Link to="/dase/invoice" >Invoices</Link></li>
-                                                    <li className="breadcrumb-item active">Create Invoice</li>
+                                                    <li className="breadcrumb-item active">Edit Invoice</li>
                                                 </ol>
                                             </div>
                                             <Toaster/>
@@ -187,14 +187,14 @@ export default function EditInvoice() {
                                 </div>
                             
 
-                                <div className="row justify-content-center">
-                                    <div className="col-xxl-9">
+                                <div className="row px-0 mx-0">
+                                    <div className="col-12 px-0 mx-0">
                                         <div className="card">
                                         {invoiceData ? (
                                             <form onSubmit={handleSubmit} className="needs-validation" id="invoice_form">
                                                 <div className="card-body border-bottom border-bottom-dashed p-4">
                                                     <div className="row">
-                                                        <div className="col-lg-4">
+                                                        <div className="col-lg-12">
                                                             <div className="profile-user mx-auto  mb-3">
                                                                 <input id="profile-img-file-input" type="file" className="profile-img-file-input" />
                                                                 <label  className="d-block">
@@ -204,14 +204,22 @@ export default function EditInvoice() {
                                                                     </span>
                                                                 </label>
                                                             </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="row">
+                                                        <div className="col-lg-6">
+                                                            
                                                             <div>
-                                                                <div>
-                                                                    <label>CompanyAddress</label>
-                                                                </div>
-                                                                <div className="mb-2">
-                                                                    <textarea onChange={handleInputChange} name="company_address" value={formData.company_address} className="form-control bg-light border-0" id="companyAddress" rows="3" placeholder="Company Address" required></textarea>
-                                                                    <div className="invalid-feedback">
-                                                                        Please enter company address
+                                                                <div className="form-group mb-2">
+
+                                                                    <div>
+                                                                        <label>Contact Number</label>
+                                                                    </div>
+                                                                    <div>
+                                                                        <input onChange={handleInputChange} name="phone_number" value={formData.phone_number} type="text" className="form-control bg-light border-0" data-plugin="cleave-phone" id="compnayContactno" placeholder="Contact No" required />
+                                                                        <div className="invalid-feedback">
+                                                                            Please enter a contact number
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                                 <div className="mb-2">
@@ -226,19 +234,44 @@ export default function EditInvoice() {
                                                             </div>
                                                         </div>
                                                     
-                                                        <div className="col-lg-4 ms-auto">
-                                                            
-                                                            <div className="mb-2">
-                                                                <input onChange={handleInputChange} name="email_address" value={formData.email_address} type="email" className="form-control bg-light border-0" id="companyEmail" placeholder="Email Address" required />
-                                                                <div className="invalid-feedback">
-                                                                    Please enter a valid email, Ex., example@gamil.com
+                                                        <div className="col-lg-6">
+                                                            <div className="form-group mb-2">
+                                                                <div>
+                                                                    <label>Registration Number</label>
+                                                                </div>
+                                                                <div>
+                                                                    <input onChange={handleInputChange} name="registration_number" value={formData.registration_number} type="text" className="form-control bg-light border-0" id="registrationNumber" maxLength="12" placeholder="Legal Registration No" required />
+                                                                    <div className="invalid-feedback">
+                                                                        Please enter a registration no, Ex., 012345678912
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                            
-                                                            <div>
-                                                                <input onChange={handleInputChange} name="phone_number" value={formData.phone_number} type="text" className="form-control bg-light border-0" data-plugin="cleave-phone" id="compnayContactno" placeholder="Contact No" required />
-                                                                <div className="invalid-feedback">
-                                                                    Please enter a contact number
+                                                            <div className="form-group mb-2">
+
+                                                                <div>
+                                                                    <label>Email</label>
+                                                                </div>
+                                                                <div>
+                                                                    <input onChange={handleInputChange} name="email_address" value={formData.email_address} type="email" className="form-control bg-light border-0" id="companyEmail" placeholder="Email Address" required />
+                                                                    <div className="invalid-feedback">
+                                                                        Please enter a valid email, Ex., example@gamil.com
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                           
+                                                           
+                                                        </div>
+                                                        <div className="lg-12 mt-2">
+                                                            <div className="form-group mb-2">
+
+                                                                <div>
+                                                                    <label>CompanyAddress</label>
+                                                                </div>
+                                                                <div>
+                                                                    <textarea onChange={handleInputChange} name="company_address" value={formData.company_address} className="form-control bg-light border-0" id="companyAddress" rows="3" placeholder="Company Address" required></textarea>
+                                                                    <div className="invalid-feedback">
+                                                                        Please enter company address
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -265,8 +298,8 @@ export default function EditInvoice() {
                                                                 <select onChange={handleInputChange} name="payment_status" value={formData.payment_status} className="form-control bg-light border-0" data-choices data-choices-search-false id="choices-payment-status" required>
                                                                     <option value="">Select Payment Status</option>
                                                                     <option value="PENDING">PENDING</option>
-                                                                    <option value="SUCCESS">SUCCESS</option>
-                                                                    <option value="Refund">Refund</option>
+                                                                    <option value="PAID">PAID</option>
+                                                                    
                                                                 </select>
                                                             </div>
                                                         </div>
@@ -283,7 +316,7 @@ export default function EditInvoice() {
                                                 </div>
                                                 <div className="card-body p-4 border-top border-top-dashed">
                                                     <div className="row">
-                                                        <div className="col-lg-4 col-sm-6">
+                                                        <div className="col-lg-6 col-sm-12">
                                                             <div>
                                                                 <label className="text-muted text-uppercase fw-semibold">Billing Address</label>
                                                             </div>
@@ -319,9 +352,9 @@ export default function EditInvoice() {
                                                             </div>
                                                         </div>
                                                     
-                                                        <div className="col-sm-6 ms-auto">
+                                                        <div className="col-sm-12 col-lg-6 ms-auto">
                                                             <div className="row">
-                                                                <div className="col-lg-8">
+                                                                <div className="">
                                                                     <div>
                                                                         <label className="text-muted text-uppercase fw-semibold">Shipping Address</label>
                                                                     </div>
@@ -459,7 +492,7 @@ export default function EditInvoice() {
                                                                         </button>
                                                                     </td>
                                                                 </tr>
-                                                                <tr className="border-top border-top-dashed mt-2">
+                                                                <tr className="border border-dashed mt-2">
                                                                     <td colSpan="3"></td>
                                                                     <td colSpan="2" className="p-0">
                                                                         <table className="table table-borderless table-sm table-nowrap align-middle mb-0">
@@ -488,7 +521,7 @@ export default function EditInvoice() {
                                                                                         <input type="text" className="form-control bg-light border-0" id="cart-shipping" placeholder="$0.00" readOnly />
                                                                                     </td>
                                                                                 </tr>
-                                                                                <tr className="border-top border-top-dashed">
+                                                                                <tr className="border border-dashed">
                                                                                     <th scope="row">Total Amount</th>
                                                                                     <td>
                                                                                         <input type="text" value={totalAmount} className="form-control bg-light border-0" id="cart-total" placeholder="$0.00" readOnly />
@@ -503,32 +536,7 @@ export default function EditInvoice() {
                                                         </table>
                                                         
                                                     </div>
-                                                    <div className="row mt-3">
-                                                        <div className="col-lg-4">
-                                                            <div className="mb-2">
-                                                                <label className="form-label text-muted text-uppercase fw-semibold">Payment Details</label>
-                                                                <div className="input-light">
-                                                                    <select className="form-control bg-light border-0" data-choices data-choices-search-false data-choices-removeItem id="choices-payment-type">
-                                                                        <option value="">Payment Method</option>
-                                                                        <option value="Mastercard">Mastercard</option>
-                                                                        <option value="Credit Card">Credit Card</option>
-                                                                        <option value="Visa">Visa</option>
-                                                                        <option value="Paypal">Paypal</option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                            <div className="mb-2">
-                                                                <input className="form-control bg-light border-0" type="text" id="cardholderName" placeholder="Card Holder Name"/>
-                                                            </div>
-                                                            <div className="mb-2">
-                                                                <input className="form-control bg-light border-0" type="text" id="cardNumber" placeholder="xxxx xxxx xxxx xxxx" />
-                                                            </div>
-                                                            <div>
-                                                                <input className="form-control  bg-light border-0" type="text" id="amountTotalPay" placeholder="$0.00" readOnly />
-                                                            </div>
-                                                        </div>
-                                                    
-                                                    </div>
+                                      
                                                     
                                                     <div className="mt-4">
                                                         <label  className="form-label text-muted text-uppercase fw-semibold">NOTES</label>

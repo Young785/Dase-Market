@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './style.css';
-import toast from 'react-hot-toast';
+import toast , { Toaster } from 'react-hot-toast';
 import axiosInstance from '../../axiosInstance';
 
 export default function VerifyPasswordOtp() {
-  const navigate = useNavigate();
-  const [OTPCode, setOTPCode] = useState('');
-  let getAuth
-  let FPEmail =  localStorage.getItem('fp_email')
-  const [ setIsUploading] = useState(null);
+ const location = useLocation();
+    const navigate = useNavigate();
+    const { email } = location.state || {};
+    const [otp, setOtp] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
 
   const notifySuccess = (text) => toast.success(text, {
       position: "top-right",
@@ -31,96 +31,84 @@ export default function VerifyPasswordOtp() {
       progress: undefined,
   });
 
+  // Redirect if email is not present
   useEffect(() => {
-      getAuth = JSON.parse(localStorage.getItem('auth_data'));
-      if (getAuth) {
-          notifySuccess("Authorized!")
-          setTimeout(() => {
-              window.location.href = '/dase/dashboard';
-              
-              // router.push('/streamers/dashboard');
-          }, 2000);
-      }
-  }, []);
+    if (!email) {
+        toast.error("Unauthorized access. Please go back to the login page.");
+        navigate('/'); // Redirect to login page
+    }
+  }, [email, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (FPEmail) {
-        let business_email = FPEmail.trim();
-
-        const dataToSend = {
-            business_email: business_email,
-            code: OTPCode
-        };
-        setIsUploading(true)
-        try {
-            const response = await axiosInstance.post('/password/code/check', {
-                
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(dataToSend)
-            });
-            const data = await response.json();
-            // handle response
-            if (response.ok) {
-                notifySuccess(data.message)
-                localStorage.setItem('FP_OTP', OTPCode)
-                setTimeout(() => {
-
-                    navigate('/dase/newpassword');
-                }, 1500);
-            } else {
-                notifyError(data.message)
-                // handle error response
-                console.error('Registration failed:', data);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        } finally {
-        setIsUploading(false)
-        }
+    if (!otp) {
+        toast.error("Please enter the OTP.");
+        return;
     }
-}
 
-const handleResend = async () => {
-    if (FPEmail) {
-        let business_email = FPEmail.trim();
+    setIsUploading(true); 
 
-        const dataToSend = {
-            business_email: business_email
-        };
-        setIsUploading(true)
+    
 
-        try {
-            const response = await axiosInstance.post('/change-password', {
+
+    try {
+      const response = await axiosInstance.post('/password/code/check', {
+          code: otp,
+          business_email: email,
+      });
+
+      if (response.data.success) {
+          toast.success(response.data.message);
+          // Navigate to the New Password page
+          navigate('/dase/newpassword', { state: { email, code: otp } });
+      } else {
+          toast.error(response.data.message);
+      }
+      } catch (error) {
+          toast.error(`An error occurred: ${error.response?.data?.message || error.message}`);
+      }finally {
+        setIsUploading(false); // Reset loading state
+    }
+  }
+
+// const handleResend = async () => {
+//     if (FPEmail) {
+//         let business_email = FPEmail.trim();
+
+//         const dataToSend = {
+//             business_email: business_email
+//         };
+//         setIsUploading(true)
+
+//         try {
+//             const response = await axiosInstance.post('/change-password', {
                
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(dataToSend)
-            });
-            const data = await response.json();
-            // handle response
-            if (response.ok) {
-                notifySuccess(data.message)
-            } else {
-                notifyError(data.message)
-                // handle error response
-                console.error('Registration failed:', data);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        } finally {
-        setIsUploading(false)
-        }
-    }
-}
+//                 headers: {
+//                     'Content-Type': 'application/json'
+//                 },
+//                 body: JSON.stringify(dataToSend)
+//             });
+//             const data = await response.json();
+//             // handle response
+//             if (response.ok) {
+//                 notifySuccess(data.message)
+//             } else {
+//                 notifyError(data.message)
+//                 // handle error response
+//                 console.error('Registration failed:', data);
+//             }
+//         } catch (error) {
+//             console.error('Error:', error);
+//         } finally {
+//         setIsUploading(false)
+//         }
+//     }
+// }
 
   return (
     <div>
-       
+      <Toaster />
       <div className="auth-page-wrapper pt-5">
         <div className="auth-one-bg-position auth-one-bg" id="auth-particles">
           <div className="bg-overlay"></div>
@@ -145,29 +133,31 @@ const handleResend = async () => {
                 <div className="card mt-4">
                   <div className="card-body p-4">
                     <div className="text-center mt-2">
-                      <h5 className="text-primary">Verify Your Code</h5>
-                      <p className="text-muted">Get your free dase account now</p>
+                      <h5 className="text-primary">Verify OTP</h5>
+                      <p className="text-muted">Enter the OTP sent to {email}</p>
                     </div>
                     <div className="p-2 mt-4">
                       <form className="needs-validation"  onSubmit={handleSubmit}>
                         <div className="mb-3">
                           <label htmlFor="code" className="form-label">Code <span className="text-danger">*</span></label>
-                          <input type="number"  className="form-control"  placeholder="Enter verification code" required
+                          <input type="text"  className="form-control"  placeholder="Enter verification code" required
                           
-                            name="phone"
+                            name="otp"
                             maxLength={6}
                            
                             pattern="\d{1,6}"
-                            value={OTPCode}
-                            onChange={(e) => setOTPCode(e.target.value)} />
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value)} />
                           <div className="invalid-feedback">Please enter verification code</div>
                         </div>
                         <div className="mt-4">
-                          <button className="btn btn-success w-100" type="submit">Verify</button>
+                          <button className="btn btn-success w-100" type="submit" disabled={isUploading}>
+                              {isUploading ? 'Verifying...' : 'Verify OTP'}
+                          </button>
                         </div>
                         <div className="mt-4 text-center">
                           <p className="mb-2">Verify to continue </p>
-                          <span onClick={handleResend} style={{cursor: 'pointer'}} className="fw-semibold text-primary"> Resend OTP </span> 
+                          <span  style={{cursor: 'pointer'}} className="fw-semibold text-primary"> Resend OTP </span> 
                         </div>
                       </form>
                     </div>
@@ -175,7 +165,7 @@ const handleResend = async () => {
                 </div>
 
                 <div className="mt-4 text-center">
-                  <p className="mb-0">Already have an account? <Link href="/" className="fw-semibold text-primary text-decoration-underline"> Signin </Link> </p>
+                  <p className="mb-0">Already have an account? <Link to="/" className="fw-semibold text-primary text-decoration-underline"> Signin </Link> </p>
                 </div>
               </div>
             </div>
