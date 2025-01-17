@@ -64,7 +64,7 @@ export default function ViewInvoice() {
         }
     };
 
-    const sendMessage = async (e, parentId = null) => {
+    const sendMessage = async (e) => {
         e.preventDefault(); // Prevent form submission
         const currentUserId = localStorage.getItem('user_id'); // Assuming user_id is stored in localStorage
 
@@ -79,7 +79,7 @@ export default function ViewInvoice() {
                 receiver_id: receiverId,
                 message: messageToSend,
                 type: 'text', // Assuming type is text for simplicity
-                parent_id: parentId // Include the parentId in the request
+                // parent_id: parentId // Include the parentId in the request
             });
             if (response.data.success) {
                 toast.success('Message sent successfully!');

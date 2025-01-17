@@ -114,7 +114,7 @@ export default function EditInvoice() {
                     total_amount: data.total_amount,
                     billing_full_name: data.billing_full_name,
                     billing_address: data.billing_address,
-                    billing_phone_no: data.billing_tax_no,
+                    billing_phone_no: data.billing_phone_no,
                     billing_tax_no: data.billing_tax_no,
                     shipping_full_name: data.shipping_full_name,
                     shipping_address: data.shipping_address,
@@ -333,7 +333,7 @@ export default function EditInvoice() {
                                                                 </div>
                                                             </div>
                                                             <div className="mb-2">
-                                                                <input onChange={handleInputChange} name="billing_phone_no" value={formData.billing_phone_no} type="text" className="form-control bg-light border-0" data-plugin="cleave-phone" id="billingPhoneno" placeholder="(123)456-7890" required />
+                                                                <input onChange={handleInputChange} name="billing_phone_no" value={formData.billing_phone_no} type="text" className="form-control bg-light border-0" data-plugin="cleave-phone" id="billingPhoneno" placeholder="billing phone no" required />
                                                                 <div className="invalid-feedback">
                                                                     Please enter a phone number
                                                                 </div>

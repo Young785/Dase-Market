@@ -169,11 +169,15 @@
 
 
 .nav-item{
-  padding-top: px !important;
+  padding-top: 10px !important;
 }
-  .nav-link {
+ 
+  .nav-item .nav-link {
     transition: all 0.3s ease;
-  }
+    
+    color: white !important; 
+    border-radius: 12px;
+}
 
 .nav-item.active .nav-link {
     background-color: #4169E1 !important; 
@@ -194,9 +198,7 @@
     transform: scale(1.05);
 }
 
-.nav-link {
-    animation: fadeIn 0.5s ease;
-}
+
 
 @keyframes fadeIn {
     0% { opacity: 0; }
