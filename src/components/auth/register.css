@@ -10,5 +10,9 @@
 
 #engineer-tab:hover{
     background-color: ;
-    color: #000;
+    color: #000 ;
+}
+
+#client-tab, #engineer-tab{
+    color: #000 !important;
 }

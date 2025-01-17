@@ -12,11 +12,14 @@
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^0.2.2",
+    "feather-icons": "^4.29.2",
+    "html2canvas": "^1.4.1",
     "lord-icon-element": "^4.1.2",
     "lottie-web": "^5.12.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-player": "^2.16.0",
+    "remixicon": "^4.3.0",
     "wavesurfer-react": "^3.0.4",
     "wavesurfer.js": "^7.8.5"
   },

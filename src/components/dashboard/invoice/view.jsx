@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axiosInstance from '../../../axiosInstance';
+import html2canvas from 'html2canvas';
 
 import { LogoDark } from '../../../assets/images';
 import { LogoLight } from '../../../assets/images';
@@ -28,6 +29,22 @@ export default function ViewInvoice() {
         }
     };
 
+    const handlePrint = () => {
+        window.print();
+    };
+    
+    const handleDownload = () => {
+        const element = document.getElementById('invoice-receipt'); // Change this to the ID of the specific container
+        html2canvas(element, { scale: 2 }).then((canvas) => {
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png');
+            link.download = 'invoice.png';
+            link.click();
+        }).catch((error) => {
+            toast.error('Error capturing the invoice for download');
+        });
+    };
+
     if (!invoice) return <div>Loading...</div>;
 
     return (
@@ -39,10 +56,10 @@ export default function ViewInvoice() {
                     <div className="main-content">
 
                         <div className="page-content">
-                            <div className="container-fluid">
+                            <div className="container-fluid p-0 m-0">
 
                                 
-                                <div className="row">
+                                <div className="row m-0 p-0">
                                     <div className="col-12">
                                         <div className="page-title-box d-sm-flex align-items-center justify-content-between">
                                             <h4 className="mb-sm-0">Invoice Details</h4>
@@ -59,29 +76,35 @@ export default function ViewInvoice() {
                                 </div>
                             
 
-                                <div className="row justify-content-center">
-                                    <div className="col-xxl-9 ">
+                                <div className="row m-0 p-0" id="invoice-receipt">
+                                    <div className="col-12 ">
                                         <div className="card" id="demo">
                                             <div className="row">
                                                 <div className="col-lg-12">
                                                     <div className="card-header border-bottom-dashed p-4">
-                                                        <div className="d-flex">
-                                                            <div className="flex-grow-1">
+                                                        <div className="row">
+                                                            <div className="col-lg-12">
+
                                                                 <img src={LogoDark} className="card-logo card-logo-dark" alt="logo dark" height="17"/>
                                                                 <img src={LogoLight} className="card-logo card-logo-light" alt="logo light" height="17"/>
-                                                                <div className="mt-sm-5 mt-4">
+                                                            </div>
+                                                        </div>
+                                                        <div className="d-flex py-4">
+                                                            <div className="flex-grow-1">
+                                                                <div className="">
                                                                     <h6 className="text-muted text-uppercase fw-semibold">Address</h6>
                                                                     <p className="text-muted mb-1" id="address-details">{invoice.company_address}</p>
                                                                     <p className="text-muted mb-0" id="zip-code"><span>Zip-code:</span> {invoice.postal_code}</p>
                                                                 </div>
                                                             </div>
-                                                            <div className="flex-shrink-0 mt-sm-0 mt-3">
+                                                            <div className="flex-shrink-0">
                                                                 {/* <h6><span className="text-muted fw-normal">Legal Registration No:</span><span id="legal-register-no">{invoice.company_registration_no}</span></h6> */}
                                                                 <h6><span className="text-muted fw-normal">Email:</span><span id="email">{invoice.email_address}</span></h6>
-                                                                <h6><span className="text-muted fw-normal">Website:</span> <a href="https://themesbrand.com/" className="link-primary" target="_blank" id="website">www.themesbrand.com</a></h6>
+                                                                {/* <h6><span className="text-muted fw-normal">Website:</span> <a href="https://themesbrand.com/" className="link-primary" target="_blank" id="website">www.themesbrand.com</a></h6> */}
                                                                 <h6 className="mb-0"><span className="text-muted fw-normal">Contact No: </span><span id="contact-no"> {invoice.phone_number}</span></h6>
                                                             </div>
                                                         </div>
+
                                                     </div>
                                                     
                                                 </div>
@@ -90,12 +113,12 @@ export default function ViewInvoice() {
                                                         <div className="row g-3">
                                                             <div className="col-lg-3 col-6">
                                                                 <p className="text-muted mb-2 text-uppercase fw-semibold">Invoice No</p>
-                                                                <h5 className="fs-14 mb-0">#VL<span id="invoice-no">{invoice.invoice_number}</span></h5>
+                                                                <h5 className="fs-14 mb-0"><span id="invoice-no">{invoice.invoice_number}</span></h5>
                                                             </div>
                                                             
                                                             <div className="col-lg-3 col-6">
                                                                 <p className="text-muted mb-2 text-uppercase fw-semibold">Date</p>
-                                                                <h5 className="fs-14 mb-0"><span id="invoice-date">{invoice.invoice_date}</span> <small className="text-muted" id="invoice-time">02:36PM</small></h5>
+                                                                <h5 className="fs-14 mb-0"><span id="invoice-date">{invoice.date}</span> <small className="text-muted" id="invoice-time"></small></h5>
                                                             </div>
                                                             
                                                             <div className="col-lg-3 col-6">
@@ -115,8 +138,8 @@ export default function ViewInvoice() {
                                                 </div>
                                                 <div className="col-lg-12">
                                                     <div className="card-body p-4 border-top border-top-dashed">
-                                                        <div className="row g-3">
-                                                            <div className="col-6">
+                                                        <div className="row">
+                                                            <div className="col-lg-6 col-sm-12">
                                                                 <h6 className="text-muted text-uppercase fw-semibold mb-3">Billing Address</h6>
                                                                 <p className="fw-medium mb-2" id="billing-name">Name:  {invoice.billing_full_name}</p>
                                                                 <p className="text-muted mb-1" id="billing-address-line-1">Address: {invoice.billing_address}</p>
@@ -124,7 +147,7 @@ export default function ViewInvoice() {
                                                                 <p className="text-muted mb-0"><span>Tax: </span><span id="billing-tax-no">{invoice.billing_tax_no}</span> </p>
                                                             </div>
                                                             
-                                                            <div className="col-6">
+                                                            <div className="col-lg-6 col-sm-12">
                                                                 <h6 className="text-muted text-uppercase fw-semibold mb-3">Shipping Address</h6>
                                                                 <p className="fw-medium mb-2" id="shipping-name">David Nichols</p>
                                                                 <p className="text-muted mb-1" id="shipping-address-line-1">305 S San Gabriel Blvd</p>
@@ -192,13 +215,13 @@ export default function ViewInvoice() {
                                                                 </tbody>
                                                             </table>
                                                         </div>
-                                                        <div className="mt-3">
+                                                        {/* <div className="mt-3">
                                                             <h6 className="text-muted text-uppercase fw-semibold mb-3">Payment Details:</h6>
                                                             <p className="text-muted mb-1">Payment Method: <span className="fw-medium" id="payment-method">Mastercard</span></p>
                                                             <p className="text-muted mb-1">Card Holder: <span className="fw-medium" id="card-holder-name">David Nichols</span></p>
                                                             <p className="text-muted mb-1">Card Number: <span className="fw-medium" id="card-number">xxx xxxx xxxx 1234</span></p>
                                                             <p className="text-muted">Total Amount: <span className="fw-medium" id="">$ </span><span id="card-total-amount">755.96</span></p>
-                                                        </div>
+                                                        </div> */}
                                                         <div className="mt-4">
                                                             <div className="alert alert-info">
                                                                 <p className="mb-0"><span className="fw-semibold px-3">NOTES:</span>
@@ -208,8 +231,8 @@ export default function ViewInvoice() {
                                                             </div>
                                                         </div>
                                                         <div className="hstack gap-2 justify-content-end d-print-none mt-4">
-                                                            <a href="#" className="btn btn-success"><i className="ri-printer-line align-bottom me-1"></i> Print</a>
-                                                            <a href="#" className="btn btn-primary"><i className="ri-download-2-line align-bottom me-1"></i> Download</a>
+                                                            <a href="#" className="btn btn-success" onClick={handlePrint}><i className="ri-printer-line align-bottom me-1"></i> Print</a>
+                                                            <a href="#" className="btn btn-primary" onClick={handleDownload}><i className="ri-download-2-line align-bottom me-1"></i> Download</a>
                                                         </div>
                                                     </div>
                                                     

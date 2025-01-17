@@ -105,12 +105,12 @@ export default function Register() {
     if (role === 'engineer') {
       setFormData({
         ...initialFormData,
-        // Set default values specific to 'engineer' role if needed
+        
       });
     } else if (role === 'client') {
       setFormData({
         ...initialFormData,
-        // Set default values specific to 'client' role if needed
+       
       });
     }
   };
@@ -122,10 +122,19 @@ export default function Register() {
  
 
 
-  const handleChange = (e, val) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
     console.log(`Updating ${name} with value: ${value}`);
-    setFormData({ ...formData, [name]: value });
+
+    // Prevent form submission on autofill
+    if (e.nativeEvent.inputType === 'insertText' || e.nativeEvent.inputType === 'insertCompositionText') {
+        e.preventDefault();
+    }
+
+    // Check if the input is being autofilled
+    if (value && e.target.value !== formData[name]) {
+        setFormData({ ...formData, [name]: value });
+    }
   };
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -137,11 +146,11 @@ export default function Register() {
   };
 
 
- 
+
 
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault(); 
     setIsUploading(true);
     setLoading(true); 
 
@@ -550,7 +559,7 @@ export default function Register() {
                         <button
                           className={`nav-link ${activeTab === 'engineer' ? 'active' : ''}`}
                           id="engineer-tab"
-                          style={{width:'100%'}}
+                          style={{width:'100%', backgroundColor: ''}}
                           onClick={() => handleTabChange('engineer')}
                           type="button"
                           role="tab"
@@ -563,7 +572,7 @@ export default function Register() {
                       <li className="nav-item col-6" role="presentation">
                         <button
                           className={`nav-link ${activeTab === 'client' ? 'active' : ''}`}
-                          style={{width:'100%'}}
+                          style={{width:'100%', backgroundColor: '',}}
                           id="client-tab"
                           onClick={() => handleTabChange('client')}
                           type="button"
