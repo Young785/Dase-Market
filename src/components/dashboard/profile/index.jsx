@@ -88,7 +88,7 @@ export default function ProfilePage() {
         }
 
         try {
-            const response = await axiosInstance.post('/user/2fa/verify', { code: verificationCode });
+            const response = await axiosInstance.get('/user/2fa/verify', { code: verificationCode });
             if (response.data.status) {
                 
                 notifySuccess(response.data.message);
