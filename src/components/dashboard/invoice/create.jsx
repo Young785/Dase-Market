@@ -168,13 +168,13 @@ export default function CreateInvoice() {
                                 </div>
                             
 
-                                <div className="row justify-content-center">
-                                    <div className="col-xxl-9">
+                                <div className="row px-0 mx-0">
+                                    <div className="col-12 mx-0 px-0">
                                         <div className="card">
                                             <form onSubmit={handleSubmit} className="needs-validation" id="invoice_form">
                                                 <div className="card-body border-bottom border-bottom-dashed p-4">
                                                     <div className="row">
-                                                        <div className="col-lg-4">
+                                                        <div className="col-lg-12">
                                                             <div className="profile-user mx-auto  mb-3">
                                                                 <input id="profile-img-file-input" type="file" className="profile-img-file-input" />
                                                                 <label  className="d-block">
@@ -184,10 +184,15 @@ export default function CreateInvoice() {
                                                                     </span>
                                                                 </label>
                                                             </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="row">
+                                                        <div className="col-lg-6">
+                                                            
                                                             <div>
-                                                                <div>
+                                                                {/* <div>
                                                                     <label>Address</label>
-                                                                </div>
+                                                                </div> */}
                                                                 <div className="mb-2">
                                                                     <textarea onChange={handleInputChange} name="company_address" value={formData.company_address} className="form-control bg-light border-0" id="companyAddress" rows="3" placeholder="Company Address" required></textarea>
                                                                     <div className="invalid-feedback">
@@ -203,7 +208,7 @@ export default function CreateInvoice() {
                                                             </div>
                                                         </div>
                                                     
-                                                        <div className="col-lg-4 ms-auto">
+                                                        <div className="col-lg-6">
                                                             <div className="mb-2">
                                                                 <input onChange={handleInputChange} name="registration_number" value={formData.registration_number} type="text" className="form-control bg-light border-0" id="registrationNumber" maxLength="12" placeholder="Legal Registration No" required />
                                                                 <div className="invalid-feedback">
@@ -216,12 +221,12 @@ export default function CreateInvoice() {
                                                                     Please enter a valid email, Ex., example@gamil.com
                                                                 </div>
                                                             </div>
-                                                            <div className="mb-2">
+                                                            {/* <div className="mb-2">
                                                                 <input onChange={handleInputChange} name="website" value={formData.website} type="text" className="form-control bg-light border-0" id="companyWebsite" placeholder="Website" required />
                                                                 <div className="invalid-feedback">
                                                                     Please enter a website, Ex., www.example.com
                                                                 </div>
-                                                            </div>
+                                                            </div> */}
                                                             <div>
                                                                 <input onChange={handleInputChange} name="phone_number" value={formData.phone_number} type="text" className="form-control bg-light border-0" data-plugin="cleave-phone" id="compnayContactno" placeholder="Contact No" required />
                                                                 <div className="invalid-feedback">
@@ -252,8 +257,8 @@ export default function CreateInvoice() {
                                                                 <select onChange={handleInputChange} name="payment_status" value={formData.payment_status} className="form-control bg-light border-0" data-choices data-choices-search-false id="choices-payment-status" required>
                                                                     <option value="">Select Payment Status</option>
                                                                     <option value="PENDING">PENDING</option>
-                                                                    <option value="SUCCESS">SUCCESS</option>
-                                                                    <option value="Refund">Refund</option>
+                                                                    <option value="PAID">PAID</option>
+                                                                   
                                                                 </select>
                                                             </div>
                                                         </div>
@@ -270,7 +275,7 @@ export default function CreateInvoice() {
                                                 </div>
                                                 <div className="card-body p-4 border-top border-top-dashed">
                                                     <div className="row">
-                                                        <div className="col-lg-4 col-sm-6">
+                                                        <div className="col-lg-6 col-sm-12">
                                                             <div>
                                                                 <label className="text-muted text-uppercase fw-semibold">Billing Address</label>
                                                             </div>
@@ -306,9 +311,9 @@ export default function CreateInvoice() {
                                                             </div>
                                                         </div>
                                                     
-                                                        <div className="col-sm-6 ms-auto">
+                                                        <div className="col-lg-6 col-sm-12">
                                                             <div className="row">
-                                                                <div className="col-lg-8">
+                                                                <div className="">
                                                                     <div>
                                                                         <label className="text-muted text-uppercase fw-semibold">Shipping Address</label>
                                                                     </div>
@@ -365,7 +370,7 @@ export default function CreateInvoice() {
                                                                     </th>
                                                                     <th scope="col" style={{width: "120px"}}>Quantity</th>
                                                                     <th scope="col" className="text-end" style={{width: "150px"}}>Amount</th>
-                                                                    <th scope="col" className="text-end" style={{width: "105px"}}></th>
+                                                                    <th scope="col" className="text-end" style={{width: "105px"}}>Action</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -439,7 +444,7 @@ export default function CreateInvoice() {
                                                                 </tr>
                                                             </tbody>
                                                             <tbody>
-                                                                <tr className="border-top border-top-dashed mt-2">
+                                                                <tr className="border border-dashed mt-2">
                                                                     <td colSpan="3"></td>
                                                                     <td colSpan="2" className="p-0">
                                                                         <table className="table table-borderless table-sm table-nowrap align-middle mb-0">
@@ -468,7 +473,7 @@ export default function CreateInvoice() {
                                                                                         <input type="text" className="form-control bg-light border-0" id="cart-shipping" placeholder="$0.00" readOnly />
                                                                                     </td>
                                                                                 </tr>
-                                                                                <tr className="border-top border-top-dashed">
+                                                                                <tr className="border border-top-dashed">
                                                                                     <th scope="row">Total Amount</th>
                                                                                     <td>
                                                                                         <input type="text" className="form-control bg-light border-0" value={totalAmount} readOnly />
@@ -483,7 +488,7 @@ export default function CreateInvoice() {
                                                         </table>
                                                         
                                                     </div>
-                                                    <div className="row mt-3">
+                                                    {/* <div className="row mt-3">
                                                         <div className="col-lg-4">
                                                             <div className="mb-2">
                                                                 <label className="form-label text-muted text-uppercase fw-semibold">Payment Details</label>
@@ -508,11 +513,11 @@ export default function CreateInvoice() {
                                                             </div>
                                                         </div>
                                                     
-                                                    </div>
+                                                    </div> */}
                                                     
                                                     <div className="mt-4">
                                                         <label  className="form-label text-muted text-uppercase fw-semibold">NOTES</label>
-                                                        <textarea className="form-control alert alert-info" id="exampleFormControlTextarea1" placeholder="Notes" rows="2" required>All accounts are to be paid within 7 days from receipt of invoice. To be paid by cheque or credit card or direct payment online. If account is not paid within 7 days the credits details supplied as confirmation of work undertaken will be charged the agreed quoted fee noted above.</textarea>
+                                                        <textarea onChange={handleInputChange} name="general_note" value={formData.general_note} className="form-control alert alert-info" id="exampleFormControlTextarea1" placeholder="Notes" rows="2" required> </textarea>
                                                     </div>
                                                     <div className="hstack gap-2 justify-content-end d-print-none mt-4">
                                                         <button type="submit" className="btn btn-success"><i className="ri-printer-line align-bottom me-1"></i> Save</button>

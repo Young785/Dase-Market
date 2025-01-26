@@ -32,6 +32,8 @@ import './assets/libs/quill/quill.snow.css'
 import './assets/libs/sweetalert2/sweetalert2.min.css'
 import './assets/libs/swiper/swiper-bundle.min.css'
 import "react-phone-input-2/lib/bootstrap.css";
+import 'remixicon/fonts/remixicon.css';
+
 
 
 

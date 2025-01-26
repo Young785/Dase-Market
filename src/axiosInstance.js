@@ -20,19 +20,27 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
     response => response,
     error => {
-        const { response } = error;
-        if (response) {
-            if (response.status === 401 ||
-                (response.data && response.data.data && response.data.data.errorMessage === "Unauthorized, User is not authenticated.")) {
-                localStorage.clear();
-                toast.error('Session timeout!');
-                window.location.href = '/';
-                return Promise.reject(error);
-            }
+      const { response } = error;
+  
+      if (response) {
+        if (
+          response.status === 401 || 
+          (response.data?.data?.errorMessage === "Unauthorized, User is not authenticated.")
+        ) {
+          if (!error.config._retry) {
+            error.config._retry = true; 
+            localStorage.clear();
+            toast.error('Session timeout!');
+            window.location.href = '/'; 
+          }
         }
-        return Promise.reject(error);
+      }
+  
+      return Promise.reject(error); 
     }
 );
+  
+  
 
 export default axiosInstance;
 

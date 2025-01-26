@@ -71,4 +71,12 @@
     padding: 10px;
     border: 1px solid #ddd;
   }
+
+
+  .profile table th, .profile table td {
+    
+   border: none !important;
+  }
+
+
   
