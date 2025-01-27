@@ -1,0 +1,45 @@
+
+.custom-dropdown .flag-dropdown,
+.custom-dropdown .country,
+.custom-dropdown .search-box {
+  display: none;
+}
+
+.custom-dropdown .selected-flag {
+  width: auto !important; 
+  padding-right: 10px; 
+}
+
+.custom-dropdown .arrow {
+  margin-left: 0;
+}
+
+.borderLeft{
+    border-top-left-radius: 0% !important;
+    border-bottom-left-radius: 0% !important;
+    border-left: 0% !important;
+    border-left: none;
+}
+.phoneCode{
+
+}
+
+
+/* styles.css or your-component-styles.css */
+.custom-phone-input {
+    border-top-right-radius: 0% !important; 
+    border-bottom-right-radius: 0% !important;
+    /* border: 1px solid #ced4da; */
+  }
+  
+  .custom-phone-input:focus {
+    outline: none; 
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); 
+  }
+  
+  .dase-logo{
+    color: #fff;
+    font-weight: 900;
+    font-size: 25px;
+  }

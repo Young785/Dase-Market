@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 import RegisterPage from './auth/register';
@@ -21,6 +22,7 @@ import Setting from './dashboard/settings/App'
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Waveform from './dashboard/voice/App';
 import Social from './dashboard/social/App'
+import { loadExternalScripts } from './utils/external-scripts';
 
 // New component to wrap dashboard routes
 const DashboardWrapper = () => {
@@ -44,6 +46,10 @@ const DashboardWrapper = () => {
 };
 
 function App() {
+  useEffect(() => {
+    loadExternalScripts();
+  }, []);
+
   return (
     <Routes>
       <Route path="/" element={<LoginPage />} />
