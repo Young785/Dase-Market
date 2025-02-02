@@ -1,0 +1,54 @@
+
+  
+  /* Show the toggle button and close button on mobile devices (screens <= 768px) */
+  @media (max-width: 768px) {
+    .toggle-button {
+      display: block;
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      font-size: 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+  
+    .close-sidebar-btn {
+      display: block;
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      color: #fff;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .sidebar-footer {
+      padding: 10px;
+  
+      text-align: center; 
+      /* height: 100vh; */
+      bottom: 60px !important;
+      position: absolute !important;
+      width: 100%;
+    }
+  
+    .app-menu.navbar-menu {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #EFF3FB;
+      z-index: 1000;
+      transition: transform 0.3s ease;
+      transform: translateX(-100%);
+    }
+  
+    .app-menu.navbar-menu.open {
+      transform: translateX(0);
+    }
+  }
+  
