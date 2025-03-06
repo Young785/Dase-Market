@@ -93,8 +93,6 @@ export default function DashboardInvoice() {
 
                 const response = await axiosInstance.get('/user/invoices');
 
-                console.log('API Response:', response.data); // Debug log
-
                 if (response.data.status === false) {
                     setMessage(response.data.message);
                     setInvoices([]);
@@ -105,7 +103,7 @@ export default function DashboardInvoice() {
                 }
                 
             } catch (err) {
-                console.error('Error fetching invoices:', err); // Debug log
+                
                 setError('Failed to fetch invoices');
                 notifyError("Error fetching invoices");
                
