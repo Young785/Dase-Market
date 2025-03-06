@@ -15,20 +15,8 @@ import MusicPlayer from './MusicPlayer';
 import { useProfile } from '../../../context/ProfileContext';
 
 export default function ProfilePage() {
-    // const [profile, setProfile] = useState(null);
-    // const [loading, setLoading] = useState(true);
-    // const [userEmail, setUserEmail] = useState('');
-
     const { profile, loading } = useProfile();
-    const [userEmail, setUserEmail] = useState('');
     const scrollbarRef = useRef(null);
-
-    // const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    // const [selectedOption, setSelectedOption] = useState('');
-    // const [isModalOpen, setIsModalOpen] = useState(false);
-    // const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
-    // const options = ['Email', 'Google2FA', 'SMS'];
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [selectedOption, setSelectedOption] = useState('');
@@ -68,13 +56,11 @@ export default function ProfilePage() {
     };
 
     const handleOptionClick = (option) => {
-        setSearchTerm(option);
         setSelectedOption(option);
         setIsDropdownOpen(false);
     };
 
     const clearSelection = () => {
-        setSearchTerm('');
         setSelectedOption('');
         setIsDropdownOpen(false);
     };
@@ -151,7 +137,7 @@ export default function ProfilePage() {
             if (response.data.status) {
                 
                 notifySuccess(response.data.message);
-                setIsGoogleModalOpen(false); // Close modal on success
+                setIsGoogleModalOpen(false); 
             } else {
                 
                 notifyError(response.data.message);
@@ -204,7 +190,7 @@ export default function ProfilePage() {
 
     useEffect(() => {
         if (profile) {
-            setUserEmail(profile.email);
+            // setUserEmail(profile.email);
         }
     }, [profile]);
       
@@ -221,8 +207,8 @@ export default function ProfilePage() {
         first_name,
         last_name,
         business_name,
+        work_experience,
         business_email,
-        business_phone,
         business_phone_number,
         email_verified_at,
         dob,
@@ -337,40 +323,47 @@ export default function ProfilePage() {
                                                                                     <input type="text" className="form-control" id="lastnameInput" disabled value={last_name} />
                                                                                 </div>
                                                                             </div>
+
+                                                                            <div className="col-lg-4">
+                                                                                <div className="mb-3">
+                                                                                    <label for="businessName" className="form-label">Business Name</label>
+                                                                                    <input type="text" className="form-control" id="businessName" disabled  value={business_name} />
+                                                                                </div>
+                                                                            </div>
                                                                             
-                                                                            <div className="col-lg-6">
+                                                                            <div className="col-lg-4">
                                                                                 <div className="mb-3">
                                                                                     <label for="phonenumberInput" className="form-label">Business Phone Number</label>
                                                                                     <input type="text" className="form-control" id="phonenumberInput" disabled value={business_phone_number}/>
                                                                                 </div>
                                                                             </div>
                                                                             
-                                                                            <div className="col-lg-6">
+                                                                            <div className="col-lg-4">
                                                                                 <div className="mb-3">
                                                                                     <label for="emailInput" className="form-label">Business Email Address</label>
                                                                                     <input type="email" className="form-control" id="emailInput" disabled value={business_email}/>
                                                                                 </div>
                                                                             </div>
                                                                             
-                                                                            <div className="col-lg-6">
+                                                                            <div className="col-lg-4">
                                                                                 <div className="mb-3">
                                                                                     <label for="JoiningdatInput" className="form-label">Joining Date</label>
                                                                                     <input type="text" className="form-control" data-provider="flatpickr" id="JoiningdatInput" data-date-format="d M, Y" data-deafult-date="24 Nov, 2021" disabled value={email_verified_at}  />
                                                                                 </div>
                                                                             </div>
-                                                                            <div className="col-lg-6">
+                                                                            <div className="col-lg-4">
                                                                                 <div className="mb-3">
                                                                                     <label for="DOBInput" className="form-label">DOB</label>
-                                                                                    <input type="text" className="form-control" data-provider="flatpickr" id="DOBInput" data-date-format="d M, Y" data-deafult-date="24 Nov, 2021" disabled value={dob}  />
+                                                                                    <input type="date" className="form-control" id="DOBInput" disabled value={dob}  />
                                                                                 </div>
                                                                             </div>
                                                                             
                                                                            
                                                                             
-                                                                            <div className="col-lg-6">
+                                                                            <div className="col-lg-4">
                                                                                 <div className="mb-3">
-                                                                                    <label for="designationInput" className="form-label">Designation</label>
-                                                                                    <input type="text" className="form-control" id="designationInput" placeholder="Designation" value="Lead Designer / Developer"/>
+                                                                                    <label for="work_experience" className="form-label">Work Experience</label>
+                                                                                    <input type="text" className="form-control" id="work_experience" disabled value={work_experience}/>
                                                                                 </div>
                                                                             </div>
                                                                             
@@ -381,26 +374,14 @@ export default function ProfilePage() {
                                                                                 </div>
                                                                             </div>
                                                                             
-                                                                            <div className="col-lg-4">
+                                                                            <div className="col-lg-6">
                                                                                 <div className="mb-3">
                                                                                     <label for="cityInput" className="form-label">Street Address</label>
                                                                                     <input type="text" className="form-control" id="cityInput" disabled value={street_address} />
                                                                                 </div>
                                                                             </div>
                                                                             
-                                                                            <div className="col-lg-4">
-                                                                                <div className="mb-3">
-                                                                                    <label for="countryInput" className="form-label">Country</label>
-                                                                                    <input type="text" className="form-control" id="countryInput" placeholder="Country" value="United States" />
-                                                                                </div>
-                                                                            </div>
-                                                                            
-                                                                            <div className="col-lg-4">
-                                                                                <div className="mb-3">
-                                                                                    <label for="zipcodeInput" className="form-label">Zip Code</label>
-                                                                                    <input type="text" className="form-control" minlength="5" maxlength="6" id="zipcodeInput" placeholder="Enter zipcode" value="90011"/>
-                                                                                </div>
-                                                                            </div>
+                                                                           
                                                                             
                                                                             <div className="col-lg-12">
                                                                                 <div className="mb-3 pb-2">
@@ -452,10 +433,10 @@ export default function ProfilePage() {
                                                                                             className="form-control dropdown-toggle" 
                                                                                             placeholder="Select an option" 
                                                                                             onClick={handleInputClick} 
-                                                                                            onChange={(e) => setSearchTerm(e.target.value)} 
-                                                                                            value={searchTerm}
+                                                                                            onChange={(e) => setSelectedOption(e.target.value)} 
+                                                                                            value={selectedOption}
                                                                                         />
-                                                                                        {searchTerm && (
+                                                                                        {selectedOption && (
                                                                                             <span className="input-group-append" onClick={clearSelection}>
                                                                                                 <button className="btn btn-outline-secondary" type="button">
                                                                                                     <FontAwesomeIcon icon={faTimes} />
@@ -519,7 +500,15 @@ export default function ProfilePage() {
                                                                                         
                                                                                         <div className="input-group">
                                                                                             <span className="input-group-text" id="basic-addon3">Email</span>
-                                                                                            <input type="email" className="form-control" id="basic-url" aria-describedby="basic-addon3" readOnly value={userEmail}/>
+                                                                                            {/* <input type="email" className="form-control" id="basic-url" aria-describedby="basic-addon3" readOnly value={userEmail}/> */}
+                                                                                            <input 
+                                                                                                type="email" 
+                                                                                                className="form-control" 
+                                                                                                id="basic-url" 
+                                                                                                aria-describedby="basic-addon3" 
+                                                                                                disabled 
+                                                                                                value={business_email} 
+                                                                                            />
                                                                                         </div>
                                                                                     </div>
                                                                                     <div className='pt-5'>

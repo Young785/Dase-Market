@@ -7,6 +7,28 @@ export function ProfileProvider({ children }) {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const updateProfile = async () => {
+        try {
+            const authData = JSON.parse(localStorage.getItem('auth_data'));
+            const token = authData?.access_token;
+
+            if (!token) {
+                console.error("No token found. User is not authenticated.");
+                return;
+            }
+
+            const response = await axiosInstance.get('/user/profile', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (response.data.success) {
+                setProfile(response.data.data);
+            }
+        } catch (error) {
+            console.error("Error updating profile:", error);
+        }
+    };
+
     useEffect(() => {
         const fetchProfile = async () => {
             try {
@@ -38,7 +60,7 @@ export function ProfileProvider({ children }) {
     }, []);
 
     return (
-        <ProfileContext.Provider value={{ profile, loading, setProfile }}>
+        <ProfileContext.Provider value={{ profile, loading, setProfile, updateProfile }}>
             {children}
         </ProfileContext.Provider>
     );
