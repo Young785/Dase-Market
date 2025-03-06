@@ -7,11 +7,16 @@ import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../axiosInstance';
 import { Link } from 'react-router-dom';
 import {UsersAvater2, UsersAvater3, UsersAvater5} from "../../assets/images"
+import { useProfile } from '../../context/ProfileContext';
+
 
 export default function Header({ title, onToggleSidebar }) {
 	const navigate = useNavigate();
-	const [profile, setProfile] = useState(null);
-    const [loading, setLoading] = useState(true);
+	// const [profile, setProfile] = useState(null);
+	// const { profile, loading } = useProfile();
+    // const [loading, setLoading] = useState(true);
+	const { profile, loading } = useProfile();
+	
 
 	const notifyError = (text) => toast.error(text, {
         position: 'top-right',
@@ -23,52 +28,16 @@ export default function Header({ title, onToggleSidebar }) {
         progress: undefined,
       });
 
-    useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                // Retrieve the token from localStorage
-                const authData = JSON.parse(localStorage.getItem('auth_data'));
-                const token = authData?.access_token;
-
-                // If the token is missing, handle it accordingly
-                if (!token) {
-                  
-                    notifyError("No token found. User is not authenticated.");
-                    return;
-                }
-
-                // Make an authenticated request to fetch the profile
-                const response = await axiosInstance.get('/user/profile', {
-                    headers: {
-                        Authorization: `Bearer ${token}`,  // Include the Bearer token
-                    },
-                });
-
-                setProfile(response.data.data); // Update the state with the fetched profile data
-            } catch (error) {
-               
-                notifyError("Error fetching profile data:", error)
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchProfile();
-    }, []);
+   
 
     if (loading) {
         return <div>Loading...</div>;
     }
 
-    if (!profile) {
-        return <div>Error: Profile data could not be fetched.</div>;
-    }
-    // // Define the base URL for profile photos
-    // const baseURL = 'http://yourserver.com/path-to-images/'; // Replace with actual server URL
-
-    // // Construct the full profile photo URL
-    // const profilePhotoURL = profile_photo ? `${baseURL}${profile_photo}` : "assets/images/users/default-avatar.jpg";
-
+    // if (!profile) {
+    //     return <div>Error: Profile data could not be fetched.</div>;
+    // }
+  
 
     // Destructure the profile data
     const {
