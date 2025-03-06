@@ -11,11 +11,15 @@ import { faChevronDown, faTimes } from '@fortawesome/free-solid-svg-icons';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 import PostCard from "../../posts/page"
-import MusicPlayer from './MusicPlayer'; // Import the MusicPlayer component
+import MusicPlayer from './MusicPlayer'; 
+import { useProfile } from '../../../context/ProfileContext';
 
 export default function ProfilePage() {
-    const [profile, setProfile] = useState(null);
-    const [loading, setLoading] = useState(true);
+    // const [profile, setProfile] = useState(null);
+    // const [loading, setLoading] = useState(true);
+    // const [userEmail, setUserEmail] = useState('');
+
+    const { profile, loading } = useProfile();
     const [userEmail, setUserEmail] = useState('');
     const scrollbarRef = useRef(null);
 
@@ -199,44 +203,10 @@ export default function ProfilePage() {
     };
 
     useEffect(() => {
-        let didCancel = false; 
-        
-        const fetchProfile = async () => {
-            if (didCancel) return;
-            try {
-                const authData = JSON.parse(localStorage.getItem('auth_data'));
-                const token = authData?.access_token;
-        
-                if (!token) {
-                    notifyError("No token found. User is not authenticated.");
-                    return;
-                }
-        
-                const response = await axiosInstance.get('/user/profile', {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-        
-                if (!didCancel) {
-                    // Check if the response is successful
-                    if (response.data.success) {
-                        setProfile(response.data.data);
-                        setUserEmail(response.data.data.email); // Set the user's email from the profile data
-                    } else {
-                        // Handle the case where the response is not successful
-                        notifyError(response.data.message || "Failed to fetch profile data.");
-                        setProfile(response.data.data); // Set profile data even if success is false
-                    }
-                }
-            } catch (error) {
-                notifyError(`Error fetching profile data: ${error.response?.data?.message || "An error occurred."}`);
-            } finally {
-                if (!didCancel) setLoading(false);
-            }
-        };
-        
-        fetchProfile();
-        return () => { didCancel = true; }; 
-    }, []);
+        if (profile) {
+            setUserEmail(profile.email);
+        }
+    }, [profile]);
       
 
     if (loading) {
