@@ -1,0 +1,61 @@
+.votingModule {
+    display: block;
+    margin-top: 40px;
+    cursor: pointer;
+    font-family: sans-serif;
+    text-align: center;
+  }
+  
+  .iconContainer {
+    position: relative;
+    height: 20px;
+    width: 20px;
+    margin: 0 auto;
+    display: inline-block;
+  }
+  
+  .icon {
+    font-family: Fontawesome;
+    color: black;
+    font-size: 26px;
+    position: absolute;
+    color: white;
+    transition: all 0.3s;
+  }
+  
+  .icon1::before {
+    content: '\f087'; /* Thumbs up */
+    display: block;
+  }
+  
+  .icon2::before {
+    content: '\f164'; /* Thumbs up alternate */
+    display: block;
+  }
+  
+  .hiddenVote {
+    transform: scale(0);
+    opacity: 0;
+  }
+  
+  .textContainer {
+    display: inline-block;
+    height: 20px;
+    overflow-y: hidden;
+  }
+  
+  .text {
+    display: block;
+    position: relative;
+    top: 2px;
+    transition: all 0.3s;
+  }
+  
+  .showPercent {
+    top: -15px;
+  }
+  
+  .text2 {
+    font-weight: bold;
+  }
+  

@@ -1,5 +1,6 @@
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
+import { UsersAvater2 } from '../../../assets/images';
 import axiosInstance from '../../../axiosInstance'; // Adjust the import path as necessary
 import { toast, Toaster } from 'react-hot-toast';
 
@@ -30,6 +31,7 @@ export default function ProfileEditPage() {
         business_phone_code: '',
         business_phone: '',
         business_website: '',
+        // profile_photo: '',
         business_phone_number: '',
         business_email: '',
         email_verified_at: '',
@@ -49,6 +51,7 @@ export default function ProfileEditPage() {
                         last_name: data.last_name,
                         business_name: data.business_name,
                         business_phone_code: data.business_phone_code,
+                        profile_photo: data.profile_photo,
                         business_phone: data.business_phone,
                         business_website: data.business_website,
                         business_phone_number: data.business_phone_number,
@@ -67,17 +70,25 @@ export default function ProfileEditPage() {
     }, []);
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, type, files } = e.target;
         setFormData(prevState => ({
             ...prevState,
-            [name]: value
+            [name]: type === 'file' ? files[0] : value 
         }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Prepare the data to send as JSON, excluding profile_photo
+        const { profile_photo, ...dataToSend } = formData; // Destructure to exclude profile_photo
+        
         try {
-            const response = await axiosInstance.put('/user/profile', formData);
+            const response = await axiosInstance.put('/user/profile', dataToSend, {
+                headers: {
+                    'Content-Type': 'application/json' // Set the content type to application/json
+                }
+            });
             // if (response.data.success) {
             //     toast.success(response.data.message);
             if (response.data.status === false) {
@@ -122,12 +133,13 @@ export default function ProfileEditPage() {
                                 <Toaster/>
 
                                 <div className="row">
-                                    {/* <div className="col-xxl-3">
+                                    <div className="col-xxl-3">
                                         <div className="card mt-n5">
                                             <div className="card-body p-4">
                                                 <div className="text-center">
                                                     <div className="profile-user position-relative d-inline-block mx-auto  mb-4">
-                                                        <img src="assets/images/users/avatar-1.jpg" className="rounded-circle avatar-xl img-thumbnail user-profile-image" alt="user-profile-image"/>
+                                                        {/* <img src="assets/images/users/avatar-1.jpg" className="rounded-circle avatar-xl img-thumbnail user-profile-image" alt="user-profile-image"/> */}
+                                                        <img  src={formData.profile_photo ? UsersAvater2 : UsersAvater2} alt="user-img" className="img-thumbnail rounded-circle" />
                                                         <div className="avatar-xs p-0 rounded-circle profile-photo-edit">
                                                             <input id="profile-img-file-input" type="file" className="profile-img-file-input" />
                                                             <label for="profile-img-file-input" className="profile-photo-edit avatar-xs">
@@ -137,75 +149,15 @@ export default function ProfileEditPage() {
                                                             </label>
                                                         </div>
                                                     </div>
-                                                    <h5 className="fs-16 mb-1">Anna Adame</h5>
+                                                    <h5 className="fs-16 mb-1">{formData.first_name} {formData.last_name}</h5>
                                                     <p className="text-muted mb-0">Lead Designer / Developer</p>
                                                 </div>
                                             </div>
                                         </div>
                                         
-                                        <div className="card">
-                                            <div className="card-body">
-                                                <div className="d-flex align-items-center mb-5">
-                                                    <div className="flex-grow-1">
-                                                        <h5 className="card-title mb-0">Complete Your Profile</h5>
-                                                    </div>
-                                                    <div className="flex-shrink-0">
-                                                        <a href="javascript:void(0);" className="badge bg-light text-primary fs-12"><i className="ri-edit-box-line align-bottom me-1"></i> Edit</a>
-                                                    </div>
-                                                </div>
-                                                <div className="progress animated-progress custom-progress progress-label">
-                                                    <div className="progress-bar bg-danger" role="progressbar" style={{width: "30%"}} aria-valuenow="30" aria-valuemin="0" aria-valuemax="100">
-                                                        <div className="label">30%</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="card">
-                                            <div className="card-body">
-                                                <div className="d-flex align-items-center mb-4">
-                                                    <div className="flex-grow-1">
-                                                        <h5 className="card-title mb-0">Portfolio</h5>
-                                                    </div>
-                                                    <div className="flex-shrink-0">
-                                                        <a href="javascript:void(0);" className="badge bg-light text-primary fs-12"><i className="ri-add-fill align-bottom me-1"></i> Add</a>
-                                                    </div>
-                                                </div>
-                                                <div className="mb-3 d-flex">
-                                                    <div className="avatar-xs d-block flex-shrink-0 me-3">
-                                                        <span className="avatar-title rounded-circle fs-16 bg-body text-body">
-                                                            <i className="ri-github-fill"></i>
-                                                        </span>
-                                                    </div>
-                                                    <input type="email" className="form-control" id="gitUsername" placeholder="Username" value="@daveadame"/>
-                                                </div>
-                                                <div className="mb-3 d-flex">
-                                                    <div className="avatar-xs d-block flex-shrink-0 me-3">
-                                                        <span className="avatar-title rounded-circle fs-16 bg-primary">
-                                                            <i className="ri-global-fill"></i>
-                                                        </span>
-                                                    </div>
-                                                    <input type="text" className="form-control" id="websiteInput" placeholder="www.example.com" value="www.velzon.com"/>
-                                                </div>
-                                                <div className="mb-3 d-flex">
-                                                    <div className="avatar-xs d-block flex-shrink-0 me-3">
-                                                        <span className="avatar-title rounded-circle fs-16 bg-success">
-                                                            <i className="ri-dribbble-fill"></i>
-                                                        </span>
-                                                    </div>
-                                                    <input type="text" className="form-control" id="dribbleName" placeholder="Username" value="@dave_adame" />
-                                                </div>
-                                                <div className="d-flex">
-                                                    <div className="avatar-xs d-block flex-shrink-0 me-3">
-                                                        <span className="avatar-title rounded-circle fs-16 bg-danger">
-                                                            <i className="ri-pinterest-fill"></i>
-                                                        </span>
-                                                    </div>
-                                                    <input type="text" className="form-control" id="pinterestName" placeholder="Username" value="Advance Dave"/>
-                                                </div>
-                                            </div>
-                                        </div>
+                                       
                                         
-                                    </div> */}
+                                    </div> 
                                     
                                     <div className="col-xxl-12">
                                         <div className="card mt-xxl-n5">
@@ -216,21 +168,7 @@ export default function ProfileEditPage() {
                                                             <i className="fas fa-home"></i> Personal Details
                                                         </a>
                                                     </li>
-                                                    <li className="nav-item">
-                                                        <a className="nav-link" data-bs-toggle="tab" href="#changePassword" role="tab">
-                                                            <i className="far fa-user"></i> Change Password
-                                                        </a>
-                                                    </li>
-                                                    <li className="nav-item">
-                                                        <a className="nav-link" data-bs-toggle="tab" href="#experience" role="tab">
-                                                            <i className="far fa-envelope"></i> Experience
-                                                        </a>
-                                                    </li>
-                                                    <li className="nav-item">
-                                                        <a className="nav-link" data-bs-toggle="tab" href="#privacy" role="tab">
-                                                            <i className="far fa-envelope"></i> Privacy Policy
-                                                        </a>
-                                                    </li>
+                                                    
                                                 </ul>
                                             </div>
                                             <div className="card-body p-4">

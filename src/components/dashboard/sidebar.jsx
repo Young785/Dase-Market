@@ -154,18 +154,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                                 </span>
                             </Link>
                         </li>
-                        <li className={`nav-item ${isActive(["/dase/setting"])}`}>
-                            <Link to="/dase/setting" className={`nav-link ${isActive(["/dase/setting"])}`} data-key="t-setting">
-                                <span data-key="t-setting">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M12 2v2m0 16v2m8.66-14.66l-1.42 1.42m-11.32 0l-1.42-1.42M22 12h-2m-16 0H2m14.66 8.66l1.42-1.42m-11.32 0l1.42 1.42" stroke="#6882B6" strokeWidth="2"/>
-                                        <circle cx="12" cy="12" r="3" stroke="#6882B6" strokeWidth="2"/>
-                                    </svg>
-
-                                    Setting
-                                </span>
-                            </Link>
-                        </li>
+                       
                         {/* <li className={`nav-item ${isActive(["/dase/voice"])}`}>
                             <Link to="/dase/voice" className={`nav-link ${isActive(["/dase/voice"])}`} data-key="t-voice">
                                 <span data-key="t-voice">

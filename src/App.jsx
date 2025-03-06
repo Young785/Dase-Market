@@ -18,7 +18,7 @@ import ViewInvoice from './dashboard/invoice/view/App';
 import EditInvoice from './dashboard/invoice/edit/App';
 import Profile from './dashboard/profile/App';
 import ProfileEdit from './dashboard/profile/edit';
-import Setting from './dashboard/settings/App'
+// import Setting from './dashboard/settings/App'
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Waveform from './dashboard/voice/App';
 import Social from './dashboard/social/App'
@@ -36,7 +36,7 @@ const DashboardWrapper = () => {
       <Route path="chat" element={<Chat />} />
       <Route path="profile" element={<Profile />} />
       <Route path="profile/edit" element={<ProfileEdit />} />
-      <Route path="setting" element={<Setting />} />
+      {/* <Route path="setting" element={<Setting />} /> */}
       <Route path="voice" element={<Waveform />} />
       <Route path="social" element={<Social />} />
       {/* Redirect to dashboard home for any unmatched routes */}
