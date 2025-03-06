@@ -204,7 +204,7 @@ export default function LogIn() {
                           </button>
                         </div>
 
-                        <div className="mt-4 text-center">
+                        {/* <div className="mt-4 text-center">
                           <h2 className="fs-13 mb-4 title">OR</h2>
                           <div className="signin-other-title">
                             <h5 className="fs-13 mb-4 title">Sign In with</h5>
@@ -223,7 +223,7 @@ export default function LogIn() {
                               <i className="ri-twitter-fill fs-16"></i>
                             </button>
                           </div>
-                        </div>
+                        </div> */}
                       </form>
                     </div>
                   </div>
