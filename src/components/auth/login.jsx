@@ -4,6 +4,7 @@ import './style.css';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 import axiosInstance from '../../axiosInstance';
+import { useProfile } from '../../context/ProfileContext';
 
 export default function LogIn() {
   const [showPassword, setShowPassword] = useState(false);
@@ -13,6 +14,7 @@ export default function LogIn() {
   });
   const [isUploading, setIsUploading] = useState(false);
   const navigate = useNavigate();
+  const { updateProfile } = useProfile();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -76,6 +78,8 @@ export default function LogIn() {
             if (data.user.setting.show_welcome_modal === "YES") {
               localStorage.setItem('show_welcome_modal', 'YES');
             }
+  
+            await updateProfile();
   
             setTimeout(() => {
               navigate('/dase/dashboard');
