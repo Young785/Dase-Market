@@ -1,0 +1,75 @@
+.music-player {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    padding: 10px;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.player-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.control-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    margin: 0 10px;
+    cursor: pointer;
+}
+
+.progress-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+input[type="range"] {
+    flex: 1;
+    margin: 0 10px;
+}
+
+.time-display {
+    font-size: 14px;
+}
+
+.play-pause-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.track-info {
+    margin-left: 15px;
+    flex-grow: 1;
+}
+
+.track-title {
+    font-weight: bold;
+}
+
+.track-artist {
+    color: gray;
+}
+
+.track-duration {
+    margin-left: 10px;
+    color: gray;
+}
+
+.current-track-info {
+    text-align: center;
+    margin: 10px 0;
+    font-size: 16px;
+    font-weight: bold;
+}

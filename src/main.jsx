@@ -5,7 +5,9 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router } from 'react-router-dom'; 
+
 import App from './App';
+import { ProfileProvider, useProfile } from './context/ProfileContext';
 
 // Core CSS
 import './assets/css/app.min.css'
@@ -28,7 +30,9 @@ import './dashboard/style.css';
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Router>
-      <App />
+      <ProfileProvider>
+        <App />
+      </ProfileProvider>
     </Router>
   </StrictMode>,
 );

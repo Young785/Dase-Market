@@ -765,28 +765,28 @@ export default function Register() {
                               )}
                             </button>
 
-                            <div className="mt-4 text-center">
-                            <div className="">
-                                <h2 className="fs-13 mb-4 title">OR</h2>
-                            </div>
-                            <div className="signin-other-title">
-                                <h5 className="fs-13 mb-4 title">Sign In with</h5>
-                            </div>
-                            <div className="gap-1 d-flex justify-content-center align-items-center">
-                                <button type="button" className="btn center text-center btn-primary btn-icon waves-effect waves-light px-0">
-                                <i className="ri-facebook-fill fs-16 text-center center"></i>
-                                </button>
-                                <button type="button" className="btn btn-danger btn-icon waves-effect waves-light px-0">
-                                <i className="ri-google-fill fs-16"></i>
-                                </button>
-                                <button type="button" className="btn btn-dark btn-icon waves-effect waves-light px-0">
-                                <i className="ri-github-fill fs-16"></i>
-                                </button>
-                                <button type="button" className="btn btn-info btn-icon waves-effect waves-light px-0">
-                                <i className="ri-twitter-fill fs-16"></i>
-                                </button>
-                            </div>
-                            </div>
+                            {/* <div className="mt-4 text-center">
+                              <div className="">
+                                  <h2 className="fs-13 mb-4 title">OR</h2>
+                              </div>
+                              <div className="signin-other-title">
+                                  <h5 className="fs-13 mb-4 title">Sign In with</h5>
+                              </div>
+                              <div className="gap-1 d-flex justify-content-center align-items-center">
+                                  <button type="button" className="btn center text-center btn-primary btn-icon waves-effect waves-light px-0">
+                                  <i className="ri-facebook-fill fs-16 text-center center"></i>
+                                  </button>
+                                  <button type="button" className="btn btn-danger btn-icon waves-effect waves-light px-0">
+                                  <i className="ri-google-fill fs-16"></i>
+                                  </button>
+                                  <button type="button" className="btn btn-dark btn-icon waves-effect waves-light px-0">
+                                  <i className="ri-github-fill fs-16"></i>
+                                  </button>
+                                  <button type="button" className="btn btn-info btn-icon waves-effect waves-light px-0">
+                                  <i className="ri-twitter-fill fs-16"></i>
+                                  </button>
+                              </div>
+                            </div> */}
                           </form>
                       </div>
 
@@ -942,7 +942,7 @@ export default function Register() {
                             )}
                           </button>
 
-                          <div className="mt-4 text-center">
+                          {/* <div className="mt-4 text-center">
                             <div className="">
                               <h2 className="fs-13 mb-4 title">OR</h2>
                             </div>
@@ -963,7 +963,7 @@ export default function Register() {
                                 <i className="ri-twitter-fill fs-16"></i>
                               </button>
                             </div>
-                          </div>
+                          </div> */}
                         </form>
                       </div>
                     </div>

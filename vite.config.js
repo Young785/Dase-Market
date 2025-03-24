@@ -76,8 +76,10 @@ export default defineConfig({
     include: ['sweetalert2']
   },
   server: {
-    watch: {
-      usePolling: true
-    }
+    https: false,
+    host: 'localhost',
+    port: 3000,
+    strictPort: true,
+    open: true
   }
 })

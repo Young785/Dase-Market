@@ -6,7 +6,6 @@ import { toast } from 'react-toastify';
 export default function DashboardInvoice() {
     const [invoices, setInvoices] = useState([]);
     const navigate = useNavigate();
-    // const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState(null);
     const [error, setError] = useState(null);
@@ -31,44 +30,29 @@ export default function DashboardInvoice() {
         progress: undefined,
     });
 
-
-    
     const handleDeleteClick = (invoiceId) => {
         setInvoiceToDelete(invoiceId);
-        // Assuming you're using Bootstrap's modal
         const deleteModal = new bootstrap.Modal(document.getElementById('deleteOrder'));
         deleteModal.show();
     };
     const handleDelete = async () => {
         if (invoiceToDelete) {
-            
             try {
                 const response = await axiosInstance.delete(`/user/invoices/delete/${invoiceToDelete}`);
-                
-                // Check if the response indicates success
                 if (response.data.status === true || response.status === 200) {
-                    // Update the state
                     setInvoices(prevInvoices => prevInvoices.filter(invoice => invoice.invoice_id !== invoiceToDelete));
-                    
-                    // Show success message
-                    // toast.success(response.data.message || 'Invoice deleted successfully');
-                    const data = response.data;
-                    notifySuccess(data.message);
-                        setTimeout(() => {
+                    notifySuccess(response.data.message);
+                    setTimeout(() => {
                         navigate('/dase/invoice');
                     }, 2000);
                 } else {
-                    // If the response doesn't indicate success, treat it as an error
                     throw new Error(response.data.message || 'Failed to delete invoice');
                 }
             } catch (error) {
-              
                 toast.error(error.message || 'Error deleting invoice');
             } finally {
                 setLoading(false);
                 setInvoiceToDelete(null);
-                
-                // Close the modal regardless of success or failure
                 const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteOrder'));
                 if (deleteModal) {
                     deleteModal.hide();
@@ -79,39 +63,20 @@ export default function DashboardInvoice() {
 
     useEffect(() => {
         const fetchInvoices = async () => {
-            
             try {
-                // const authData = JSON.parse(localStorage.getItem('auth_data'));
-                // const token = authData?.access_token;
-
-                // if (!token) {
-                //     notifyError("No token found. User is not authenticated.");
-                //     setError("Authentication failed");
-                //     setLoading(false);
-                //     return;
-                // }
-
                 const response = await axiosInstance.get('/user/invoices');
-
-                console.log('API Response:', response.data); // Debug log
-
                 if (response.data.status === false) {
                     setMessage(response.data.message);
                     setInvoices([]);
-                    // setAnalytics(null);
                 } else {
                     setInvoices(response.data.data.invoices || []);
                     setAnalytics(response.data.data.analytics || null);
                 }
-                
             } catch (err) {
-                console.error('Error fetching invoices:', err); // Debug log
                 setError('Failed to fetch invoices');
                 notifyError("Error fetching invoices");
-               
-            }finally {
+            } finally {
                 setLoading(false);
-               
             }
         };
 
