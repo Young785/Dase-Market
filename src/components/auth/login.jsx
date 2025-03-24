@@ -5,9 +5,10 @@ import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 import axiosInstance from '../../axiosInstance';
 import { useProfile } from '../../context/ProfileContext';
+// import VerificationModal from './verificationPage';
 
 export default function LogIn() {
-  const [showPassword, setShowPassword] = useState(false);
+  const [showVerificationModal, showPassword, setShowVerificationModal, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     login: '',
     password: '',
@@ -49,58 +50,33 @@ export default function LogIn() {
     e.preventDefault();
   
     if (formData.login && formData.password) {
-      formData.login = formData.login.trim();
-      formData.password = formData.password.trim();
-      setIsUploading(true); // Set loading state to true
+      setIsUploading(true);
   
       try {
         const response = await axiosInstance.post('/login', formData);
-        const data = response.data;
-  
-        if (data.status) {
-          if (data.user.is_verified === false) { // Check if the user is unverified
-            notifyError("Your account is not verified. Please verify your email before logging in.");
-          } else if (data.user.status === 'false') {
-            localStorage.setItem('signup_record', JSON.stringify(data.user));
-            notifyError("Your Account is Inactive, kindly proceed to verify your email.");
-            setTimeout(() => {
-              navigate('/dase/verifyotp');
-            }, 1500);
-          } else {
-            notifySuccess(data.message);
-            localStorage.setItem('auth_data', JSON.stringify({
-              access_token: data.access_token,
-              user: data.user,
-              permissions: data.permissions,
-            }));
-            localStorage.removeItem('signup_record');
-  
-            if (data.user.setting.show_welcome_modal === "YES") {
-              localStorage.setItem('show_welcome_modal', 'YES');
-            }
-  
-            await updateProfile();
-  
-            setTimeout(() => {
-              navigate('/dase/dashboard');
-            }, 2000);
-          }
+        
+        if (response.data.status) {
+          notifySuccess(response.data.message);
+          
+          // Wait for profile to be updated before navigation
+          await updateProfile();
+          
+          // Small timeout to ensure state updates are complete
+          setTimeout(() => {
+            navigate('/dase/dashboard');
+          }, 100);
         } else {
-          notifyError(data.message);
+          notifyError(response.data.message);
         }
       } catch (err) {
-        if (err.response && err.response.data) {
-          notifyError(err.response.data.message || 'An unexpected error occurred');
-        } else {
-          notifyError('Network error or server not responding');
-        }
+        notifyError(err.response?.data?.message || 'An unexpected error occurred');
       } finally {
-        setIsUploading(false); // Reset loading state
+        setIsUploading(false);
       }
     } else {
       notifyError("All fields are required!");
     }
-  };
+};
 
   return (
     <div>
@@ -241,6 +217,12 @@ export default function LogIn() {
           </div>
         </div>
       </div>
+      
+      {/* <VerificationModal 
+        isOpen={showVerificationModal}
+        onClose={() => setShowVerificationModal(false)}
+        email={formData.login}
+      /> */}
     </div>
   );
 }
