@@ -15,7 +15,7 @@ import MusicPlayer from './MusicPlayer';
 import { useProfile } from '../../../context/ProfileContext';
 
 export default function ProfilePage() {
-    const { profile, loading } = useProfile();
+    const { profile, loading: profileLoading } = useProfile();
     const scrollbarRef = useRef(null);
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -27,6 +27,12 @@ export default function ProfilePage() {
     const options = ['Email', 'Google', 'SMS']; // Dropdown options
     const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
+
+    const [oldPassword, setOldPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [message, setMessage] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const [tracks, setTracks] = useState([
         {
@@ -147,6 +153,31 @@ export default function ProfilePage() {
         }
     };
 
+    const handleChangePassword = async (e) => {
+        e.preventDefault(); // Prevent default form submission
+        setMessage(''); 
+        setLoading(true);
+
+        try {
+            const response = await axiosInstance.post('/user/profile/change-password', {
+                old_password: oldPassword,
+                password: newPassword,
+                password_confirmation: confirmPassword,
+            });
+
+            if (response.data.success) {
+                setMessage(response.data.message); 
+            }
+        } catch (error) {
+            if (error.response && error.response.data) {
+                setMessage(error.response.data.message); 
+            } else {
+                setMessage('An unexpected error occurred.'); 
+            }
+        } finally {
+            setLoading(false); 
+        }
+    };
 
     const closeModal = () => {
         setIsModalOpen(false);
@@ -195,7 +226,7 @@ export default function ProfilePage() {
     }, [profile]);
       
 
-    if (loading) {
+    if (profileLoading) {
         return <div>Loading...</div>;
     }
 
@@ -589,47 +620,45 @@ export default function ProfilePage() {
                                                         <div className="card-body">
                                                            
 
-                                                            <form action="">
-                                                                <div className="row col-12 mb-4">
-
-                                                                    <div className="d-flex profile-wrapper justify-content-between align-items-center">
-
-                                                                        <h5 className='card-title'>Change Password </h5>
-                                                                        
-
+                                                        <form onSubmit={handleChangePassword}>
+                                                            <div className="row col-12 mb-4">
+                                                                <div className="d-flex profile-wrapper justify-content-between align-items-center">
+                                                                    <h5 className='card-title'>Change Password </h5>
+                                                                </div>
+                                                            </div>
+                                                            <div className="row g-3">
+                                                                <div className="col-4">
+                                                                    <div>
+                                                                        <label htmlFor="oldPasswordInput" className="form-label">Old Password</label>
+                                                                        <input type="password" className="form-control" id="oldPasswordInput" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} />
                                                                     </div>
                                                                 </div>
-                                                                
-                                                                <div class="row g-3">
-                                                                    <div class="col-4">
-                                                                        <div>
-                                                                            <label for="oldPasswordInput" class="form-label">Old Password</label>
-                                                                            <input type="password" class="form-control" id="oldPasswordInput" value="451326546"/>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-4">
-                                                                        <div>
-                                                                            <label for="newPasswordInput" class="form-label">New Password</label>
-                                                                            <input type="password" class="form-control" id="newPasswordInput" />
-                                                                        </div>
-                                                                    </div>
-                                                                    
-                                                                    <div class="col-4">
-                                                                        <div>
-                                                                            <label for="confirmPasswordInput" class="form-label">Confirm Password</label>
-                                                                            <input type="password" class="form-control" id="confirmPasswordInput"/>
-                                                                        </div>
-                                                                    </div>
-                                                                    
-                                                                    <div class="col-lg-12">
-                                                                        <div class="hstack gap-2 justify-content-end">
-                                                                            
-                                                                            <button class="btn btn-primary">Change Password</button>
-                                                                        </div>
+                                                                <div className="col-4">
+                                                                    <div>
+                                                                        <label htmlFor="newPasswordInput" className="form-label">New Password</label>
+                                                                        <input type="password" className="form-control" id="newPasswordInput" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
                                                                     </div>
                                                                 </div>
-                                                                
-                                                            </form>
+                                                                <div className="col-4">
+                                                                    <div>
+                                                                        <label htmlFor="confirmPasswordInput" className="form-label">Confirm Password</label>
+                                                                        <input type="password" className="form-control" id="confirmPasswordInput" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                                                                    </div>
+                                                                </div>
+                                                                <div className="col-lg-12">
+                                                                    <div className="hstack gap-2 justify-content-end">
+                                                                        <button type='submit' className="btn btn-primary" disabled={loading}>
+                                                                            {loading ? 'Loading...' : 'Change Password'} {/* Loading state */}
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            {message && (
+                                                                <div className={`alert ${message.includes('error') ? 'alert-danger' : 'alert-info'}`}>
+                                                                    {message}
+                                                                </div>
+                                                            )} {/* Display dynamic message */}
+                                                        </form>
                                                         </div>
                                                     </div>
                                                 </div>
