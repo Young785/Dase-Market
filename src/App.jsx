@@ -22,6 +22,8 @@ import Setting from './dashboard/settings/App'
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Waveform from './dashboard/voice/App';
 import Social from './dashboard/social/App'
+import Project from './dashboard/project/App'
+import Engineer from './dashboard/engineer/App'
 import { loadExternalScripts } from './utils/external-scripts';
 
 // New component to wrap dashboard routes
@@ -39,6 +41,8 @@ const DashboardWrapper = () => {
       <Route path="setting" element={<Setting />} />
       <Route path="voice" element={<Waveform />} />
       <Route path="social" element={<Social />} />
+      <Route path="project" element={<Project />} />
+      <Route path="engineer" element={<Engineer />} />
       {/* Redirect to dashboard home for any unmatched routes */}
       <Route path="*" element={<Navigate to="/dase/dashboard" replace />} />
     </Routes>
