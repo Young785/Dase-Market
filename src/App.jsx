@@ -7,7 +7,9 @@ import VerifyOtp from './components/auth/verify-code';
 import ConfirmAccount from './components/auth/confirm-account';
 import ForgotPassword from './components/auth/forgotpassword';
 import VerifyPasswordOtp from './components/auth/verifypasswordotp';
-import NewPassword from './components/auth/newpassword'
+import NewPassword from './components/auth/newpassword';
+import VerificationPage from './components/auth/verificationPage';
+
 
 
 import DashboardHome from './dashboard/page';
@@ -59,6 +61,7 @@ function App() {
       <Route path="/dase/forget-password" element={<ForgotPassword/>} />
       <Route path="/dase/verifypasswordotp" element={<VerifyPasswordOtp/>} />
       <Route path="dase/newpassword" element={<NewPassword/>} />
+      <Route path="dase/verify-account" element={<VerificationPage/>} />
 
       {/* Protected routes */}
       <Route 

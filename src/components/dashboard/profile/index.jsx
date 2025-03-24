@@ -619,51 +619,49 @@ export default function ProfilePage() {
                                                     <div className="card">
                                                         <div className="card-body">
                                                            
-
-                                                        <form onSubmit={handleChangePassword}>
-                                                            <div className="row col-12 mb-4">
-                                                                <div className="d-flex profile-wrapper justify-content-between align-items-center">
-                                                                    <h5 className='card-title'>Change Password </h5>
-                                                                </div>
-                                                            </div>
-                                                            <div className="row g-3">
-                                                                <div className="col-4">
-                                                                    <div>
-                                                                        <label htmlFor="oldPasswordInput" className="form-label">Old Password</label>
-                                                                        <input type="password" className="form-control" id="oldPasswordInput" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} />
+                                                            <form onSubmit={handleChangePassword}>
+                                                                <div className="row col-12 mb-4">
+                                                                    <div className="d-flex profile-wrapper justify-content-between align-items-center">
+                                                                        <h5 className='card-title'>Change Password </h5>
                                                                     </div>
                                                                 </div>
-                                                                <div className="col-4">
-                                                                    <div>
-                                                                        <label htmlFor="newPasswordInput" className="form-label">New Password</label>
-                                                                        <input type="password" className="form-control" id="newPasswordInput" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                                                                <div className="row g-3">
+                                                                    <div className="col-4">
+                                                                        <div>
+                                                                            <label htmlFor="oldPasswordInput" className="form-label">Old Password</label>
+                                                                            <input type="password" className="form-control" id="oldPasswordInput" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="col-4">
+                                                                        <div>
+                                                                            <label htmlFor="newPasswordInput" className="form-label">New Password</label>
+                                                                            <input type="password" className="form-control" id="newPasswordInput" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="col-4">
+                                                                        <div>
+                                                                            <label htmlFor="confirmPasswordInput" className="form-label">Confirm Password</label>
+                                                                            <input type="password" className="form-control" id="confirmPasswordInput" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="col-lg-12">
+                                                                        <div className="hstack gap-2 justify-content-end">
+                                                                            <button type='submit' className="btn btn-primary" disabled={loading}>
+                                                                                {loading ? 'Loading...' : 'Change Password'} {/* Loading state */}
+                                                                            </button>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                                <div className="col-4">
-                                                                    <div>
-                                                                        <label htmlFor="confirmPasswordInput" className="form-label">Confirm Password</label>
-                                                                        <input type="password" className="form-control" id="confirmPasswordInput" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                                                                {message && (
+                                                                    <div className={`alert ${message.includes('error') ? 'alert-danger' : 'alert-info'}`}>
+                                                                        {message}
                                                                     </div>
-                                                                </div>
-                                                                <div className="col-lg-12">
-                                                                    <div className="hstack gap-2 justify-content-end">
-                                                                        <button type='submit' className="btn btn-primary" disabled={loading}>
-                                                                            {loading ? 'Loading...' : 'Change Password'} {/* Loading state */}
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            {message && (
-                                                                <div className={`alert ${message.includes('error') ? 'alert-danger' : 'alert-info'}`}>
-                                                                    {message}
-                                                                </div>
-                                                            )} {/* Display dynamic message */}
-                                                        </form>
+                                                                )}
+                                                            </form>
+                                                            
                                                         </div>
                                                     </div>
                                                 </div>
-
-
 
                                                 <div className="tab-pane fade main" id="musicPlayer" role="tabpanel">
                                                    <div className="card ">

@@ -7,7 +7,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router } from 'react-router-dom'; 
 
 import App from './App';
-import { ProfileProvider } from './context/ProfileContext';
+import { ProfileProvider, useProfile } from './context/ProfileContext';
 
 // Core CSS
 import './assets/css/app.min.css'
