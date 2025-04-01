@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import OtpInput from 'react-otp-input';
 import { Link, useNavigate } from 'react-router-dom';
 import  PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css'; 
@@ -24,16 +25,15 @@ export default function ProfilePage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
     const [qrCodeUrl, setQrCodeUrl] = useState('');
-    const options = ['Email', 'Google', 'SMS']; // Dropdown options
+    const options = ['Email', 'Google', 'SMS'];
     const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
-
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
-
+    const [otp, setOtp] = useState('');
     const [tracks, setTracks] = useState([
         {
             title: "SoundHelix Song 1",
@@ -54,9 +54,8 @@ export default function ProfilePage() {
             url: "https://freemusicarchive.org/music/Kevin_MacLeod/The_Big_Bang/The_Big_Bang.mp3"
         },
     ]);
-
     const currentTrack = tracks[currentTrackIndex];
-
+    
     const handleInputClick = () => {
         setIsDropdownOpen(!isDropdownOpen);
     };
@@ -72,7 +71,7 @@ export default function ProfilePage() {
     };
 
     const handleEnable2FA = async (e) => {
-        e.preventDefault(); // Prevent default form submission behavior
+        e.preventDefault(); 
 
         if (!selectedOption) {
             
@@ -88,15 +87,15 @@ export default function ProfilePage() {
                 response = await axiosInstance.get('/user/2fa/request/email');
                 
                 notifySuccess(response.data.message);
-                setIsModalOpen(true); // Open Email verification modal
+                setIsModalOpen(true);
             } else if (selectedOption === 'Google') {
                 response = await axiosInstance.get('/user/2fa/enable/google2fa');
                 
                 notifySuccess(response.data.message);
                 setQrCodeUrl(response.data.qrcode_url); 
-                setIsGoogleModalOpen(true); // Open Google 2FA modal
+                setIsGoogleModalOpen(true);
             } else if (selectedOption === 'SMS') {
-                // Handle SMS 2FA request here
+               
                 
                 notifyError("SMS 2FA is not implemented yet.");
             }
@@ -108,24 +107,21 @@ export default function ProfilePage() {
     };
 
     const handleVerifyCode = async () => {
-        if (!verificationCode) {
-           
+        if (!otp) {
             notifyError("The code field is required.");
             return;
         }
 
         try {
-            const response = await axiosInstance.get('/user/2fa/verify', { code: verificationCode });
+            const response = await axiosInstance.get('/user/2fa/verify', { code: otp });
             if (response.data.status) {
-                
                 notifySuccess(response.data.message);
-                closeModal(); // Close modal on success
+                closeModal();
             } else {
-               
                 notifyError(response.data.message);
             }
         } catch (error) {
-            notifyError(response.data.message);
+            notifyError(error.response?.data?.message || "An error occurred.");
             toast.error(`Error: ${error.response?.data?.message || "An error occurred."}`);
         }
     };
@@ -139,7 +135,7 @@ export default function ProfilePage() {
         }
 
         try {
-            const response = await axiosInstance.post('/user/2fa/verify', { code: verificationCode });
+            const response = await axiosInstance.get('/user/2fa/verify', { code: verificationCode });
             if (response.data.status) {
                 
                 notifySuccess(response.data.message);
@@ -546,14 +542,21 @@ export default function ProfilePage() {
 
                                                                                         <p className='text-center'>Enter the code sent to you in the box below.</p>
                                                                                         <div className="form-group">
-                                                                                            {/* <input type="text" className="form-control" placeholder="Enter verification code" /> */}
-                                                                                            <input 
-                                                                                                type="text" 
-                                                                                                className="form-control" 
-                                                                                                placeholder="Enter verification code" 
-                                                                                                value={verificationCode}
-                                                                                                onChange={(e) => setVerificationCode(e.target.value)}
+                                                                                            <OtpInput
+                                                                                                value={otp}
+                                                                                                onChange={setOtp}
+                                                                                                numInputs={6}
+                                                                                                renderSeparator={<span style={{ width: '10px' }}></span>}
+                                                                                                renderInput={(props) => (
+                                                                                                    <input 
+                                                                                                        {...props} 
+                                                                                                        className="form-control" 
+                                                                                                        style={{ width: '50px', height: '50px', fontSize: '20px', textAlign: 'center' }}
+                                                                                                    />
+                                                                                                )}
+                                                                                                containerStyle={{ display: 'flex', justifyContent: 'space-between' }}
                                                                                             />
+                                                                                            <div className="invalid-feedback">Please enter the verification code</div>
                                                                                         </div>
                                                                                     </div>
                                                                                 </div>
