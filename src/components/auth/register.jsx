@@ -33,6 +33,7 @@ export default function Register() {
     password: "",
     password_confirmation: ""
   });
+  
   const [activeTab, setActiveTab] = useState('engineer');
 
   const notifySuccess = (text) => toast.success(`${text}`, {
@@ -84,7 +85,7 @@ export default function Register() {
 
 
   const handleSetRole = (role) => {
-    // Reset form fields based on the selected role
+    
     const initialFormData = {
       first_name: "",
       last_name: "",
@@ -101,7 +102,7 @@ export default function Register() {
       password_confirmation: ""
     };
   
-    // Clear form fields based on the selected role
+   
     if (role === 'engineer') {
       setFormData({
         ...initialFormData,
@@ -124,18 +125,43 @@ export default function Register() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    console.log(`Updating ${name} with value: ${value}`);
+    
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Validate the current field
+    const error = validateField(name, value);
+    setErrors(prev => ({ ...prev, [name]: error }));
 
-    // Prevent form submission on autofill
-    if (e.nativeEvent.inputType === 'insertText' || e.nativeEvent.inputType === 'insertCompositionText') {
-        e.preventDefault();
+    // If password field changes, also validate password confirmation
+    if (name === 'password') {
+      const confirmError = validateField('password_confirmation', formData.password_confirmation);
+      setErrors(prev => ({ ...prev, password_confirmation: confirmError }));
     }
-
-    // Check if the input is being autofilled
-    if (value && e.target.value !== formData[name]) {
-        setFormData({ ...formData, [name]: value });
+    
+    // If password confirmation field changes, validate it against current password
+    if (name === 'password_confirmation') {
+      const confirmError = validateField('password_confirmation', value);
+      setErrors(prev => ({ ...prev, password_confirmation: confirmError }));
     }
   };
+
+  // Add this to handle autofill events
+  useEffect(() => {
+    // Get all form inputs
+    const inputs = document.querySelectorAll('input');
+    
+    // Add change event listener to each input
+    inputs.forEach(input => {
+      input.addEventListener('animationstart', (e) => {
+        if (e.animationName === 'onAutoFillStart') {
+          // Handle autofill
+          const { name, value } = e.target;
+          setFormData(prev => ({ ...prev, [name]: value }));
+        }
+      });
+    });
+  }, []);
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setFormData({ ...formData, profile_photo: file });
@@ -151,12 +177,26 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault(); 
+
+     
+    if (!validateForm()) {
+      notifyError('Please fix the errors before submitting');
+      return;
+    }
+
+    // Check terms agreement
+    const termsCheckbox = document.getElementById(activeTab === 'engineer' ? 'termsCheckEngineer' : 'termsCheckClient');
+    if (!termsCheckbox.checked) {
+      notifyError('Please agree to the Terms of Use');
+      return;
+    }
+
     setIsUploading(true);
     setLoading(true); 
 
     const role = activeTab;
     const updatedFormData = { ...formData, role:role };
-    console.log("payload after updatedFormData", formData);
+
     
 
     // Conditionally validate fields based on the active tab
@@ -175,7 +215,7 @@ export default function Register() {
     } else if (activeTab === 'client') {
         requiredFields.push('business_name', 'business_website');
     }
-    // console.log("payload after activeTab", formData);
+    
     
 
     // Check if all required fields are filled
@@ -197,11 +237,11 @@ export default function Register() {
                     }
                 });
 
-                // Append the profile_photo file
+             
                 if (formData.profile_photo) {
                     dataToSend.append('profile_photo', formData.profile_photo);
                 }
-                // console.log("Payload before try", formData);
+             
 
                 try {
                     const response = await axiosInstance.post('/register', dataToSend, {
@@ -270,6 +310,95 @@ export default function Register() {
   const handleCloseModal = () => {
     setShowModal(false);
   };
+
+
+
+  const [errors, setErrors] = useState({
+    first_name: '',
+    last_name: '',
+    business_email: '',
+    business_phone: '',
+    business_name: '',
+    password: '',
+    password_confirmation: '',
+    business_website: '',
+    bio: '',
+    work_experience: '',
+    password: '',
+    password_confirmation: '',
+    profile_photo: '',
+  });
+
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'first_name':
+      case 'last_name':
+        return value.trim() ? '' : `${name.replace('_', ' ')} is required`;
+      
+      case 'business_email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!value) return 'Email is required';
+        if (!emailRegex.test(value)) return 'Please enter a valid email address';
+        return '';
+      
+      case 'business_phone':
+        if (value && value.length < 10) return 'Phone number must be at least 10 digits';
+        return '';
+      
+      case 'business_name':
+        return value.trim() ? '' : 'Business name is required';
+      
+      case 'business_website':
+        if (!value) return ''; // Optional field
+        const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+        return urlRegex.test(value) ? '' : 'Please enter a valid URL';
+      
+      case 'password':
+        if (!value) return 'Password is required';
+        if (value.length < 8) return 'Password must be at least 8 characters';
+        if (!/(?=.*[a-z])/.test(value)) return 'Password must contain at least one lowercase letter';
+        if (!/(?=.*[A-Z])/.test(value)) return 'Password must contain at least one uppercase letter';
+        if (!/(?=.*\d)/.test(value)) return 'Password must contain at least one number';
+        if (!/(?=.*[!@#$%^&*])/.test(value)) return 'Password must contain at least one special character';
+        return '';
+      
+      case 'password_confirmation':
+        if (!value) return 'Confirm password is required';
+        if (value !== formData.password) return 'Passwords do not match';
+        return '';
+      
+      default:
+        return '';
+    }
+  };
+
+  // Validate all fields before submission
+  const validateForm = () => {
+    const newErrors = {};
+    let isValid = true;
+
+    // Validate all fields
+    Object.keys(formData).forEach(key => {
+      if (key === 'password' || key === 'password_confirmation') {
+        const error = validateField(key, formData[key]);
+        if (error) {
+          isValid = false;
+          newErrors[key] = error;
+        }
+      }
+      // ... validate other fields
+    });
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  
+
+
+
+
+
 
   const renderModalContent = () => {
     if (activeTab === 'engineer') {
@@ -365,7 +494,7 @@ export default function Register() {
                                                       Find and prevent fraud
                                                       </li>
                                                   </ul>
-                                                  <p className="text-muted">Like any other website, Website Name uses ‘cookies'. These cookies are used to store information including visitors' preferences, and the pages on the website that the visitor accessed or visited. The information is used to optimize the users' experience by customizing our web page content based on visitors' browser type and/or other information.</p>
+                                                  <p className="text-muted">Like any other website, Website Name uses 'cookies'. These cookies are used to store information including visitors' preferences, and the pages on the website that the visitor accessed or visited. The information is used to optimize the users' experience by customizing our web page content based on visitors' browser type and/or other information.</p>
                                               </div>
                                           </div>
 
@@ -490,7 +619,7 @@ export default function Register() {
                                                       Find and prevent fraud
                                                       </li>
                                                   </ul>
-                                                  <p className="text-muted">Like any other website, Website Name uses ‘cookies'. These cookies are used to store information including visitors' preferences, and the pages on the website that the visitor accessed or visited. The information is used to optimize the users' experience by customizing our web page content based on visitors' browser type and/or other information.</p>
+                                                  <p className="text-muted">Like any other website, Website Name uses 'cookies'. These cookies are used to store information including visitors' preferences, and the pages on the website that the visitor accessed or visited. The information is used to optimize the users' experience by customizing our web page content based on visitors' browser type and/or other information.</p>
                                               </div>
                                           </div>
 
@@ -598,14 +727,14 @@ export default function Register() {
                                 <label htmlFor="first_name" className="form-label">
                                 First Name <span className="text-danger">*</span>
                                 </label>
-                                <input type="text" value={formData.first_name} onChange={handleChange} className="form-control" name="first_name" id="first_name" placeholder="Enter first name" required />
+                                <input type="text" value={formData.first_name} onChange={handleChange} className={`form-control ${errors.first_name ? 'is-invalid' : ''}`} name="first_name" id="first_name" placeholder="Enter first name" required />
                                 <div className="invalid-feedback">Please enter first name</div>
                             </div>
                             <div className="col-md-6 col-sm-12 pb-sm-3">
                                 <label htmlFor="last_name" className="form-label">
                                 Last Name <span className="text-danger">*</span>
                                 </label>
-                                <input type="text" value={formData.last_name} onChange={handleChange} className="form-control" name="last_name" id="last_name" placeholder="Enter last name" required />
+                                <input type="text" value={formData.last_name} onChange={handleChange} className={`form-control ${errors.last_name ? 'is-invalid' : ''}`} name="last_name" id="last_name" placeholder="Enter last name" required />
                                 <div className="invalid-feedback">Please enter last name</div>
                             </div>
                             </div>
@@ -615,31 +744,10 @@ export default function Register() {
                                 <label htmlFor="business_email" className="form-label">
                                 Business Email <span className="text-danger">*</span>
                                 </label>
-                                <input type="email" value={formData.business_email} onChange={handleChange} className="form-control" name="business_email" id="business_email" placeholder="Enter email" required />
+                                <input type="email" value={formData.business_email} onChange={handleChange} className={`form-control ${errors.business_email ? 'is-invalid' : ''}`} name="business_email" id="business_email" placeholder="Enter email" required />
                                 <div className="invalid-feedback">Please enter email</div>
                             </div>
-                            {/* <div className="col-md-6 col-sm-12 pb-sm-3">
-                                <label htmlFor="phone_code" className="form-label">
-                                Phone Code <span className="text-danger">*</span>
-                                </label>
-                                <PhoneCode onChange={handlePhoneChange} />
-                                <div className="invalid-feedback">Please select phone code</div>
-                            </div> */}
-
-                            {/* <div className="col-md-6 col-sm-12 pb-sm-3">
-                                <label htmlFor="phone" className="form-label">Phone Number</label>
-                                <PhoneInput
-                                country={'ng'}
-                                value={phone}
-                                onChange={(e) => handlePhoneChange(e.target.value)}
-                                enableSearch={true}
-                                inputProps={{
-                                    placeholder: 'Enter phone number',
-                                    style: { width: '100%' }
-                                }}
-                                />
-                                <div className="invalid-feedback">Please select phone code</div>
-                            </div> */}
+                            
 
                             <div className="col-md-6 col-sm-12 pb-sm-3">
                                 <label htmlFor="phone" className="form-label">Phone Number</label>
@@ -654,7 +762,7 @@ export default function Register() {
                                         placeholder: 'Enter phone number',
                                     }}
                                     containerClass="phone-input-container"
-                                    inputClass="form-control phone-input" // Custom class here
+                                    inputClass="form-control phone-input"
                                 />
 
                             </div>
@@ -664,12 +772,12 @@ export default function Register() {
                             <div className="col-md-6 col-sm-12 pb-sm-3">
                                 <label htmlFor="profile_photo" className="form-label">Profile Photo</label>
 
-                                {/* <input type="file" onChange={handleFileChange} className="form-control" name="profile_photo" id="profile_photo" accept=".png, .jpg, .jpeg" /> */}
+                               
                                 <input
                                 type="file"
                                 name="profile_photo"
                                 onChange={handleEngineerFileChange}
-                                className="form-control"
+                                className={`form-control ${errors.profile_photo ? 'is-invalid' : ''}`}
                                 accept="image/*"
                                 />
 
@@ -678,29 +786,29 @@ export default function Register() {
                                 <label htmlFor="business_name" className="form-label">
                                 Business Name <span className="text-danger">*</span>
                                 </label>
-                                <input type="text" value={formData.business_name} onChange={handleChange} className="form-control" name="business_name" id="business_name" placeholder="Enter business name" required />
+                                <input type="text" value={formData.business_name} onChange={handleChange} className={`form-control ${errors.business_name ? 'is-invalid' : ''}`} name="business_name" id="business_name" placeholder="Enter business name" required />
                                 <div className="invalid-feedback">Please enter business name</div>
                             </div>
                             </div>
                             <div className="row mb-3">
                             <div className="col-md-6 col-sm-12 pb-sm-3">
                                 <label htmlFor="bio" className="form-label">Bio</label>
-                                <textarea value={formData.bio} onChange={handleChange} className="form-control" name="bio" id="bio" placeholder="Enter your bio" rows="3"></textarea>
+                                <textarea value={formData.bio} onChange={handleChange} className={`form-control ${errors.bio ? 'is-invalid' : ''}`} name="bio" id="bio" placeholder="Enter your bio" rows="3"></textarea>
                             </div>
                             <div className="col-md-6 col-sm-12 pb-sm-3">
                                 <label htmlFor="work_experience" className="form-label">Work Experience</label>
-                                <textarea value={formData.work_experience} onChange={handleChange} className="form-control" name="work_experience" id="work_experience" placeholder="Enter your work experience" rows="3"></textarea>
+                                <textarea value={formData.work_experience} onChange={handleChange} className={`form-control ${errors.work_experience ? 'is-invalid' : ''}`} name="work_experience" id="work_experience" placeholder="Enter your work experience" rows="3"></textarea>
                             </div>
                             </div>
                             <div className="mb-3 row">
                             <div className="col-md-6 col-sm-12 pb-sm-3">
                                 <label className="form-label" htmlFor="password-input">
-                                Password
+                                Password <span className="text-danger">*</span>
                                 </label>
                                 <div className="position-relative auth-pass-inputgroup">
                                 <input
                                     type={showPassword ? 'text' : 'password'}
-                                    className="form-control pe-5 password-input"
+                                    className={`form-control pe-5 password-input ${errors.password ? 'is-invalid' : ''}`}
                                     value={formData.password}
                                     onChange={handleChange}
                                     name="password"
@@ -715,17 +823,24 @@ export default function Register() {
                                 >
                                     <i className={`ri-${showPassword ? 'eye-off-fill' : 'eye-fill'} align-middle`}></i>
                                 </button>
-                                <div className="invalid-feedback">Please enter password</div>
+                                {errors.password && (
+                                    <div className="invalid-feedback">
+                                        {errors.password}
+                                    </div>
+                                )}
                                 </div>
+                                <small className="text-muted">
+                                    Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character
+                                </small>
                             </div>
                             <div className="col-md-6 col-sm-12 pb-sm-3">
                                 <label className="form-label" htmlFor="confirm-password-input">
-                                Confirm Password
+                                Confirm Password <span className="text-danger">*</span>
                                 </label>
                                 <div className="position-relative auth-pass-inputgroup">
                                 <input
                                     type={showConfirmPassword ? 'text' : 'password'}
-                                    className="form-control pe-5 password-input"
+                                    className={`form-control pe-5 password-input ${errors.password_confirmation ? 'is-invalid' : ''}`}
                                     value={formData.password_confirmation}
                                     onChange={handleChange}
                                     name="password_confirmation"
@@ -740,7 +855,11 @@ export default function Register() {
                                 >
                                     <i className={`ri-${showConfirmPassword ? 'eye-off-fill' : 'eye-fill'} align-middle`}></i>
                                 </button>
-                                <div className="invalid-feedback">Please confirm password</div>
+                                {errors.password_confirmation && (
+                                    <div className="invalid-feedback">
+                                        {errors.password_confirmation}
+                                    </div>
+                                )}
                                 </div>
                             </div>
                             </div>
@@ -802,14 +921,14 @@ export default function Register() {
                               <label htmlFor="first_name" className="form-label">
                                 First Name <span className="text-danger">*</span>
                               </label>
-                              <input type="text" value={formData.first_name} onChange={handleChange} className="form-control" name="first_name" id="first_name" placeholder="Enter first name" required />
+                              <input type="text" value={formData.first_name} onChange={handleChange} className={`form-control ${errors.first_name ? 'is-invalid' : ''}`} name="first_name" id="first_name" placeholder="Enter first name" required />
                               <div className="invalid-feedback">Please enter first name</div>
                             </div>
                             <div className="col-md-6 col-sm-12 pb-sm-3">
                               <label htmlFor="last_name" className="form-label">
                                 Last Name <span className="text-danger">*</span>
                               </label>
-                              <input type="text" value={formData.last_name} onChange={handleChange} className="form-control" name="last_name" id="last_name" placeholder="Enter last name" required />
+                              <input type="text" value={formData.last_name} onChange={handleChange} className={`form-control ${errors.last_name ? 'is-invalid' : ''}`} name="last_name" id="last_name" placeholder="Enter last name" required />
                               <div className="invalid-feedback">Please enter last name</div>
                             </div>
                           </div>
@@ -819,7 +938,7 @@ export default function Register() {
                               <label htmlFor="business_email" className="form-label">
                                 Business Email <span className="text-danger">*</span>
                               </label>
-                              <input type="email" value={formData.business_email} onChange={handleChange} className="form-control" name="business_email" id="business_email" placeholder="Enter email" required />
+                              <input type="email" value={formData.business_email} onChange={handleChange} className={`form-control ${errors.business_email ? 'is-invalid' : ''}`} name="business_email" id="business_email" placeholder="Enter email" required />
                               <div className="invalid-feedback">Please enter email</div>
                             </div>
                             <div className="col-md-6 col-sm-12 pb-sm-3">
@@ -845,13 +964,13 @@ export default function Register() {
                           <div className="row mb-3">
                             <div className="col-md-6 col-sm-12 pb-sm-3">
                               <label htmlFor="profile_photo" className="form-label">Profile Photo</label>
-                              {/* <input type="file" onChange={handleChange} className="form-control" name="profile_photo" id="profile_photo" /> */}
+                              {/* <input type="file" onChange={handleChange} className={`form-control ${errors.first_name ? 'is-invalid' : ''}`} name="profile_photo" id="profile_photo" /> */}
                             
                               <input
                                 type="file"
                                 name="profile_photo"
                                 onChange={handleFileChange}
-                                className="form-control"
+                                className={`form-control ${errors.profile_photo ? 'is-invalid' : ''}`}
                                 accept="image/*"
                               />
 
@@ -861,25 +980,25 @@ export default function Register() {
                               <label htmlFor="business_name" className="form-label">
                                 Business Name <span className="text-danger">*</span>
                               </label>
-                              <input type="text" value={formData.business_name} onChange={handleChange} className="form-control" name="business_name" id="business_name" placeholder="Enter business name" required />
+                              <input type="text" value={formData.business_name} onChange={handleChange} className={`form-control ${errors.business_name ? 'is-invalid' : ''}`} name="business_name" id="business_name" placeholder="Enter business name" required />
                               <div className="invalid-feedback">Please enter business name</div>
                             </div>
                           </div>
                           <div className="row mb-3">
                             <div className="col-md-12 col-sm-12 pb-sm-3">
                               <label htmlFor="business_website" className="form-label">Business Website</label>
-                              <input type="url" value={formData.business_website} onChange={handleChange} className="form-control" name="business_website" id="business_website" placeholder="Enter business website" />
+                              <input type="url" value={formData.business_website} onChange={handleChange} className={`form-control ${errors.business_website ? 'is-invalid' : ''}`} name="business_website" id="business_website" placeholder="Enter business website" />
                             </div>
                           </div>
                           <div className="mb-3 row">
                             <div className="col-md-6 col-sm-12 pb-sm-3">
                               <label className="form-label" htmlFor="password-input">
-                                Password
+                                Password <span className="text-danger">*</span>
                               </label>
                               <div className="position-relative auth-pass-inputgroup">
                                 <input
                                   type={showPassword ? 'text' : 'password'}
-                                  className="form-control pe-5 password-input"
+                                  className={`form-control pe-5 password-input ${errors.password ? 'is-invalid' : ''}`}
                                   value={formData.password}
                                   onChange={handleChange}
                                   name="password"
@@ -894,17 +1013,24 @@ export default function Register() {
                                 >
                                   <i className={`ri-${showPassword ? 'eye-off-fill' : 'eye-fill'} align-middle`}></i>
                                 </button>
-                                <div className="invalid-feedback">Please enter password</div>
+                                {errors.password && (
+                                  <div className="invalid-feedback">
+                                    {errors.password}
+                                  </div>
+                                )}
                               </div>
+                              <small className="text-muted">
+                                Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character
+                              </small>
                             </div>
                             <div className="col-md-6 col-sm-12 pb-sm-3">
                               <label className="form-label" htmlFor="confirm-password-input">
-                                Confirm Password
+                                Confirm Password <span className="text-danger">*</span>
                               </label>
                               <div className="position-relative auth-pass-inputgroup">
                                 <input
                                   type={showConfirmPassword ? 'text' : 'password'}
-                                  className="form-control pe-5 password-input"
+                                  className={`form-control pe-5 password-input ${errors.password_confirmation ? 'is-invalid' : ''}`}
                                   value={formData.password_confirmation}
                                   onChange={handleChange}
                                   name="password_confirmation"
@@ -919,7 +1045,11 @@ export default function Register() {
                                 >
                                   <i className={`ri-${showConfirmPassword ? 'eye-off-fill' : 'eye-fill'} align-middle`}></i>
                                 </button>
-                                <div className="invalid-feedback">Please confirm password</div>
+                                {errors.password_confirmation && (
+                                  <div className="invalid-feedback">
+                                    {errors.password_confirmation}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>

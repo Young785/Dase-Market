@@ -13,13 +13,57 @@ export default function LogIn() {
     login: '',
     password: '',
   });
+  const [errors, setErrors] = useState({
+    login: '',
+    password: ''
+  });
   const [isUploading, setIsUploading] = useState(false);
   const navigate = useNavigate();
   const { updateProfile } = useProfile();
 
+  // Validation functions
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^\d{10,}$/; // Assumes phone number is at least 10 digits
+
+    if (!email) {
+      return 'Email or Phone is required';
+    }
+    if (!emailRegex.test(email) && !phoneRegex.test(email)) {
+      return 'Please enter a valid email or phone number';
+    }
+    return '';
+  };
+
+  const validatePassword = (password) => {
+    if (!password) {
+      return 'Password is required';
+    }
+    if (password.length < 6) {
+      return 'Password must be at least 6 characters';
+    }
+    return '';
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    
+    // Clear error when user starts typing
+    setErrors({
+      ...errors,
+      [name]: ''
+    });
+  };
+
+  const validateForm = () => {
+    const newErrors = {
+      login: validateEmail(formData.login),
+      password: validatePassword(formData.password)
+    };
+
+    setErrors(newErrors);
+    return !newErrors.login && !newErrors.password;
   };
 
   const notifySuccess = (text) => toast.success(text, {
@@ -48,35 +92,35 @@ export default function LogIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    if (formData.login && formData.password) {
-      setIsUploading(true);
-  
-      try {
-        const response = await axiosInstance.post('/login', formData);
-        
-        if (response.data.status) {
-          notifySuccess(response.data.message);
-          
-          // Wait for profile to be updated before navigation
-          await updateProfile();
-          
-          // Small timeout to ensure state updates are complete
-          setTimeout(() => {
-            navigate('/dase/dashboard');
-          }, 100);
-        } else {
-          notifyError(response.data.message);
-        }
-      } catch (err) {
-        notifyError(err.response?.data?.message || 'An unexpected error occurred');
-      } finally {
-        setIsUploading(false);
-      }
-    } else {
-      notifyError("All fields are required!");
+
+    if (!validateForm()) {
+      return;
     }
-};
+
+    setIsUploading(true);
+
+    try {
+      const response = await axiosInstance.post('/login', formData);
+      
+      if (response.data.status) {
+        notifySuccess(response.data.message);
+        await updateProfile(true);
+        navigate('/dase/dashboard');
+      } else {
+        notifyError(response.data.message);
+      }
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || 'An unexpected error occurred';
+      notifyError(errorMessage);
+      
+      // Handle specific error cases
+      if (err.response?.data?.requiresVerification) {
+        navigate('/dase/verify-account');
+      }
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
     <div>
@@ -125,17 +169,22 @@ export default function LogIn() {
                       <form onSubmit={handleSubmit}>
                         <div className="mb-3">
                           <label htmlFor="useremail" className="form-label">
-                            Email <span className="text-danger">*</span>
+                            Email / Phone <span className="text-danger">*</span>
                           </label>
                           <input
                             value={formData.login}
                             onChange={handleChange}
-                            className="form-control"
+                            className={`form-control ${errors.login ? 'is-invalid' : ''}`}
                             type="text"
                             placeholder="Email / Phone No."
                             name="login"
                             required
                           />
+                          {errors.login && (
+                            <div className="invalid-feedback">
+                              {errors.login}
+                            </div>
+                          )}
                         </div>
 
                         <div className="mb-3">
@@ -145,14 +194,14 @@ export default function LogIn() {
                             </Link>
                           </div>
                           <label className="form-label" htmlFor="password-input">
-                            Password
+                            Password <span className="text-danger">*</span>
                           </label>
                           <div className="position-relative auth-pass-inputgroup">
                             <input
                               type={showPassword ? 'text' : 'password'}
                               value={formData.password}
                               onChange={handleChange}
-                              className="form-control pe-5 password-input"
+                              className={`form-control pe-5 password-input ${errors.password ? 'is-invalid' : ''}`}
                               placeholder="Enter password"
                               name="password"
                               required
@@ -164,6 +213,11 @@ export default function LogIn() {
                             >
                               <i className={`ri-${showPassword ? 'eye-off-fill' : 'eye-fill'} align-middle`}></i>
                             </button>
+                            {errors.password && (
+                              <div className="invalid-feedback">
+                                {errors.password}
+                              </div>
+                            )}
                           </div>
                         </div>
 

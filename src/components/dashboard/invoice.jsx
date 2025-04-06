@@ -62,9 +62,18 @@ export default function DashboardInvoice() {
     };
 
     useEffect(() => {
+        const controller = new AbortController();
+        let isMounted = true;
+
         const fetchInvoices = async () => {
             try {
-                const response = await axiosInstance.get('/user/invoices');
+                // Add the signal to the request
+                const response = await axiosInstance.get('/user/invoices', {
+                    signal: controller.signal
+                });
+
+                if (!isMounted) return;
+
                 if (response.data.status === false) {
                     setMessage(response.data.message);
                     setInvoices([]);
@@ -73,19 +82,27 @@ export default function DashboardInvoice() {
                     setAnalytics(response.data.data.analytics || null);
                 }
             } catch (err) {
+                // Ignore abort errors
+                if (err.name === 'AbortError') return;
+                
+                if (!isMounted) return;
                 setError('Failed to fetch invoices');
                 notifyError("Error fetching invoices");
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         };
 
         fetchInvoices();
-    }, []);
 
-    useEffect(() => {
-        console.log('Current invoices state:', invoices); // Debug log
-    }, [invoices]);
+        // Cleanup function
+        return () => {
+            isMounted = false;
+            controller.abort(); // Cancel any pending requests
+        };
+    }, []); // Empty dependency array
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>{error}</div>;

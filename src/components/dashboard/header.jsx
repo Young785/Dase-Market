@@ -7,15 +7,12 @@ import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../axiosInstance';
 import { Link } from 'react-router-dom';
 import {UsersAvater2, UsersAvater3, UsersAvater5} from "../../assets/images"
-import { ProfileProvider, useProfile } from '../../context/ProfileContext';
+import { useProfile } from '../../context/ProfileContext';
 
 
 export default function Header({ title, onToggleSidebar }) {
 	const navigate = useNavigate();
-	// const [profile, setProfile] = useState(null);
-	// const { profile, loading } = useProfile();
-    // const [loading, setLoading] = useState(true);
-	const { profile, loading } = useProfile();
+	const { profile } = useProfile();
 	
 
 	const notifyError = (text) => toast.error(text, {
@@ -30,19 +27,10 @@ export default function Header({ title, onToggleSidebar }) {
 
    
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    // if (!profile) {
-    //     return <div>Error: Profile data could not be fetched.</div>;
-    // }
-  
-
-    // Destructure the profile data
+    // Get user data safely with default values
     const {
-        first_name,
-        last_name,
+        first_name = '',
+        last_name = '',
         business_name,
         business_email,
         business_phone,
@@ -54,7 +42,7 @@ export default function Header({ title, onToggleSidebar }) {
         business_website,
         created_at,
         last_login,
-    } = profile;
+    } = profile || {};
 
 	
 	const handleLogout = () => {
@@ -78,7 +66,7 @@ export default function Header({ title, onToggleSidebar }) {
 	return (
 		<>
 			<div>
-				<ProfileProvider>
+				
 
 					<header id="page-topbar">
 						<ToastContainer />
@@ -493,47 +481,48 @@ export default function Header({ title, onToggleSidebar }) {
 											<span className="d-flex align-items-center">
 												<img className="rounded-circle header-profile-user" src={UsersAvater2} alt="" />
 												<span className="text-start ms-xl-2">
-													<span className="d-none d-xl-inline-block ms-1 fw-medium user-name-text">{`${first_name} ${last_name}`}</span>
+													<span className="d-none d-xl-inline-block ms-1 fw-medium user-name-text">
+														{first_name && last_name ? `${first_name} ${last_name}` : 'Loading...'}
 													</span>
-													
+												</span>
 											</span>
 										</button>
 										<div className="dropdown-menu dropdown-menu-end">
-										<h6 className="dropdown-header">Welcome {first_name}!</h6>
-										<Link to="/dase/profile" className="dropdown-item">
-											<i className="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> 
-											<span className="align-middle">Profile</span>
-										</Link>
-										<a className="dropdown-item" href='#'>
-											<i className="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> 
-											<span className="align-middle">Messages</span>
-										</a>
-										<a className="dropdown-item" href='#'>
-											<i className="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> 
-											<span className="align-middle">Taskboard</span>
-										</a>
-										<a className="dropdown-item" href='#'>
-											<i className="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> 
-											<span className="align-middle">Help</span>
-										</a>
-										<div className="dropdown-divider"></div>
-										<a className="dropdown-item" href='#'>
-											<i className="mdi mdi-wallet text-muted fs-16 align-middle me-1"></i> 
-											<span className="align-middle">Balance : <b>$5971.67</b></span>
-										</a>
-										<Link to="/dase/setting" className="dropdown-item">
-											<span className="badge bg-success-subtle text-success mt-1 float-end">New</span>
-											<i className="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i> 
-											<span className="align-middle">Settings</span>
-										</Link>
-										<a className="dropdown-item" href='#'>
-											<i className="mdi mdi-lock text-muted fs-16 align-middle me-1"></i> 
-											<span className="align-middle">Lock screen</span>
-										</a>
-										<a onClick={handleLogout} style={{cursor: 'pointer'}} className="dropdown-item">
-											<i className="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> 
-											<span className="align-middle" data-key="t-logout">Logout</span>
-										</a>
+											<h6 className="dropdown-header">Welcome {first_name || 'User'}!</h6>
+											<Link to="/dase/profile" className="dropdown-item">
+												<i className="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> 
+												<span className="align-middle">Profile</span>
+											</Link>
+											<a className="dropdown-item" href='#'>
+												<i className="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> 
+												<span className="align-middle">Messages</span>
+											</a>
+											<a className="dropdown-item" href='#'>
+												<i className="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> 
+												<span className="align-middle">Taskboard</span>
+											</a>
+											<a className="dropdown-item" href='#'>
+												<i className="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> 
+												<span className="align-middle">Help</span>
+											</a>
+											<div className="dropdown-divider"></div>
+											<a className="dropdown-item" href='#'>
+												<i className="mdi mdi-wallet text-muted fs-16 align-middle me-1"></i> 
+												<span className="align-middle">Balance : <b>$5971.67</b></span>
+											</a>
+											<Link to="/dase/setting" className="dropdown-item">
+												<span className="badge bg-success-subtle text-success mt-1 float-end">New</span>
+												<i className="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i> 
+												<span className="align-middle">Settings</span>
+											</Link>
+											<a className="dropdown-item" href='#'>
+												<i className="mdi mdi-lock text-muted fs-16 align-middle me-1"></i> 
+												<span className="align-middle">Lock screen</span>
+											</a>
+											<a onClick={handleLogout} style={{cursor: 'pointer'}} className="dropdown-item">
+												<i className="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> 
+												<span className="align-middle" data-key="t-logout">Logout</span>
+											</a>
 										</div>
 									</div>
 								</div>
@@ -550,7 +539,7 @@ export default function Header({ title, onToggleSidebar }) {
 
 					{/* <Footer /> */}
 					{/* <ToastContainer /> */}
-				</ProfileProvider>
+				
 			</div>
 		</>
 

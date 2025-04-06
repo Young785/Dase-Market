@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './style.css';
 import toast , { Toaster } from 'react-hot-toast';
 import axiosInstance from '../../axiosInstance';
+import OtpInput from 'react-otp-input';
 
 export default function VerifyPasswordOtp() {
  const location = useLocation();
@@ -140,14 +141,20 @@ export default function VerifyPasswordOtp() {
                       <form className="needs-validation"  onSubmit={handleSubmit}>
                         <div className="mb-3">
                           <label htmlFor="code" className="form-label">Code <span className="text-danger">*</span></label>
-                          <input type="text"  className="form-control"  placeholder="Enter verification code" required
-                          
-                            name="otp"
-                            maxLength={6}
-                           
-                            pattern="\d{1,6}"
+                          <OtpInput
                             value={otp}
-                            onChange={(e) => setOtp(e.target.value)} />
+                            onChange={setOtp}
+                            numInputs={6}
+                            renderSeparator={<span style={{ width: '10px' }}></span>}
+                            renderInput={(props) => (
+                              <input 
+                                {...props} 
+                                className="form-control" 
+                                style={{ width: '50px', height: '50px', fontSize: '20px', textAlign: 'center' }}
+                              />
+                            )}
+                            containerStyle={{ display: 'flex', justifyContent: 'space-between' }}
+                          />
                           <div className="invalid-feedback">Please enter verification code</div>
                         </div>
                         <div className="mt-4">
