@@ -21,7 +21,7 @@ export default function ViewInvoice() {
 
     useEffect(() => {
         feather.replace();
-        fetchContacts(); // Fetch contacts on component mount
+        fetchContacts(); 
     }, []);
 
     const fetchContacts = async () => {
@@ -35,7 +35,7 @@ export default function ViewInvoice() {
             { id: 6, name: 'Sulaimon Taofeek' }
         ];
         setContacts(demoContacts);
-        setFilteredContacts(demoContacts); // Initialize filtered contacts
+        setFilteredContacts(demoContacts); 
     };
 
     const handleSearch = async () => {
@@ -45,7 +45,7 @@ export default function ViewInvoice() {
             const response = await axiosInstance.get('/user/messages/search', {
                 params: {
                     query: searchQuery,
-                    userId: "2" // Replace with actual user ID if needed
+                    userId: "2"
                 }
             });
             
