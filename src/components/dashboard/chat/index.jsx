@@ -12,98 +12,152 @@ export default function ViewInvoice() {
     const [messageToSend, setMessageToSend] = useState('');
     const [receiverId, setReceiverId] = useState(1); // Default receiver ID
     const [selectedContact, setSelectedContact] = useState(null); // New state for selected contact
+    const [attachment, setAttachment] = useState(null); // New state for attachment
+    const [parent_id, setParentId] = useState(null); // New state for parent_id
+    const [currentUserId, setCurrentUserId] = useState(localStorage.getItem('user_id'));
+    const [defaultAvatar, setDefaultAvatar] = useState(UsersAvater2);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [messageType, setMessageType] = useState('text'); // Default to text
 
     useEffect(() => {
         feather.replace();
-        fetchContacts(); // Fetch contacts on component mount
+        fetchContacts(); 
     }, []);
 
     const fetchContacts = async () => {
         // Assuming you have a static list of contacts or an API to fetch them
         // For now, let's use a static list
         const demoContacts = [
-            { id: 2, name: 'John Doe' },
-            { id: 3, name: 'Jane Smith' },
+            { id: 26, name: 'Abigail Lang' },
+            { id: 8, name: 'STAboyyy' },
             { id: 4, name: 'Alice Johnson' },
             { id: 5, name: 'Bob Brown' },
             { id: 6, name: 'Sulaimon Taofeek' }
         ];
         setContacts(demoContacts);
-        setFilteredContacts(demoContacts); // Initialize filtered contacts
+        setFilteredContacts(demoContacts); 
     };
 
     const handleSearch = async () => {
+        if (!searchQuery.trim()) return;
+
         try {
             const response = await axiosInstance.get('/user/messages/search', {
-                params: { query: searchQuery }
+                params: {
+                    query: searchQuery,
+                    userId: "2"
+                }
             });
-            if (response.data.success) {
-                // Assuming the response contains a list of contacts
-                setFilteredContacts(response.data.data); // Update filtered contacts with search results
+            
+            if (response.data.status) {
+                setFilteredContacts(response.data.data || []);
             } else {
                 toast.error(response.data.message);
             }
         } catch (error) {
-            toast.error(`An error occurred: ${error.response?.data?.message || error.message}`);
+            toast.error('Search failed');
+            console.error(error);
         }
     };
 
-    const fetchMessages = async (contactId) => {
-        const userId = localStorage.getItem('user_id'); // Assuming user_id is stored in localStorage
+    const fetchConversation = async (userId) => {
         try {
-            const response = await axiosInstance.get(`/user/messages/conversations/${contactId}`, {
-                params: { userId: userId }
-            });
-            if (response.data.success) {
-                setMessages(response.data.data.messages); // Set messages state
+            const response = await axiosInstance.get(`/user/messages/conversations/${userId}`);
+            
+            if (response.data.status) {
+                setMessages(response.data.data || []);
             } else {
                 toast.error(response.data.message);
             }
         } catch (error) {
-            toast.error(`An error occurred: ${error.response?.data?.message || error.message}`);
+            toast.error('Failed to fetch conversation');
+            console.error(error);
+        }
+    };
+
+    const handleFileSelect = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedFile(file);
+            // Set message type based on file type
+            if (file.type.startsWith('image/')) {
+                setMessageType('image');
+            } else if (file.type.startsWith('audio/')) {
+                setMessageType('audio');
+            } else {
+                setMessageType('document');
+            }
         }
     };
 
     const sendMessage = async (e) => {
-        e.preventDefault(); // Prevent form submission
-        const currentUserId = localStorage.getItem('user_id'); // Assuming user_id is stored in localStorage
-
-        // Check if the receiverId is the same as the current user's ID
-        if (receiverId === parseInt(currentUserId)) {
-            toast.error("You cannot message yourself.");
-            return; // Exit the function if trying to message self
+        e.preventDefault();
+        
+        // Validate that either message or attachment is present
+        if (!messageToSend.trim() && !selectedFile) {
+            toast.error("Please enter a message or select a file");
+            return;
         }
 
         try {
-            const response = await axiosInstance.post('/user/messages/send', {
-                receiver_id: receiverId,
-                message: messageToSend,
-                type: 'text', // Assuming type is text for simplicity
-                // parent_id: parentId // Include the parentId in the request
+            const formData = new FormData();
+            formData.append('receiver_id', receiverId);
+            
+            // Always append type - default to 'text' if no file is selected
+            formData.append('type', selectedFile ? messageType : 'text');
+            
+            // Add message if present
+            if (messageToSend.trim()) {
+                formData.append('message', messageToSend);
+            }
+            
+            // Add file if present
+            if (selectedFile) {
+                formData.append('attachment', selectedFile);
+            }
+
+            // Add parent_id if it's a reply
+            if (parent_id) {
+                formData.append('parent_id', parent_id);
+            }
+
+            const response = await axiosInstance.post('/user/messages/send', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
             });
-            if (response.data.success) {
-                toast.success('Message sent successfully!');
-                setMessageToSend(''); // Clear the input after sending
-                setMessages(prevMessages => [...prevMessages, response.data.data]); // Add the new message to the messages state
+            
+            if (response.data.status) {
+                // Clear form
+                setMessageToSend('');
+                setSelectedFile(null);
+                setMessageType('text'); // Reset type to default
+                
+                // Update messages list
+                setMessages(prev => [...prev, response.data.data]);
+                toast.success('Message sent successfully');
             } else {
                 toast.error(response.data.message);
             }
         } catch (error) {
-            toast.error(`An error occurred: ${error.response?.data?.message || error.message}`);
+            toast.error(error.response?.data?.message || 'Failed to send message');
+            console.error(error);
         }
     };
 
     const deleteMessage = async (messageId) => {
         try {
             const response = await axiosInstance.delete(`/user/messages/delete/${messageId}`);
-            if (response.data.success) {
-                toast.success('Message deleted successfully!');
-                setMessages(messages.filter(msg => msg.id !== messageId)); // Remove deleted message from state
+            
+            if (response.data.status) {
+                setMessages(prev => prev.filter(msg => msg.id !== messageId));
+                toast.success('Message deleted successfully');
             } else {
                 toast.error(response.data.message);
             }
         } catch (error) {
-            toast.error(`An error occurred: ${error.response?.data?.message || error.message}`);
+            toast.error('Failed to delete message');
+            console.error(error);
         }
     };
 
@@ -112,14 +166,22 @@ export default function ViewInvoice() {
             const response = await axiosInstance.put(`/user/messages/edit/${messageId}`, {
                 message: newMessage
             });
-            if (response.data.success) {
-                toast.success('Message edited successfully!');
-                setMessages(messages.map(msg => msg.id === messageId ? { ...msg, message: newMessage } : msg)); // Update message in state
+            
+            if (response.data.status) {
+                setMessages(prev => 
+                    prev.map(msg => 
+                        msg.id === messageId 
+                            ? { ...msg, message: newMessage }
+                            : msg
+                    )
+                );
+                toast.success('Message updated successfully');
             } else {
                 toast.error(response.data.message);
             }
         } catch (error) {
-            toast.error(`An error occurred: ${error.response?.data?.message || error.message}`);
+            toast.error('Failed to update message');
+            console.error(error);
         }
     };
 
@@ -128,7 +190,7 @@ export default function ViewInvoice() {
     const handleContactClick = async (contact) => {
         setReceiverId(contact.id);
         setSelectedContact(contact); // Set the selected contact
-        await fetchMessages(contact.id); // Fetch messages for the selected contact
+        await fetchConversation(contact.id); // Fetch messages for the selected contact
     };
 
     return (
@@ -321,10 +383,37 @@ export default function ViewInvoice() {
                                                     </div>
                                                     <ul className="list-unstyled chat-conversation-list" id="users-conversation">
                                                         {messages.map((msg) => (
-                                                            <li key={msg.id}>
-                                                                <div>{msg.message}</div>
-                                                                <button onClick={() => deleteMessage(msg.id)}>Delete</button>
-                                                                <button onClick={() => editMessage(msg.id, 'New message content')}>Edit</button>
+                                                            <li key={msg.id} className={`chat-list ${msg.sender_id === currentUserId ? 'right' : 'left'}`}>
+                                                                <div className="conversation-list">
+                                                                    <div className="chat-avatar">
+                                                                        <img src={msg.sender_avatar || defaultAvatar} alt="" />
+                                                                    </div>
+                                                                    <div className="user-chat-content">
+                                                                        <div className="chat-content">
+                                                                            <p className="mb-0">{msg.message}</p>
+                                                                            {msg.attachment && (
+                                                                                <div className="message-img mb-0">
+                                                                                    <img src={msg.attachment} alt="" className="rounded border" />
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="conversation-name">
+                                                                            <small className="text-muted time">
+                                                                                {new Date(msg.created_at).toLocaleTimeString()}
+                                                                            </small>
+                                                                            {msg.sender_id === currentUserId && (
+                                                                                <div className="message-actions">
+                                                                                    <button onClick={() => editMessage(msg.id, prompt('Edit message:', msg.message))}>
+                                                                                        Edit
+                                                                                    </button>
+                                                                                    <button onClick={() => deleteMessage(msg.id)}>
+                                                                                        Delete
+                                                                                    </button>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                             </li>
                                                         ))}
                                                     </ul>
