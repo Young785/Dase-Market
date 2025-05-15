@@ -19,76 +19,22 @@ export default function ChatApp() {
     const [activeTab, setActiveTab] = useState('chats');
     const [currentUserId, setCurrentUserId] = useState(localStorage.getItem('user_id') || '1');
     const [isLoading, setIsLoading] = useState(false);
-    const [openedContacts, setOpenedContacts] = useState(new Set()); // Track opened contacts
-    const [parentId, setParentId] = useState(null); // State for parent_id
 
     useEffect(() => {
         fetchContacts();
     }, []);
 
     const fetchContacts = async () => {
-        setIsLoading(true);
-        try {
-            // Demo contacts data
-            const demoContacts = [
-                {
-                    id: 1,
-                    name: 'Lisa Parker',
-                    status: 'Online',
-                    avatar: 'https://via.placeholder.com/40',
-                    lastMessage: 'Hey there!',
-                    unread: 2,
-                },
-                {
-                    id: 2,
-                    name: 'Abigail Lang',
-                    status: 'Away',
-                    avatar: 'https://via.placeholder.com/40',
-                    lastMessage: 'Let me know when...',
-                    unread: 0,
-                },
-                {
-                    id: 7,
-                    name: 'STAboyyy',
-                    status: 'Online',
-                    avatar: 'https://unsplash.com/photos/a-man-wearing-a-tie-dye-hoodie-and-sunglasses-2RS3Ak3cNSI',
-                    lastMessage: 'The project is done',
-                    unread: 5,
-                },
-                {
-                    id: 4,
-                    name: 'Alice Johnson',
-                    status: 'Offline',
-                    avatar: 'https://unsplash.com/photos/a-man-in-a-white-shirt-is-posing-for-a-picture-mRVP1c59wko',
-                    lastMessage: 'Thanks for your help',
-                    unread: 0,
-                },
-                {
-                    id: 5,
-                    name: 'Bob Brown',
-                    status: 'Online',
-                    avatar: 'https://images.app.goo.gl/RSC5jfYFuwXGzN7H7',
-                    lastMessage: 'Meeting at 3pm?',
-                    unread: 1,
-                },
-                {
-                    id: 6,
-                    name: 'Taofeek Sulaimon',
-                    status: 'Active',
-                    avatar: 'https://images.app.goo.gl/RSC5jfYFuwXGzN7H7', // Use the provided profile photo URL
-                    lastMessage: 'Hello, lets connect!',
-                    unread: 0,
-                },
-            ];
-
-            setContacts(demoContacts);
-            setFilteredContacts(demoContacts);
-        } catch (error) {
-            toast.error('Failed to fetch contacts');
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
+        // For demo purposes using static data
+        const demoContacts = [
+            { id: 1, name: 'Lisa Parker', status: 'Online', avatar: 'https://via.placeholder.com/40', lastMessage: 'Hey there!', unread: 2 },
+            { id: 2, name: 'Abigail Lang', status: 'Away', avatar: 'https://via.placeholder.com/40', lastMessage: 'Let me know when...', unread: 0 },
+            { id: 3, name: 'STAboyyy', status: 'Online', avatar: 'https://via.placeholder.com/40', lastMessage: 'The project is done', unread: 5 },
+            { id: 4, name: 'Alice Johnson', status: 'Offline', avatar: 'https://via.placeholder.com/40', lastMessage: 'Thanks for your help', unread: 0 },
+            { id: 5, name: 'Bob Brown', status: 'Online', avatar: 'https://via.placeholder.com/40', lastMessage: 'Meeting at 3pm?', unread: 1 }
+        ];
+        setContacts(demoContacts);
+        setFilteredContacts(demoContacts);
     };
 
     const handleSearch = (event) => {
@@ -108,16 +54,30 @@ export default function ChatApp() {
     const fetchConversation = async (contactId) => {
         setIsLoading(true);
         try {
+            // For demo purposes
+            setTimeout(() => {
+                const demoMessages = [
+                    { id: 1, message: "Hey, how are you?", sender_id: contactId, created_at: new Date(Date.now() - 3600000).toISOString() },
+                    { id: 2, message: "I'm good, thanks for asking. How about you?", sender_id: currentUserId, created_at: new Date(Date.now() - 3500000).toISOString() },
+                    { id: 3, message: "Doing well! Just checking if you're available for a meeting tomorrow.", sender_id: contactId, created_at: new Date(Date.now() - 3400000).toISOString() },
+                    { id: 4, message: "Yes, I'm free in the afternoon. What time works for you?", sender_id: currentUserId, created_at: new Date(Date.now() - 3300000).toISOString() }
+                ];
+                setMessages(demoMessages);
+                setIsLoading(false);
+            }, 500);
+            
+            // Uncomment for actual API call
+            /*
             const response = await axiosInstance.get(`/user/messages/conversations/${contactId}`);
-            if (response.data.success) {
-                setMessages(response.data.data.messages || []);
+            if (response.data.status) {
+                setMessages(response.data.data || []);
             } else {
                 toast.error(response.data.message);
             }
+            */
         } catch (error) {
             toast.error('Failed to fetch conversation');
             console.error(error);
-        } finally {
             setIsLoading(false);
         }
     };
@@ -125,40 +85,7 @@ export default function ChatApp() {
     const handleContactClick = (contact) => {
         setReceiverId(contact.id);
         setSelectedContact(contact);
-        
-        // Check if the contact has been opened before
-        if (!openedContacts.has(contact.id)) {
-            // Send a welcome message
-            sendWelcomeMessage(contact.id);
-            // Mark this contact as opened
-            setOpenedContacts(prev => new Set(prev).add(contact.id));
-        }
-        
         fetchConversation(contact.id);
-    };
-
-    const sendWelcomeMessage = async (contactId) => {
-        const welcomeMessage = "Hello! I'm looking forward to chatting with you.";
-        const formData = new FormData();
-        formData.append('receiver_id', contactId);
-        formData.append('type', 'text');
-        formData.append('message', welcomeMessage);
-
-        try {
-            const response = await axiosInstance.post('/user/messages/send', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            
-            if (response.data.success) {
-                setMessages(prev => [...prev, response.data.data]);
-                toast.success('Welcome message sent successfully');
-            } else {
-                toast.error(response.data.message);
-            }
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to send welcome message');
-            console.error(error);
-        }
     };
 
     const sendMessage = async (e) => {
@@ -168,31 +95,41 @@ export default function ChatApp() {
             return;
         }
         
-        const formData = new FormData();
-        formData.append('receiver_id', receiverId);
-        formData.append('type', selectedFile ? 'image' : 'text'); // Assuming type is based on file presence
-        formData.append('message', messageToSend.trim());
+        // For demo purposes
+        const newMessage = {
+            id: messages.length + 1,
+            message: messageToSend,
+            sender_id: currentUserId,
+            created_at: new Date().toISOString()
+        };
         
-        if (selectedFile) {
-            formData.append('attachment', selectedFile);
-        }
+        setMessages(prev => [...prev, newMessage]);
+        setMessageToSend('');
         
-        // Include parent_id if it exists
-        if (parentId) {
-            formData.append('parent_id', parentId);
-        }
-
+        // Uncomment for actual API call
+        /*
         try {
+            const formData = new FormData();
+            formData.append('receiver_id', receiverId);
+            formData.append('type', 'text');
+            
+            if (messageToSend.trim()) {
+                formData.append('message', messageToSend);
+            }
+            
+            if (selectedFile) {
+                formData.append('attachment', selectedFile);
+            }
+
             const response = await axiosInstance.post('/user/messages/send', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             
-            if (response.data.success) {
-                setMessages(prev => [...prev, response.data.data]);
-                toast.success('Message sent successfully');
+            if (response.data.status) {
                 setMessageToSend('');
                 setSelectedFile(null);
-                setParentId(null); // Reset parent_id after sending
+                setMessages(prev => [...prev, response.data.data]);
+                toast.success('Message sent successfully');
             } else {
                 toast.error(response.data.message);
             }
@@ -200,22 +137,13 @@ export default function ChatApp() {
             toast.error(error.response?.data?.message || 'Failed to send message');
             console.error(error);
         }
-    };
-
-    const handleReply = (messageId) => {
-        setParentId(messageId); // Set the parent_id to the message being replied to
-        setMessageToSend(`Replying to message ID: ${messageId}`); // Optional: Pre-fill the message input
+        */
     };
 
     return (
-        <>
+        <div className="chat-container">
             <Toaster />
-            <div id="layout-wrapper">
-                <div className="main-content">
-                    <div className="page-content">
-                        <div className="container-fluid">
-                            <div className="chat-wrapper d-lg-flex gap-1 mx-n4 mt-n4 p-0">
-                                {/* Left Sidebar */}
+            
             {/* Left Sidebar */}
             <div className="chat-sidebar">
                 <div className="sidebar-header">
@@ -224,7 +152,7 @@ export default function ChatApp() {
                 </div>
                 
                 <div className="search-box">
-                    {/* <Search className="search-icon" size={18} /> */}
+                    <Search className="search-icon" size={18} />
                     <input
                         type="text"
                         placeholder="Search here..."
@@ -407,25 +335,6 @@ export default function ChatApp() {
                     </div>
                 )}
             </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <footer className="footer">
-                    <div className="container-fluid">
-                        <div className="row">
-                            <div className="col-sm-6">
-                                <script>document.write(new Date().getFullYear())</script> © Velzon.
-                            </div>
-                            <div className="col-sm-6">
-                                <div className="text-sm-end d-none d-sm-block">
-                                    Design & Develop by Themesbrand
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </footer>
-            </div>
-        </>
+        </div>
     );
 }
