@@ -1,29 +1,50 @@
 .phone-input-container .form-control.phone-input {
-    height: calc(1.5em + .75rem + 2px);
-    /* padding: .375rem .75rem; */
-    border-radius: 0.25rem;
-    /* Additional custom styles */
-    display: block;
-    width: 100%;
-    font-size: 1rem;
+  height: calc(1.5em + .75rem + 2px);
+  /* padding: .375rem .75rem; */
+  border-radius: 0.25rem;
+  /* Additional custom styles */
+  display: block;
+  width: 100%;
+  font-size: 1rem;
 }
 
-#engineer-tab:hover{
-    background-color: ;
-    color: #000 ;
+#engineer-tab:hover {
+  background-color: ;
+  color: #000;
 }
 
-#client-tab, #engineer-tab{
-    color: #000 !important;
+#client-tab,
+#engineer-tab {
+  color: #000 !important;
 }
 
-/* Detect autofill */
-@keyframes onAutoFillStart {
-  from {/**/}
-  to {/**/}
+/* Prevent autofill from triggering form submission */
+form {
+  /* Disable browser's default autofill styling */
+  -webkit-appearance: none;
 }
 
+/* Disable autocomplete-related animations */
 input:-webkit-autofill {
-  animation-name: onAutoFillStart;
-  transition: background-color 50000s ease-in-out 0s;
+  transition-delay: 99999s;
+  transition-property: background-color;
+}
+
+/* Prevent phone input from triggering form submission */
+.phone-input-container {
+  position: relative;
+  z-index: 1;
+}
+
+.phone-input-container input {
+  /* Prevent Enter key from submitting the form */
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Disable form submission on Enter key */
+form {
+  /* Prevent default browser behavior */
+  -webkit-appearance: none;
+  appearance: none;
 }
