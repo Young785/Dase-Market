@@ -38,7 +38,7 @@ export default function NotificationPage() {
 
     // Single data fetching effect
     useEffect(() => {
-        // Fetch notifications from API
+        
         const fetchNotifications = async () => {
             try {
                 setLoading(true);
@@ -58,9 +58,9 @@ export default function NotificationPage() {
         if (!profileLoading && profile) {
             fetchNotifications();
         }
-    }, [profileLoading, profile]); // Only depend on profile loading state
+    }, [profileLoading, profile]); 
 
-    // Handle tab switching with React state instead of DOM manipulation
+    
     const handleTabClick = (tabId) => {
         setActiveTab(tabId);
     };

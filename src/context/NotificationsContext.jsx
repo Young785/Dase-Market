@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import axiosInstance from '../axiosInstance'; // Adjust path as needed
-import { toast } from 'react-hot-toast'; // Import your preferred toast library
+import axiosInstance from '../axiosInstance'; 
+import { toast } from 'react-hot-toast'; 
 
-// Create the context
+
 const NotificationsContext = createContext(null);
 
-// Create a provider component
+
 export const NotificationsProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -128,7 +128,7 @@ export const NotificationsProvider = ({ children }) => {
     );
 };
 
-// Custom hook to use the notifications context
+
 export const useNotifications = () => {
     const context = useContext(NotificationsContext);
     if (context === null) {
