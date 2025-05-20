@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import './style.css'
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Bell} from 'lucide-react'; 
 
 import {LogoSm} from '../../assets/images';
 import {LogoDark} from '../../assets/images';
@@ -142,6 +143,24 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                                 </span>
                             </Link>
                         </li>
+
+                        <li className={`nav-item ${isActive(["/dase/notification"])}`}>
+                            <Link to="/dase/notification" className={`nav-link ${isActive(["/dase/notification"])}`} data-key="t-chat">
+                                <span data-key="t-chat">
+                                    {/* <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V4a2 2 0 012-2h14a2 2 0 012 2v11z" stroke="#6882B6" strokeWidth="2"/>
+                                    </svg> */}
+                                    
+                                    <Bell className="fs-16 text-[#6d7080] me-3" />
+                                    
+
+                                    Notification
+                                </span>
+                            </Link>
+                        </li>
+
+
+
                         <li className={`nav-item ${isActive(["/dase/profile"])}`}>
                             <Link to="/dase/profile" className={`nav-link ${isActive(["/dase/profile"])}`} data-key="t-profile">
                                 <span data-key="t-profile">

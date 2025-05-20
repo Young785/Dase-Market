@@ -22,7 +22,7 @@ export default function ChatApp() {
     const [openedContacts, setOpenedContacts] = useState(new Set()); // Track opened contacts
     const [parentId, setParentId] = useState(null); // State for parent_id
 
-    useEffect(() => {
+  useEffect(() => {
         fetchContacts();
     }, []);
 
@@ -109,20 +109,20 @@ export default function ChatApp() {
         setIsLoading(true);
         try {
             const response = await axiosInstance.get(`/user/messages/conversations/${contactId}`);
-            if (response.data.success) {
+      if (response.data.success) {
                 setMessages(response.data.data.messages || []);
-            } else {
+      } else {
                 toast.error(response.data.message);
-            }
-        } catch (error) {
+      }
+    } catch (error) {
             toast.error('Failed to fetch conversation');
             console.error(error);
-        } finally {
+    } finally {
             setIsLoading(false);
         }
     };
 
-    const handleContactClick = (contact) => {
+  const handleContactClick = (contact) => {
         setReceiverId(contact.id);
         setSelectedContact(contact);
         
@@ -148,11 +148,11 @@ export default function ChatApp() {
             const response = await axiosInstance.post('/user/messages/send', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            
-            if (response.data.success) {
+
+        if (response.data.success) {
                 setMessages(prev => [...prev, response.data.data]);
                 toast.success('Welcome message sent successfully');
-            } else {
+        } else {
                 toast.error(response.data.message);
             }
         } catch (error) {
@@ -186,17 +186,17 @@ export default function ChatApp() {
             const response = await axiosInstance.post('/user/messages/send', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            
-            if (response.data.success) {
+
+      if (response.data.success) {
                 setMessages(prev => [...prev, response.data.data]);
                 toast.success('Message sent successfully');
                 setMessageToSend('');
                 setSelectedFile(null);
                 setParentId(null); // Reset parent_id after sending
-            } else {
+      } else {
                 toast.error(response.data.message);
-            }
-        } catch (error) {
+      }
+    } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to send message');
             console.error(error);
         }
@@ -221,18 +221,18 @@ export default function ChatApp() {
                 <div className="sidebar-header">
                     <h2>Chats</h2>
                     <button className="add-btn">+</button>
-                </div>
+      </div>
                 
                 <div className="search-box">
                     {/* <Search className="search-icon" size={18} /> */}
                     <input
                         type="text"
                         placeholder="Search here..."
-                        value={searchQuery}
+              value={searchQuery}
                         onChange={handleSearch}
-                    />
-                </div>
-                
+            />
+        </div>
+
                 <div className="tabs">
                     <button 
                         className={`tab ${activeTab === 'chats' ? 'active' : ''}`}
@@ -265,19 +265,19 @@ export default function ChatApp() {
                                         <div className="avatar">
                                             <img src={contact.avatar} alt={contact.name} />
                                             <span className={`status-dot ${contact.status.toLowerCase()}`}></span>
-                                        </div>
+              </div>
                                         <div className="chat-info">
                                             <h4>{contact.name}</h4>
                                             <p>{contact.lastMessage}</p>
-                                        </div>
+            </div>
                                         {contact.unread > 0 && (
                                             <div className="unread-badge">{contact.unread}</div>
                                         )}
                                     </li>
-                                ))}
+          ))}
                             </ul>
-                        </div>
-                        
+      </div>
+
                         <div className="chat-category">
                             <div className="category-header">
                                 <span>CHANNELS</span>
@@ -303,8 +303,8 @@ export default function ChatApp() {
                                     </div>
                                 </li>
                             </ul>
-                        </div>
-                    </div>
+                </div>
+              </div>
                 )}
                 
                 {activeTab === 'contacts' && (
@@ -327,7 +327,7 @@ export default function ChatApp() {
                                 </li>
                             ))}
                         </ul>
-                    </div>
+              </div>
                 )}
             </div>
 
@@ -345,7 +345,7 @@ export default function ChatApp() {
                                 <div>
                                     <h3>{selectedContact.name}</h3>
                                     <p>{selectedContact.status}</p>
-                                </div>
+                </div>
                             </div>
                             <div className="header-actions">
                                 <button className="icon-btn">
@@ -381,8 +381,8 @@ export default function ChatApp() {
                                             </div>
                                         </div>
                                     ))}
-                                </div>
-                            )}
+                            </div>
+                          )}
                         </div>
                         
                         {/* Message Input */}
@@ -405,25 +405,25 @@ export default function ChatApp() {
                     <div className="no-chat-selected">
                         <h3>Select a contact to start chatting</h3>
                     </div>
-                )}
+              )}
             </div>
                             </div>
-                        </div>
-                    </div>
+                </div>
+                </div>
                 </div>
                 <footer className="footer">
                     <div className="container-fluid">
                         <div className="row">
                             <div className="col-sm-6">
                                 <script>document.write(new Date().getFullYear())</script> © Velzon.
-                            </div>
+            </div>
                             <div className="col-sm-6">
                                 <div className="text-sm-end d-none d-sm-block">
                                     Design & Develop by Themesbrand
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            </div>
+          </div>
+      </div>
+    </div>
                 </footer>
             </div>
         </>

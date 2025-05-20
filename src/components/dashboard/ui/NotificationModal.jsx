@@ -24,7 +24,7 @@ const NotificationModal = ({ isOpen, onClose, notifications }) => {
                         aria-label="Close"
                     >&times;</button>
                 </div>
-                <SimpleBar style={{ maxHeight: 'calc(80vh - 110px)' }}> {/* Adjust max height based on header/footer of modal */}
+                <SimpleBar style={{ maxHeight: 'calc(80vh - 110px)' }}> 
                     <div className="list-group list-group-flush" style={{ padding: '8px 24px 24px 24px'}}>
                         {notifications && notifications.length > 0 ? (
                             notifications.map(notification => (
