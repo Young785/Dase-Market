@@ -413,9 +413,9 @@ export default function Register() {
   const validateField = (name, value) => {
     switch (name) {
       case "first_name":
+        return value.trim() ? "" : "First name is required"
       case "last_name":
-        return value.trim() ? "" : `${name.replace("_", " ")} is required`
-
+        return value.trim() ? "" : "Last name is required"
       case "business_email":
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!value) return "Email is required"
@@ -498,8 +498,13 @@ export default function Register() {
           isValid = false
           newErrors[key] = error
         }
+      } else {
+        const error = validateField(key, formData[key])
+        if (error) {
+          isValid = false
+          newErrors[key] = error
+        }
       }
-      // ... validate other fields
     })
 
     // Also validate bio and work_experience fields to ensure they're not lost
@@ -975,7 +980,7 @@ export default function Register() {
                                 placeholder="Enter first name"
                                 required
                               />
-                              <div className="invalid-feedback">Please enter first name</div>
+                              <div className="invalid-feedback">{errors.first_name || "Please enter first name"}</div>
                             </div>
                             <div className="col-md-6 col-sm-12 pb-sm-3">
                               <label htmlFor="last_name" className="form-label">
@@ -991,7 +996,7 @@ export default function Register() {
                                 placeholder="Enter last name"
                                 required
                               />
-                              <div className="invalid-feedback">Please enter last name</div>
+                              <div className="invalid-feedback">{errors.last_name || "Please enter last name"}</div>
                             </div>
                           </div>
 
@@ -1010,7 +1015,7 @@ export default function Register() {
                                 placeholder="Enter email"
                                 required
                               />
-                              <div className="invalid-feedback">Please enter email</div>
+                              <div className="invalid-feedback">{errors.business_email || "Please enter email"}</div>
                             </div>
 
                             <div className="col-md-6 col-sm-12 pb-sm-3">
@@ -1066,7 +1071,7 @@ export default function Register() {
                                 placeholder="Enter business name"
                                 required
                               />
-                              <div className="invalid-feedback">Please enter business name</div>
+                              <div className="invalid-feedback">{errors.business_name || "Please enter business name"}</div>
                             </div>
                           </div>
                           <div className="row mb-3">
