@@ -12,20 +12,16 @@ export default function ConfirmAccount() {
   const handleConfirmAccount = async (e) => {
     e.preventDefault();
     try {
+      // Backend expects business_email in payload
       const response = await axiosInstance.post('/confirm-account', {
-        
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: email,
-        })
+        business_email: email
       });
 
-      const data = await response.json();
+      const data = response.data;
       if (data.status) {
         toast.success(data.message);
-        navigate('/verify-code');
+        // Route defined in App.jsx
+        navigate('/dase/verifyotp');
       } else {
         toast.error(data.message);
       }
@@ -62,7 +58,7 @@ export default function ConfirmAccount() {
                   <div className="card-body p-4">
                     <div className="text-center mt-2">
                       <h5 className="text-primary">Confirm Your Account</h5>
-                      <p className="text-muted">Get your free dase account now</p>
+                      <p className="text-muted">Kindly enter the code sent to your mail</p>
                     </div>
                     <div className="p-2 mt-4">
                       <form className="needs-validation" noValidate onSubmit={handleConfirmAccount}>

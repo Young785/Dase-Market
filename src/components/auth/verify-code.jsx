@@ -176,9 +176,26 @@ export default function VerifyCode() {
       return
     }
 
-    const getrecord = JSON.parse(localStorage.getItem("signup_record"))
+    // Prefer signup_record, otherwise fallback to signupUser state, otherwise fetch profile if authenticated
+    let getrecord = JSON.parse(localStorage.getItem("signup_record")) || signupUser
 
-    if (getrecord) {
+    if (!getrecord || !getrecord.account_id) {
+      try {
+        const authLocal = JSON.parse(localStorage.getItem("auth_data"))
+        if (authLocal?.access_token) {
+          const profileRes = await axiosInstance.get("/user/profile")
+          const u = profileRes?.data?.data
+          if (u?.account_id) {
+            getrecord = { account_id: u.account_id }
+            setSignupUser((prev) => ({ ...prev, ...getrecord }))
+          }
+        }
+      } catch (_) {
+        // ignore and handle below
+      }
+    }
+
+    if (getrecord && getrecord.account_id) {
       const obj = {
         code: OTPcode,
         account_id: getrecord.account_id,
@@ -208,6 +225,8 @@ export default function VerifyCode() {
       } finally {
         setIsUploading(false)
       }
+    } else {
+      notifyError("Missing account id. Please resend OTP or login again.")
     }
   }
 
