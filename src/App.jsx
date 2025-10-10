@@ -26,6 +26,7 @@ import Waveform from './dashboard/voice/App';
 import Social from './dashboard/social/App'
 import Project from './dashboard/project/App'
 import Engineer from './dashboard/engineer/App'
+import Notification from './dashboard/notification/App'
 import EngineerDetails from './dashboard/engineer/view/App'
 import { loadExternalScripts } from './utils/external-scripts';
 
@@ -46,6 +47,7 @@ const DashboardWrapper = () => {
       <Route path="social" element={<Social />} />
       <Route path="project" element={<Project />} />
       <Route path="engineer" element={<Engineer />} />
+      <Route path="notification" element={<Notification />} />
       <Route path="engineer/view/:account_id" element={<EngineerDetails />} />
       {/* Redirect to dashboard home for any unmatched routes */}
       <Route path="*" element={<Navigate to="/dase/dashboard" replace />} />

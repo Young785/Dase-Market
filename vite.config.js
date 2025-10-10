@@ -70,7 +70,8 @@ export default defineConfig({
       css: {
         additionalData: `@import "@/assets/css/variables.css";`
       }
-    }
+    },
+    devSourcemap: false
   },
   optimizeDeps: {
     include: ['sweetalert2']
