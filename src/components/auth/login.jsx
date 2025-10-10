@@ -102,21 +102,39 @@ export default function LogIn() {
 
     try {
       const response = await axiosInstance.post('/login', formData);
+      console.log('📥 Login response:', response.data);
       
       if (response.data.status) {
         notifySuccess(response.data.message);
-        await updateProfile(true);
-        navigate('/dase/dashboard');
+        
+        // Wait a bit to ensure token is saved in axios interceptor
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Verify token was saved
+        const savedAuth = localStorage.getItem('auth_data');
+        console.log('✅ Saved auth_data:', savedAuth ? 'Yes' : 'No');
+        
+        // Now update profile
+        const profileUpdated = await updateProfile(true);
+        console.log('📋 Profile updated:', profileUpdated);
+        
+        if (profileUpdated) {
+          navigate('/dase/dashboard');
+        } else {
+          console.error('❌ Failed to load profile after login');
+          notifyError('Failed to load profile. Please try logging in again.');
+        }
       } else {
         notifyError(response.data.message);
       }
     } catch (err) {
+      console.error('❌ Login error:', err.response?.data || err.message);
       const errorMessage = err.response?.data?.message || 'An unexpected error occurred';
       notifyError(errorMessage);
       
       // Handle specific error cases
-      if (err.response?.data?.requiresVerification) {
-        navigate('/dase/verify-account');
+      if (err.response?.data?.requiresVerification || err.response?.status === 403) {
+        navigate('/dase/verifyotp');
       }
     } finally {
       setIsUploading(false);

@@ -19,25 +19,33 @@ export function ProfileProvider({ children }) {
         setLoading(true);
         try {
             const authData = JSON.parse(localStorage.getItem('auth_data'));
+            console.log('🔍 ProfileContext - auth_data:', authData);
+            
             if (!authData?.access_token) {
+                console.error('❌ No access token found');
                 setProfile(null);
                 return false;
             }
 
+            console.log('📤 Fetching profile from /user/profile');
             const response = await axiosInstance.get('/user/profile');
+            console.log('📥 Profile response:', response.data);
             
-            if (response.data.success) {
-                setProfile(response.data.data);
+            // Backend returns response.data.status instead of response.data.success
+            if (response.data.status === true || response.data.success) {
+                setProfile(response.data.data || response.data.user);
                 setIsVerified(true);
+                console.log('✅ Profile updated successfully');
                 return true;
             }
+            console.error('❌ Profile fetch failed:', response.data.message);
             return false;
         } catch (error) {
-            console.error("Error updating profile:", error);
-            if (error.response?.data?.requiresVerification) {
+            console.error("❌ Error updating profile:", error.response?.data || error.message);
+            if (error.response?.status === 403 || error.response?.data?.requiresVerification) {
                 setIsVerified(false);
                 localStorage.removeItem('auth_data');
-                navigate('/dase/login');
+                navigate('/dase/verifyotp');
             }
             return false;
         } finally {
