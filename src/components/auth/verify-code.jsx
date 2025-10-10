@@ -103,7 +103,7 @@ export default function VerifyCode() {
       setIsUploading(true)
 
       try {
-        const response = await axiosInstance.post("/dase/confirm-account", obj)
+        const response = await axiosInstance.post("/confirm-account", obj)
         console.log("📥 OTP Response:", response.data)
         
         if (response.data.status) {
@@ -140,7 +140,7 @@ export default function VerifyCode() {
       setIsUploading(true)
 
       try {
-        const response = await axiosInstance.post("/dase/verify-code", obj)
+        const response = await axiosInstance.post("/verify-code", obj)
         if (response.data.status) {
           notifySuccess(response.data.message)
 

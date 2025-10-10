@@ -101,7 +101,7 @@ export default function LogIn() {
     setIsUploading(true);
 
     try {
-      const response = await axiosInstance.post('/dase/login', formData);
+      const response = await axiosInstance.post('/login', formData);
       
       if (response.data.status) {
         notifySuccess(response.data.message);
