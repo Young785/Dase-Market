@@ -78,7 +78,12 @@ axiosInstance.interceptors.response.use(
         
         // Handle 403 Forbidden - account not verified
         if (response?.status === 403 && response?.data?.message?.includes('verify your account')) {
+            // Don't clear signup_record if user is in verification flow
+            const signupRecord = localStorage.getItem('signup_record');
             localStorage.clear();
+            if (signupRecord) {
+                localStorage.setItem('signup_record', signupRecord);
+            }
             window.location.href = '/dase/verifyotp';
         }
         

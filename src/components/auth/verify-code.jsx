@@ -39,8 +39,11 @@ export default function VerifyCode() {
     let isSubscribed = true
 
     const checkAuth = async () => {
-      const getAuth = JSON.parse(localStorage.getItem("signup_record"))
-      if (!getAuth) {
+      const signupRecordStr = localStorage.getItem("signup_record")
+      console.log("🔍 Checking signup_record:", signupRecordStr)
+      
+      if (!signupRecordStr) {
+        console.error("❌ No signup_record found in localStorage")
         notifyError("Kindly proceed to login!")
         setTimeout(() => {
           navigate("/")
@@ -48,19 +51,34 @@ export default function VerifyCode() {
         return
       }
 
-      // Check if OTP has already been sent from registration page
-      const otpAlreadySent = localStorage.getItem("otp_sent")
+      try {
+        const getAuth = JSON.parse(signupRecordStr)
+        console.log("✅ Parsed signup_record:", getAuth)
 
-      // Display the OTP message if it exists
-      const otpMessage = localStorage.getItem("otp_message")
-      if (otpMessage) {
-        notifySuccess(otpMessage)
-        localStorage.removeItem("otp_message") // Clear the message after showing it
-      }
+        // Check if OTP has already been sent from registration page
+        const otpAlreadySent = localStorage.getItem("otp_sent")
+        console.log("📧 OTP already sent?", otpAlreadySent)
 
-      // Only send OTP if it hasn't been sent already
-      if (!otpAlreadySent) {
-        handleConfirmAcct()
+        // Display the OTP message if it exists
+        const otpMessage = localStorage.getItem("otp_message")
+        if (otpMessage) {
+          notifySuccess(otpMessage)
+          localStorage.removeItem("otp_message") // Clear the message after showing it
+        }
+
+        // Only send OTP if it hasn't been sent already
+        if (!otpAlreadySent) {
+          console.log("📤 Sending OTP request...")
+          handleConfirmAcct()
+        } else {
+          console.log("✅ OTP already sent, waiting for user input")
+        }
+      } catch (error) {
+        console.error("❌ Error parsing signup_record:", error)
+        notifyError("Invalid registration data. Please register again.")
+        setTimeout(() => {
+          navigate("/dase/register")
+        }, 2000)
       }
     }
 
@@ -81,10 +99,13 @@ export default function VerifyCode() {
         business_email: getrecord.business_email,
       }
 
+      console.log("📧 Sending OTP to:", obj)
       setIsUploading(true)
 
       try {
         const response = await axiosInstance.post("/dase/confirm-account", obj)
+        console.log("📥 OTP Response:", response.data)
+        
         if (response.data.status) {
           localStorage.setItem("otp_sent", "true")
           notifySuccess(response.data.message)
@@ -92,7 +113,8 @@ export default function VerifyCode() {
           notifyError(response.data.message)
         }
       } catch (error) {
-        notifyError("Failed to send verification code.", error)
+        console.error("❌ OTP Error:", error.response?.data || error.message)
+        notifyError(error.response?.data?.message || "Failed to send verification code.")
       } finally {
         setIsUploading(false)
       }
