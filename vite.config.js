@@ -83,10 +83,11 @@ export default defineConfig({
     strictPort: true,
     open: true,
     proxy: {
-      '/api': {
+      '/api/v1/dase': {
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
         secure: false,
+        rewrite: (path) => path
       }
     }
   }
