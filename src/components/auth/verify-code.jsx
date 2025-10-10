@@ -1,16 +1,20 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import './style.css';
-import toast from 'react-hot-toast';
-import axiosInstance from '../../axiosInstance.js';
+"use client"
+
+import { useState, useEffect } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import "./style.css"
+import toast, { Toaster } from "react-hot-toast"
+import axiosInstance from "../../axiosInstance.js"
+
+import OtpInput from "react-otp-input"
 
 export default function VerifyCode() {
-  
-  const [OTPcode, setOTPCode] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
-  const navigate = useNavigate();
+  const [OTPcode, setOTPCode] = useState("")
+  const [isUploading, setIsUploading] = useState(false)
+  const navigate = useNavigate()
 
-  const notifySuccess = (text) => toast.success(text, {
+  const notifySuccess = (text) =>
+    toast.success(text, {
       position: "top-right",
       autoClose: 3000,
       hideProgressBar: false,
@@ -18,9 +22,10 @@ export default function VerifyCode() {
       pauseOnHover: true,
       draggable: true,
       progress: undefined,
-  });
+    })
 
-  const notifyError = (text) => toast.error(text, {
+  const notifyError = (text) =>
+    toast.error(text, {
       position: "top-right",
       autoClose: 3000,
       hideProgressBar: false,
@@ -28,91 +33,123 @@ export default function VerifyCode() {
       pauseOnHover: true,
       draggable: true,
       progress: undefined,
-  });
+    })
 
   useEffect(() => {
-    const getAuth = JSON.parse(localStorage.getItem('signup_record'));
-    if (!getAuth) {
-      notifyError('Kindly proceed to login!');
-      setTimeout(() => {
-        navigate('/');
-      }, 1500);
-    } else {
-      handleConfirmAcct();
+    let isSubscribed = true
+
+    const checkAuth = async () => {
+      const getAuth = JSON.parse(localStorage.getItem("signup_record"))
+      if (!getAuth) {
+        notifyError("Kindly proceed to login!")
+        setTimeout(() => {
+          navigate("/")
+        }, 1500)
+        return
+      }
+
+      // Check if OTP has already been sent from registration page
+      const otpAlreadySent = localStorage.getItem("otp_sent")
+
+      // Display the OTP message if it exists
+      const otpMessage = localStorage.getItem("otp_message")
+      if (otpMessage) {
+        notifySuccess(otpMessage)
+        localStorage.removeItem("otp_message") // Clear the message after showing it
+      }
+
+      // Only send OTP if it hasn't been sent already
+      if (!otpAlreadySent) {
+        handleConfirmAcct()
+      }
     }
-  }, []);
+
+    checkAuth()
+
+    return () => {
+      isSubscribed = false
+    }
+  }, [navigate])
 
   const handleConfirmAcct = async () => {
-    const getrecord = JSON.parse(localStorage.getItem('signup_record'));
+    const getrecord = JSON.parse(localStorage.getItem("signup_record"))
 
     if (getrecord) {
       const obj = {
         phone_code: getrecord.business_phone_code,
         phone_number: getrecord.business_phone,
         business_email: getrecord.business_email,
-      };
+      }
 
-      setIsUploading(true);
+      setIsUploading(true)
 
       try {
-        const response = await axiosInstance.post('/confirm-account', obj);
+        const response = await axiosInstance.post("/confirm-account", obj)
         if (response.data.status) {
-          notifySuccess('Verification code sent successfully.');
+          localStorage.setItem("otp_sent", "true")
+          notifySuccess(response.data.message)
         } else {
-          notifyError(response.data.message);
+          notifyError(response.data.message)
         }
       } catch (error) {
-        notifyError('Failed to send verification code.', error);
+        notifyError("Failed to send verification code.", error)
       } finally {
-        setIsUploading(false);
+        setIsUploading(false)
       }
     }
-  };
+  }
 
   const handleSendOTP = async (e) => {
-    e.preventDefault();
-    const getrecord = JSON.parse(localStorage.getItem('signup_record'));
+    e.preventDefault()
+
+    if (!OTPcode || OTPcode.length !== 6) {
+      notifyError("Please enter a valid 6-digit verification code")
+      return
+    }
+
+    const getrecord = JSON.parse(localStorage.getItem("signup_record"))
 
     if (getrecord) {
       const obj = {
         code: OTPcode,
         account_id: getrecord.account_id,
-      };
+      }
 
-      setIsUploading(true);
+      setIsUploading(true)
 
       try {
-        const response = await axiosInstance.post('/verify-code', obj);
+        const response = await axiosInstance.post("/verify-code", obj)
         if (response.data.status) {
-          notifySuccess(response.data.message);
+          notifySuccess(response.data.message)
+
+          // Store auth data if provided in response
+          if (response.data.auth_data) {
+            localStorage.setItem("auth_data", JSON.stringify(response.data.auth_data))
+          }
+
+          // Clear the OTP sent flag
+          localStorage.removeItem("otp_sent")
+
+          // Delay navigation to ensure toast messages are visible
           setTimeout(() => {
-            navigate('/dashboard'); // Redirect to the dashboard on success
-          }, 3500);
+            navigate("/dase/dashboard") // Redirect to the dashboard on success
+          }, 3500)
         } else {
-          notifyError(response.data.message);
+          notifyError(response.data.message)
         }
       } catch (error) {
-        notifyError('Verification failed.', error);
+        const errorMessage = error.response?.data?.message || "Verification failed."
+        notifyError(errorMessage)
       } finally {
-        setIsUploading(false);
+        setIsUploading(false)
       }
     }
-  };
+  }
 
   return (
     <div>
-       {/* {IsUploading &&
-            <div className='border d-flex justify-content-center align-items-center' 
-            style={{position: 'sticky', top: '10px', width: '35px', height: '35px', borderRadius: '50%', background: 'white', left: '50%', transform: 'translateX(-50%)', zIndex: '10'}}>
-                <CircularProgress
-                    style={{ stroke: "#000", strokeWidth: '4px' }}
-                    className="position-relative"
-                    size="1rem"
-                    sx={{ strokeWidth: '4px' }}
-                />
-            </div>
-            } */}
       <div className="auth-page-wrapper pt-5">
+        <Toaster />
         <div className="auth-one-bg-position auth-one-bg" id="auth-particles">
           <div className="bg-overlay"></div>
           <div className="shape"></div>
@@ -124,7 +161,9 @@ export default function VerifyCode() {
                 <div className="text-center mt-sm-5 mb-4 text-white-50">
                   <div>
                     <a href="index.html" className="d-inline-block auth-logo">
-                      <span className='dase-logo' height="20">DASE</span>
+                      <span className="dase-logo" height="20">
+                        DASE
+                      </span>
                     </a>
                   </div>
                   <p className="mt-3 fs-15 fw-medium">Premium Admin & Dashboard Template</p>
@@ -142,29 +181,43 @@ export default function VerifyCode() {
                     <div className="p-2 mt-4">
                       <form className="needs-validation" noValidate onSubmit={handleSendOTP}>
                         <div className="mb-3">
-                          <label htmlFor="code" className="form-label">Code <span className="text-danger">*</span></label>
-                          <input type="number"  className="form-control"  placeholder="Enter verification code" required
-                          
-                            name="phone"
-                            maxLength={6}
-                            pattern="\d{1,6}"
+                          <label htmlFor="code" className="form-label">
+                            Code <span className="text-danger">*</span>
+                          </label>
+                          <OtpInput
                             value={OTPcode}
-                            onChange={(e) => setOTPCode(e.target.value)} />
+                            onChange={setOTPCode}
+                            numInputs={6}
+                            renderSeparator={<span style={{ width: "10px" }}></span>}
+                            renderInput={(props) => (
+                              <input
+                                {...props}
+                                className="form-control"
+                                style={{ width: "50px", height: "50px", fontSize: "20px", textAlign: "center" }}
+                              />
+                            )}
+                            containerStyle={{ display: "flex", justifyContent: "space-between" }}
+                          />
                           <div className="invalid-feedback">Please enter verification code</div>
                         </div>
                         <div className="mt-4">
-                          {/* <button className="btn btn-success w-100" type="submit">Verify</button> */}
                           <button
                             type="submit"
                             className="btn btn-primary w-100"
-                            disabled={isUploading}
+                            disabled={isUploading || OTPcode.length !== 6}
                           >
-                            {isUploading ? 'Verifying...' : 'Verify'}
+                            {isUploading ? "Verifying..." : "Verify"}
                           </button>
                         </div>
                         <div className="mt-4 text-center">
                           <p className="mb-2">Verify to continue </p>
-                          <span onClick={handleConfirmAcct} style={{cursor: 'pointer'}} className="fw-semibold text-primary"> Resend OTP </span> 
+                          <span
+                            onClick={handleConfirmAcct}
+                            style={{ cursor: isUploading ? "not-allowed" : "pointer" }}
+                            className={`fw-semibold text-primary ${isUploading ? "opacity-50" : ""}`}
+                          >
+                            {isUploading ? "Sending..." : "Resend OTP"}
+                          </span>
                         </div>
                       </form>
                     </div>
@@ -172,7 +225,13 @@ export default function VerifyCode() {
                 </div>
 
                 <div className="mt-4 text-center">
-                  <p className="mb-0">Already have an account? <Link to="/" className="fw-semibold text-primary text-decoration-underline"> Signin </Link> </p>
+                  <p className="mb-0">
+                    Already have an account?{" "}
+                    <Link to="/" className="fw-semibold text-primary text-decoration-underline">
+                      {" "}
+                      Signin{" "}
+                    </Link>{" "}
+                  </p>
                 </div>
               </div>
             </div>
@@ -180,5 +239,5 @@ export default function VerifyCode() {
         </div>
       </div>
     </div>
-  );
+  )
 }

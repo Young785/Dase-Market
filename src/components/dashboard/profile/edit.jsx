@@ -1,10 +1,15 @@
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
+import { UsersAvater2 } from '../../../assets/images';
 import axiosInstance from '../../../axiosInstance'; // Adjust the import path as necessary
 import { toast, Toaster } from 'react-hot-toast';
+import { useProfile } from '../../../context/ProfileContext'; 
+import './style.css'
 
 export default function ProfileEditPage() {
     const navigate = useNavigate();
+    
+    const { profile, updateProfile } = useProfile(); 
     const notifyError = (text) => toast.error(text, {
         position: 'top-right',
         autoClose: 3000,
@@ -30,64 +35,68 @@ export default function ProfileEditPage() {
         business_phone_code: '',
         business_phone: '',
         business_website: '',
+        // profile_photo: '',
         business_phone_number: '',
         business_email: '',
         email_verified_at: '',
         bio: '',
         work_experience: '',
+        dob: '',
+        street_address: ''
         
     });
 
     useEffect(() => {
-        const fetchProfileData = async () => {
-            try {
-                const response = await axiosInstance.get('/user/profile');
-                if (response.data.success) {
-                    const { data } = response.data;
-                    setFormData({
-                        first_name: data.first_name,
-                        last_name: data.last_name,
-                        business_name: data.business_name,
-                        business_phone_code: data.business_phone_code,
-                        business_phone: data.business_phone,
-                        business_website: data.business_website,
-                        business_phone_number: data.business_phone_number,
-                        business_email: data.business_email,
-                        email_verified_at: data.email_verified_at,
-                        bio: data.bio,
-                        work_experience: data.work_experience
-                    });
-                }
-            } catch (error) {
-                toast.error("Error fetching profile data");
-            }
-        };
-
-        fetchProfileData();
-    }, []);
+        if (profile) {
+            setFormData({
+                first_name: profile.first_name || '',
+                last_name: profile.last_name || '',
+                business_name: profile.business_name || '',
+                business_phone_code: profile.business_phone_code || '',
+                business_phone: profile.business_phone || '',
+                business_website: profile.business_website || '',
+                business_phone_number: profile.business_phone_number || '',
+                business_email: profile.business_email || '',
+                email_verified_at: profile.email_verified_at || '',
+                bio: profile.bio || '',
+                dob: profile.dob || '',
+                work_experience: profile.work_experience || '',
+                street_address: profile.street_address || ''
+            });
+        }
+    }, [profile]);
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, type, files } = e.target;
         setFormData(prevState => ({
             ...prevState,
-            [name]: value
+            [name]: type === 'file' ? files[0] : value 
         }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Prepare the data to send as JSON, excluding profile_photo
+        const { profile_photo, ...dataToSend } = formData; 
+        
         try {
-            const response = await axiosInstance.put('/user/profile', formData);
-            // if (response.data.success) {
-            //     toast.success(response.data.message);
+            const response = await axiosInstance.put('/user/profile', dataToSend, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+           
             if (response.data.status === false) {
                 notifyError(response.data.message);
-                notifyError(data.message);
                 
                 return;
-            } const data = response.data;
+            } 
+            const data = response.data;
             notifySuccess(data.message);
-                setTimeout(() => {
+            
+            await updateProfile();
+            setTimeout(() => {
                 navigate('/dase/profile');
             }, 2000);
         } catch (error) {
@@ -106,7 +115,7 @@ export default function ProfileEditPage() {
 
                                 <div className="position-relative mx-n4 mt-n4">
                                     <div className="profile-wid-bg profile-setting-img">
-                                        <img src="assets/images/profile-bg.jpg" className="profile-wid-img" alt=""/>
+                                        <img src={formData.profile_photo ? UsersAvater2 : UsersAvater2} className="profile-wid-img" alt=""/>
                                         <div className="overlay-content">
                                             <div className="text-end p-3">
                                                 <div className="p-0 ms-auto rounded-circle profile-photo-edit">
@@ -121,13 +130,14 @@ export default function ProfileEditPage() {
                                 </div>
                                 <Toaster/>
 
-                                <div className="row">
+                              
                                     {/* <div className="col-xxl-3">
                                         <div className="card mt-n5">
                                             <div className="card-body p-4">
                                                 <div className="text-center">
                                                     <div className="profile-user position-relative d-inline-block mx-auto  mb-4">
-                                                        <img src="assets/images/users/avatar-1.jpg" className="rounded-circle avatar-xl img-thumbnail user-profile-image" alt="user-profile-image"/>
+                                                        
+                                                        <img  src={formData.profile_photo ? UsersAvater2 : UsersAvater2} alt="user-img" className="img-thumbnail rounded-circle" />
                                                         <div className="avatar-xs p-0 rounded-circle profile-photo-edit">
                                                             <input id="profile-img-file-input" type="file" className="profile-img-file-input" />
                                                             <label for="profile-img-file-input" className="profile-photo-edit avatar-xs">
@@ -137,77 +147,26 @@ export default function ProfileEditPage() {
                                                             </label>
                                                         </div>
                                                     </div>
-                                                    <h5 className="fs-16 mb-1">Anna Adame</h5>
+                                                    <h5 className="fs-16 mb-1">{formData.first_name} {formData.last_name}</h5>
                                                     <p className="text-muted mb-0">Lead Designer / Developer</p>
                                                 </div>
                                             </div>
                                         </div>
                                         
-                                        <div className="card">
-                                            <div className="card-body">
-                                                <div className="d-flex align-items-center mb-5">
-                                                    <div className="flex-grow-1">
-                                                        <h5 className="card-title mb-0">Complete Your Profile</h5>
-                                                    </div>
-                                                    <div className="flex-shrink-0">
-                                                        <a href="javascript:void(0);" className="badge bg-light text-primary fs-12"><i className="ri-edit-box-line align-bottom me-1"></i> Edit</a>
-                                                    </div>
-                                                </div>
-                                                <div className="progress animated-progress custom-progress progress-label">
-                                                    <div className="progress-bar bg-danger" role="progressbar" style={{width: "30%"}} aria-valuenow="30" aria-valuemin="0" aria-valuemax="100">
-                                                        <div className="label">30%</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="card">
-                                            <div className="card-body">
-                                                <div className="d-flex align-items-center mb-4">
-                                                    <div className="flex-grow-1">
-                                                        <h5 className="card-title mb-0">Portfolio</h5>
-                                                    </div>
-                                                    <div className="flex-shrink-0">
-                                                        <a href="javascript:void(0);" className="badge bg-light text-primary fs-12"><i className="ri-add-fill align-bottom me-1"></i> Add</a>
-                                                    </div>
-                                                </div>
-                                                <div className="mb-3 d-flex">
-                                                    <div className="avatar-xs d-block flex-shrink-0 me-3">
-                                                        <span className="avatar-title rounded-circle fs-16 bg-body text-body">
-                                                            <i className="ri-github-fill"></i>
-                                                        </span>
-                                                    </div>
-                                                    <input type="email" className="form-control" id="gitUsername" placeholder="Username" value="@daveadame"/>
-                                                </div>
-                                                <div className="mb-3 d-flex">
-                                                    <div className="avatar-xs d-block flex-shrink-0 me-3">
-                                                        <span className="avatar-title rounded-circle fs-16 bg-primary">
-                                                            <i className="ri-global-fill"></i>
-                                                        </span>
-                                                    </div>
-                                                    <input type="text" className="form-control" id="websiteInput" placeholder="www.example.com" value="www.velzon.com"/>
-                                                </div>
-                                                <div className="mb-3 d-flex">
-                                                    <div className="avatar-xs d-block flex-shrink-0 me-3">
-                                                        <span className="avatar-title rounded-circle fs-16 bg-success">
-                                                            <i className="ri-dribbble-fill"></i>
-                                                        </span>
-                                                    </div>
-                                                    <input type="text" className="form-control" id="dribbleName" placeholder="Username" value="@dave_adame" />
-                                                </div>
-                                                <div className="d-flex">
-                                                    <div className="avatar-xs d-block flex-shrink-0 me-3">
-                                                        <span className="avatar-title rounded-circle fs-16 bg-danger">
-                                                            <i className="ri-pinterest-fill"></i>
-                                                        </span>
-                                                    </div>
-                                                    <input type="text" className="form-control" id="pinterestName" placeholder="Username" value="Advance Dave"/>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                    </div> */}
+                                    </div>  */}
+
                                     
-                                    <div className="col-xxl-12">
+
+
+
+                              
+
+
+
+
+                                <div className="row">
+
+                                    <div className="col-lg-12">
                                         <div className="card mt-xxl-n5">
                                             <div className="card-header">
                                                 <ul className="nav nav-tabs-custom rounded card-header-tabs border-bottom-0" role="tablist">
@@ -216,21 +175,7 @@ export default function ProfileEditPage() {
                                                             <i className="fas fa-home"></i> Personal Details
                                                         </a>
                                                     </li>
-                                                    <li className="nav-item">
-                                                        <a className="nav-link" data-bs-toggle="tab" href="#changePassword" role="tab">
-                                                            <i className="far fa-user"></i> Change Password
-                                                        </a>
-                                                    </li>
-                                                    <li className="nav-item">
-                                                        <a className="nav-link" data-bs-toggle="tab" href="#experience" role="tab">
-                                                            <i className="far fa-envelope"></i> Experience
-                                                        </a>
-                                                    </li>
-                                                    <li className="nav-item">
-                                                        <a className="nav-link" data-bs-toggle="tab" href="#privacy" role="tab">
-                                                            <i className="far fa-envelope"></i> Privacy Policy
-                                                        </a>
-                                                    </li>
+                                                    
                                                 </ul>
                                             </div>
                                             <div className="card-body p-4">
@@ -240,36 +185,43 @@ export default function ProfileEditPage() {
                                                             <div className="row">
                                                                 <div className="col-lg-6">
                                                                     <div className="mb-3">
-                                                                        <label for="firstnameInput" className="form-label">First Name</label>
-                                                                        <input type="text" className="form-control" id="first_name" name="first_name" placeholder="Enter your firstname" value={formData.first_name} onChange={handleInputChange}/>
+                                                                        <label for="first_name" className="form-label">First Name</label>
+                                                                        <input type="text" className="form-control" id="first_name" name="first_name" value={formData.first_name} onChange={handleInputChange}/>
                                                                     </div>
                                                                 </div>
                                                                 
                                                                 <div className="col-lg-6">
                                                                     <div className="mb-3">
-                                                                        <label for="lastnameInput" className="form-label">Last Name</label>
-                                                                        <input type="text" className="form-control" id="last_name" name="last_name" placeholder="Enter your lastname" value={formData.last_name} onChange={handleInputChange}/>
+                                                                        <label for="last_name" className="form-label">Last Name</label>
+                                                                        <input type="text" className="form-control" id="last_name" name="last_name" value={formData.last_name} onChange={handleInputChange}/>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="col-lg-4">
+                                                                    <div className="mb-3">
+                                                                        <label for="business_name" className="form-label">Business Name</label>
+                                                                        <input type="text" className="form-control" id="business_name" name="business_name" value={formData.business_name} onChange={handleInputChange} />
                                                                     </div>
                                                                 </div>
                                                                 
-                                                                <div className="col-lg-6">
+                                                                <div className="col-lg-4">
                                                                     <div className="mb-3">
                                                                         <label for="business_phone_number" className="form-label">Phone Number</label>
-                                                                        <input type="text" className="form-control" id="business_phone_number" placeholder="Enter your phone number" value={formData.business_phone_number} onChange={handleInputChange}/>
+                                                                        <input type="text" className="form-control" id="business_phone_number" name="business_phone_number" value={formData.business_phone_number} onChange={handleInputChange} />
                                                                     </div>
                                                                 </div>
                                                                 
-                                                                <div className="col-lg-6">
+                                                                <div className="col-lg-4">
                                                                     <div className="mb-3">
                                                                         <label for="business_email" className="form-label">Email Address</label>
-                                                                        <input type="email" className="form-control" id="business_email" placeholder="Enter your email" value={formData.business_email} onChange={handleInputChange}/>
+                                                                        <input type="email" className="form-control" id="business_email" name="business_email" value={formData.business_email} onChange={handleInputChange} />
                                                                     </div>
                                                                 </div>
                                                                 
-                                                                <div className="col-lg-12">
+                                                            
+                                                                <div className="col-lg-6">
                                                                     <div className="mb-3">
-                                                                        <label for="email_verified_at" className="form-label">Joining Date</label>
-                                                                        <input type="text" className="form-control" data-provider="flatpickr" id="email_verified_at" data-date-format="d M, Y" value={formData.email_verified_at}  placeholder="Select date" onChange={handleInputChange} />
+                                                                        <label for="dob" className="form-label">DOB</label>
+                                                                        <input type="text" className="form-control" data-provider="flatpickr" id="dob" data-date-format="d M, Y" value={formData.dob} onChange={handleInputChange} />
                                                                     </div>
                                                                 </div>
                                                                 
@@ -278,42 +230,31 @@ export default function ProfileEditPage() {
                                                                 <div className="col-lg-6">
                                                                     <div className="mb-3">
                                                                         <label for="work_experience" className="form-label">Work Experience</label>
-                                                                        <input type="text" className="form-control" id="work_experience" placeholder="Work Experience" value={formData.work_experience} onChange={handleInputChange}/>
+                                                                        <input type="text" className="form-control" id="work_experience" name="work_experience" value={formData.work_experience} onChange={handleInputChange} />
                                                                     </div>
                                                                 </div>
                                                                 
                                                                 <div className="col-lg-6">
                                                                     <div className="mb-3">
                                                                         <label for="business_website" className="form-label">Website</label>
-                                                                        <input type="text" className="form-control" id="business_website" placeholder="www.example.com" value={formData.business_website} onChange={handleInputChange} />
+                                                                        <input type="text" className="form-control" id="business_website" name="business_website" value={formData.business_website} onChange={handleInputChange} />
                                                                     </div>
                                                                 </div>
                                                                 
-                                                                <div className="col-lg-4">
+                                                                <div className="col-lg-6">
                                                                     <div className="mb-3">
-                                                                        <label for="cityInput" className="form-label">City</label>
-                                                                        <input type="text" className="form-control" id="cityInput" placeholder="City" value="California" />
+                                                                        <label for="street_address" className="form-label">Street Address</label>
+                                                                        <input type="text" className="form-control" id="street_address" name="street_address" value={formData.street_address} onChange={handleInputChange} />
                                                                     </div>
                                                                 </div>
                                                                 
-                                                                <div className="col-lg-4">
-                                                                    <div className="mb-3">
-                                                                        <label for="countryInput" className="form-label">Country</label>
-                                                                        <input type="text" className="form-control" id="countryInput" placeholder="Country" value="United States" />
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                                <div className="col-lg-4">
-                                                                    <div className="mb-3">
-                                                                        <label for="zipcodeInput" className="form-label">Zip Code</label>
-                                                                        <input type="text" className="form-control" minlength="5" maxlength="6" id="zipcodeInput" placeholder="Enter zipcode" value="90011"/>
-                                                                    </div>
-                                                                </div>
+                                                            
+                                                            
                                                                 
                                                                 <div className="col-lg-12">
                                                                     <div className="mb-3 pb-2">
-                                                                        <label for="bio" className="form-label">Description</label>
-                                                                        <textarea className="form-control" id="bio" value={formData.bio} onChange={handleInputChange} placeholder="Enter your description" rows="3"></textarea>
+                                                                        <label for="bio" className="form-label">Bio</label>
+                                                                        <textarea className="form-control" id="bio" name="bio" value={formData.bio} onChange={handleInputChange} ></textarea>
                                                                     </div>
                                                                 </div>
                                                                 
@@ -663,8 +604,10 @@ export default function ProfileEditPage() {
                                             </div>
                                         </div>
                                     </div>
-                                    
                                 </div>
+                                      
+                                    
+                                
                             
 
                             </div>

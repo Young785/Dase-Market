@@ -175,7 +175,7 @@
   .nav-item .nav-link {
     transition: all 0.3s ease;
     
-    color: white !important; 
+    /* color:  !important;  */
     border-radius: 12px;
 }
 

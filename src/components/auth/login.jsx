@@ -4,19 +4,66 @@ import './style.css';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 import axiosInstance from '../../axiosInstance';
+import { useProfile } from '../../context/ProfileContext';
+// import VerificationModal from './verificationPage';
 
 export default function LogIn() {
-  const [showPassword, setShowPassword] = useState(false);
+  const [showVerificationModal, showPassword, setShowVerificationModal, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     login: '',
     password: '',
   });
+  const [errors, setErrors] = useState({
+    login: '',
+    password: ''
+  });
   const [isUploading, setIsUploading] = useState(false);
   const navigate = useNavigate();
+  const { updateProfile } = useProfile();
+
+  // Validation functions
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^\d{10,}$/; // Assumes phone number is at least 10 digits
+
+    if (!email) {
+      return 'Email or Phone is required';
+    }
+    if (!emailRegex.test(email) && !phoneRegex.test(email)) {
+      return 'Please enter a valid email or phone number';
+    }
+    return '';
+  };
+
+  const validatePassword = (password) => {
+    if (!password) {
+      return 'Password is required';
+    }
+    if (password.length < 6) {
+      return 'Password must be at least 6 characters';
+    }
+    return '';
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    
+    // Clear error when user starts typing
+    setErrors({
+      ...errors,
+      [name]: ''
+    });
+  };
+
+  const validateForm = () => {
+    const newErrors = {
+      login: validateEmail(formData.login),
+      password: validatePassword(formData.password)
+    };
+
+    setErrors(newErrors);
+    return !newErrors.login && !newErrors.password;
   };
 
   const notifySuccess = (text) => toast.success(text, {
@@ -45,56 +92,33 @@ export default function LogIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    if (formData.login && formData.password) {
-      formData.login = formData.login.trim();
-      formData.password = formData.password.trim();
-      setIsUploading(true); // Set loading state to true
-  
-      try {
-        const response = await axiosInstance.post('/login', formData);
-        const data = response.data;
-  
-        if (data.status) {
-          if (data.user.is_verified === false) { // Check if the user is unverified
-            notifyError("Your account is not verified. Please verify your email before logging in.");
-          } else if (data.user.status === 'false') {
-            localStorage.setItem('signup_record', JSON.stringify(data.user));
-            notifyError("Your Account is Inactive, kindly proceed to verify your email.");
-            setTimeout(() => {
-              navigate('/dase/verifyotp');
-            }, 1500);
-          } else {
-            notifySuccess(data.message);
-            localStorage.setItem('auth_data', JSON.stringify({
-              access_token: data.access_token,
-              user: data.user,
-              permissions: data.permissions,
-            }));
-            localStorage.removeItem('signup_record');
-  
-            if (data.user.setting.show_welcome_modal === "YES") {
-              localStorage.setItem('show_welcome_modal', 'YES');
-            }
-  
-            setTimeout(() => {
-              navigate('/dase/dashboard');
-            }, 2000);
-          }
-        } else {
-          notifyError(data.message);
-        }
-      } catch (err) {
-        if (err.response && err.response.data) {
-          notifyError(err.response.data.message || 'An unexpected error occurred');
-        } else {
-          notifyError('Network error or server not responding');
-        }
-      } finally {
-        setIsUploading(false); // Reset loading state
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const response = await axiosInstance.post('/login', formData);
+      
+      if (response.data.status) {
+        notifySuccess(response.data.message);
+        await updateProfile(true);
+        navigate('/dase/dashboard');
+      } else {
+        notifyError(response.data.message);
       }
-    } else {
-      notifyError("All fields are required!");
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || 'An unexpected error occurred';
+      notifyError(errorMessage);
+      
+      // Handle specific error cases
+      if (err.response?.data?.requiresVerification) {
+        navigate('/dase/verify-account');
+      }
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -145,17 +169,22 @@ export default function LogIn() {
                       <form onSubmit={handleSubmit}>
                         <div className="mb-3">
                           <label htmlFor="useremail" className="form-label">
-                            Email <span className="text-danger">*</span>
+                            Email / Phone <span className="text-danger">*</span>
                           </label>
                           <input
                             value={formData.login}
                             onChange={handleChange}
-                            className="form-control"
+                            className={`form-control ${errors.login ? 'is-invalid' : ''}`}
                             type="text"
                             placeholder="Email / Phone No."
                             name="login"
                             required
                           />
+                          {errors.login && (
+                            <div className="invalid-feedback">
+                              {errors.login}
+                            </div>
+                          )}
                         </div>
 
                         <div className="mb-3">
@@ -165,14 +194,14 @@ export default function LogIn() {
                             </Link>
                           </div>
                           <label className="form-label" htmlFor="password-input">
-                            Password
+                            Password <span className="text-danger">*</span>
                           </label>
                           <div className="position-relative auth-pass-inputgroup">
                             <input
                               type={showPassword ? 'text' : 'password'}
                               value={formData.password}
                               onChange={handleChange}
-                              className="form-control pe-5 password-input"
+                              className={`form-control pe-5 password-input ${errors.password ? 'is-invalid' : ''}`}
                               placeholder="Enter password"
                               name="password"
                               required
@@ -184,6 +213,11 @@ export default function LogIn() {
                             >
                               <i className={`ri-${showPassword ? 'eye-off-fill' : 'eye-fill'} align-middle`}></i>
                             </button>
+                            {errors.password && (
+                              <div className="invalid-feedback">
+                                {errors.password}
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -204,7 +238,7 @@ export default function LogIn() {
                           </button>
                         </div>
 
-                        <div className="mt-4 text-center">
+                        {/* <div className="mt-4 text-center">
                           <h2 className="fs-13 mb-4 title">OR</h2>
                           <div className="signin-other-title">
                             <h5 className="fs-13 mb-4 title">Sign In with</h5>
@@ -223,7 +257,7 @@ export default function LogIn() {
                               <i className="ri-twitter-fill fs-16"></i>
                             </button>
                           </div>
-                        </div>
+                        </div> */}
                       </form>
                     </div>
                   </div>
@@ -237,6 +271,12 @@ export default function LogIn() {
           </div>
         </div>
       </div>
+      
+      {/* <VerificationModal 
+        isOpen={showVerificationModal}
+        onClose={() => setShowVerificationModal(false)}
+        email={formData.login}
+      /> */}
     </div>
   );
 }

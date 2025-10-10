@@ -5,47 +5,95 @@ import { toast } from 'react-toastify';
 import axiosInstance from '../../../axiosInstance';
 import html2canvas from 'html2canvas';
 
-import { LogoDark } from '../../../assets/images';
-import { LogoLight } from '../../../assets/images';
+import { LogoDark, LogoLight } from '../../../assets/images';
+
 export default function ViewInvoice() {
     const { invoiceId } = useParams();
     const [invoice, setInvoice] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // Create abort controller
+        const controller = new AbortController();
+        let isMounted = true;
+
+        const fetchInvoiceData = async () => {
+            try {
+                const response = await axiosInstance.get(`/user/invoices/${invoiceId}`, {
+                    signal: controller.signal // Add abort signal
+                });
+                
+                if (!isMounted) return;
+
+                const { data } = response.data;
+                setInvoice({
+                    ...data,
+                    items: JSON.parse(data.items)
+                });
+            } catch (error) {
+                // Ignore abort errors
+                if (error.name === 'AbortError') return;
+                
+                if (isMounted) {
+                    toast.error('Error fetching invoice data');
+                }
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
+
         fetchInvoiceData();
-    }, [invoiceId]);
 
-
-    const fetchInvoiceData = async () => {
-        try {
-            const response = await axiosInstance.get(`/user/invoices/${invoiceId}`);
-            const { data } = response.data;
-            setInvoice({
-                ...data,
-                items: JSON.parse(data.items)
-            });
-        } catch (error) {
-            toast.error('Error fetching invoice data');
-        }
-    };
+        // Cleanup function
+        return () => {
+            isMounted = false;
+            controller.abort(); // Cancel any pending requests
+        };
+    }, [invoiceId]); // Only depend on invoiceId
 
     const handlePrint = () => {
         window.print();
     };
     
     const handleDownload = () => {
-        const element = document.getElementById('invoice-receipt'); // Change this to the ID of the specific container
-        html2canvas(element, { scale: 2 }).then((canvas) => {
+        const element = document.getElementById('invoice-receipt');
+        if (!element) {
+            toast.error('Invoice element not found');
+            return;
+        }
+
+        html2canvas(element, { 
+            scale: 2,
+            logging: false // Disable logging
+        }).then((canvas) => {
             const link = document.createElement('a');
             link.href = canvas.toDataURL('image/png');
-            link.download = 'invoice.png';
+            link.download = `invoice-${invoice.invoice_number}.png`;
             link.click();
         }).catch((error) => {
-            toast.error('Error capturing the invoice for download');
+            toast.error('Error downloading invoice');
         });
     };
 
-    if (!invoice) return <div>Loading...</div>;
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        );
+    }
+
+    if (!invoice) {
+        return (
+            <div className="alert alert-danger m-4" role="alert">
+                Failed to load invoice data. Please try refreshing the page.
+            </div>
+        );
+    }
 
     return (
         <>

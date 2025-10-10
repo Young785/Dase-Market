@@ -154,18 +154,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                                 </span>
                             </Link>
                         </li>
-                        <li className={`nav-item ${isActive(["/dase/setting"])}`}>
-                            <Link to="/dase/setting" className={`nav-link ${isActive(["/dase/setting"])}`} data-key="t-setting">
-                                <span data-key="t-setting">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M12 2v2m0 16v2m8.66-14.66l-1.42 1.42m-11.32 0l-1.42-1.42M22 12h-2m-16 0H2m14.66 8.66l1.42-1.42m-11.32 0l1.42 1.42" stroke="#6882B6" strokeWidth="2"/>
-                                        <circle cx="12" cy="12" r="3" stroke="#6882B6" strokeWidth="2"/>
-                                    </svg>
-
-                                    Setting
-                                </span>
-                            </Link>
-                        </li>
+                       
                         {/* <li className={`nav-item ${isActive(["/dase/voice"])}`}>
                             <Link to="/dase/voice" className={`nav-link ${isActive(["/dase/voice"])}`} data-key="t-voice">
                                 <span data-key="t-voice">
@@ -198,6 +187,41 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                                         </defs>
                                     </svg>
                                     Social
+                                </span>
+                            </Link>
+                        </li>
+
+                        <li className={`nav-item ${isActive(["/dase/project"])}`}>
+                            <Link to="/dase/project" className={`nav-link ${isActive(["/dase/project"])}`} data-key="t-project">
+                                <span data-key="t-project">
+                                    <svg className="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <g clipPath="url(#clip0_942_815)">
+                                            <path d="M4 13H10C10.55 13 11 12.55 11 12V4C11 3.45 10.55 3 10 3H4C3.45 3 3 3.45 3 4V12C3 12.55 3.45 13 4 13ZM4 21H10C10.55 21 11 20.55 11 20V16C11 15.45 10.55 15 10 15H4C3.45 15 3 15.45 3 16V20C3 20.55 3.45 21 4 21ZM14 21H20C20.55 21 21 20.55 21 20V12C21 11.45 20.55 11 20 11H14C13.45 11 13 11.45 13 12V20C13 20.55 13.45 21 14 21ZM13 4V8C13 8.55 13.45 9 14 9H20C20.55 9 21 8.55 21 8V4C21 3.45 20.55 3 20 3H14C13.45 3 13 3.45 13 4Z" fill="#6882B6"/>
+                                        </g>
+                                        <defs>
+                                            <clipPath id="clip0_942_815">
+                                                <rect width="24" height="24" fill="white"/>
+                                            </clipPath>
+                                        </defs>
+                                    </svg>
+                                    Project
+                                </span>
+                            </Link>
+                        </li>
+                        <li className={`nav-item ${isActive(["/dase/engineer"])}`}>
+                            <Link to="/dase/engineer" className={`nav-link ${isActive(["/dase/engineer"])}`} data-key="t-project">
+                                <span data-key="t-project">
+                                    <svg className="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <g clipPath="url(#clip0_942_815)">
+                                            <path d="M4 13H10C10.55 13 11 12.55 11 12V4C11 3.45 10.55 3 10 3H4C3.45 3 3 3.45 3 4V12C3 12.55 3.45 13 4 13ZM4 21H10C10.55 21 11 20.55 11 20V16C11 15.45 10.55 15 10 15H4C3.45 15 3 15.45 3 16V20C3 20.55 3.45 21 4 21ZM14 21H20C20.55 21 21 20.55 21 20V12C21 11.45 20.55 11 20 11H14C13.45 11 13 11.45 13 12V20C13 20.55 13.45 21 14 21ZM13 4V8C13 8.55 13.45 9 14 9H20C20.55 9 21 8.55 21 8V4C21 3.45 20.55 3 20 3H14C13.45 3 13 3.45 13 4Z" fill="#6882B6"/>
+                                        </g>
+                                        <defs>
+                                            <clipPath id="clip0_942_815">
+                                                <rect width="24" height="24" fill="white"/>
+                                            </clipPath>
+                                        </defs>
+                                    </svg>
+                                    Engineer
                                 </span>
                             </Link>
                         </li>

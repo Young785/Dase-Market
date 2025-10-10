@@ -21,7 +21,7 @@ export default function ForgotPassword() {
       return;
     }
 
-    setIsUploading(true); // Set loading state to true
+    setIsUploading(true); 
 
     try {
       const response = await axiosInstance.post('/change-password', {
@@ -38,7 +38,7 @@ export default function ForgotPassword() {
     } catch (error) {
       toast.error(`An error occurred: ${error.response?.data?.message || error.message}`);
     } finally {
-      setIsUploading(false); // Reset loading state
+      setIsUploading(false);
     }
   };
 

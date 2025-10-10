@@ -7,7 +7,9 @@ import VerifyOtp from './components/auth/verify-code';
 import ConfirmAccount from './components/auth/confirm-account';
 import ForgotPassword from './components/auth/forgotpassword';
 import VerifyPasswordOtp from './components/auth/verifypasswordotp';
-import NewPassword from './components/auth/newpassword'
+import NewPassword from './components/auth/newpassword';
+import VerificationPage from './components/auth/verificationPage';
+
 
 
 import DashboardHome from './dashboard/page';
@@ -18,10 +20,13 @@ import ViewInvoice from './dashboard/invoice/view/App';
 import EditInvoice from './dashboard/invoice/edit/App';
 import Profile from './dashboard/profile/App';
 import ProfileEdit from './dashboard/profile/edit';
-import Setting from './dashboard/settings/App'
+// import Setting from './dashboard/settings/App'
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Waveform from './dashboard/voice/App';
 import Social from './dashboard/social/App'
+import Project from './dashboard/project/App'
+import Engineer from './dashboard/engineer/App'
+import EngineerDetails from './dashboard/engineer/view/App'
 import { loadExternalScripts } from './utils/external-scripts';
 
 // New component to wrap dashboard routes
@@ -36,9 +41,12 @@ const DashboardWrapper = () => {
       <Route path="chat" element={<Chat />} />
       <Route path="profile" element={<Profile />} />
       <Route path="profile/edit" element={<ProfileEdit />} />
-      <Route path="setting" element={<Setting />} />
+      {/* <Route path="setting" element={<Setting />} /> */}
       <Route path="voice" element={<Waveform />} />
       <Route path="social" element={<Social />} />
+      <Route path="project" element={<Project />} />
+      <Route path="engineer" element={<Engineer />} />
+      <Route path="engineer/view/:account_id" element={<EngineerDetails />} />
       {/* Redirect to dashboard home for any unmatched routes */}
       <Route path="*" element={<Navigate to="/dase/dashboard" replace />} />
     </Routes>
@@ -59,6 +67,7 @@ function App() {
       <Route path="/dase/forget-password" element={<ForgotPassword/>} />
       <Route path="/dase/verifypasswordotp" element={<VerifyPasswordOtp/>} />
       <Route path="dase/newpassword" element={<NewPassword/>} />
+      <Route path="dase/verify-account" element={<VerificationPage/>} />
 
       {/* Protected routes */}
       <Route 
