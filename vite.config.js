@@ -84,7 +84,7 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api/v1/dase': {
-        target: 'http://127.0.0.1:8000',
+        target: 'https://livestream.test',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path
