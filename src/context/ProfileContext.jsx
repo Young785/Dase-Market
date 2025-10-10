@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import axiosInstance from '../axiosInstance';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -6,17 +6,21 @@ const ProfileContext = createContext();
 
 export function ProfileProvider({ children }) {
     const [profile, setProfile] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [isVerified, setIsVerified] = useState(true);
     const navigate = useNavigate();
     const location = useLocation();
 
-    const updateProfile = async () => {
+    const updateProfile = useCallback(async (force = false) => {
+        if (profile && !force) {
+            return true;
+        }
+
         setLoading(true);
         try {
             const authData = JSON.parse(localStorage.getItem('auth_data'));
             if (!authData?.access_token) {
-                setLoading(false);
+                setProfile(null);
                 return false;
             }
 
@@ -39,7 +43,16 @@ export function ProfileProvider({ children }) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [profile, navigate]);
+
+    useEffect(() => {
+        const authData = JSON.parse(localStorage.getItem('auth_data'));
+        if (authData?.access_token) {
+            updateProfile();
+        } else {
+            setLoading(false);
+        }
+    }, []);
 
     // Check if current route is a protected route
     const isProtectedRoute = (pathname) => {
@@ -52,7 +65,7 @@ export function ProfileProvider({ children }) {
             '/dase/verifyotp'
         ];
 
-        // If the path is not in public routes and starts with /dase/, it's protected
+        
         return !publicRoutes.includes(pathname) && pathname.startsWith('/dase/');
     };
 
@@ -61,17 +74,13 @@ export function ProfileProvider({ children }) {
             const authData = JSON.parse(localStorage.getItem('auth_data'));
             if (authData?.access_token && isProtectedRoute(location.pathname)) {
                 setLoading(true);
-                await updateProfile();
+                await updateProfile(true); 
+            } else {
+                setLoading(false);
             }
         };
 
-        if (isProtectedRoute(location.pathname)) {
-            loadProfile();
-        } else {
-            // Reset states for public routes
-            setLoading(false);
-            setProfile(null);
-        }
+        loadProfile();
     }, [location.pathname]);
 
     return (

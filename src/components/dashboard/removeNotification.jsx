@@ -1,3 +1,4 @@
+"use client"
 import { Link } from 'react-router-dom';
 // import SideBar from '../dashboard_header/sidebar';
 
