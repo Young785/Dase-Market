@@ -420,6 +420,26 @@ export default function Register() {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!value) return "Email is required"
         if (!emailRegex.test(value)) return "Please enter a valid email address"
+        // Disallow common free email providers for business email
+        const blockedDomains = [
+          "gmail.com",
+          "yahoo.com",
+          "yahoo.co.uk",
+          "hotmail.com",
+          "outlook.com",
+          "live.com",
+          "msn.com",
+          "icloud.com",
+          "aol.com",
+          "protonmail.com",
+          "yandex.com",
+          "gmx.com",
+          "zoho.com",
+          "mail.com",
+        ]
+        const domain = value.split("@")[1]?.toLowerCase().trim()
+        if (!domain || !domain.includes(".")) return "Please use a valid business email domain"
+        if (blockedDomains.includes(domain)) return "Please use your company/business email address"
         return ""
 
       case "business_phone":
@@ -430,9 +450,13 @@ export default function Register() {
         return value.trim() ? "" : "Business name is required"
 
       case "business_website":
-        if (!value) return "" // Optional field
-        const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/
-        return urlRegex.test(value) ? "" : "Please enter a valid URL"
+        // Required for clients; optional for engineers
+        if (activeTab === "client" && !value) return "Business website is required for clients"
+        if (!value) return ""
+        // Require a proper URL with domain and allow optional http/https
+        const urlRegex = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/
+        if (!urlRegex.test(value)) return "Please enter a valid website URL"
+        return ""
 
       case "password":
         if (!value) return "Password is required"
