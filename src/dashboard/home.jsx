@@ -16,7 +16,7 @@ import { companiesImg5 } from '../assets/images';
 import { companiesImg8 } from '../assets/images';
 
 import Footer from "../components/dashboard/footer"
-import { Bell, Briefcase, DollarSign, Users, Server } from 'lucide-react'; // Example icons
+import { Bell, Briefcase, DollarSign, Users, Server } from 'lucide-react'; 
 import NotificationModal from '../components/dashboard/ui/NotificationModal'; // Import the new modal
 
 // import SideBar from '../dashboard_header/sidebar'
@@ -259,13 +259,7 @@ export default function Home() {
 											<h5 className="fs-16 mb-1">{user.first_name} {user.last_name}</h5>
 											<p className="text-muted mb-0">{user.business_name}</p>
 											<p className="text-muted mb-0">{user.business_email}</p>
-											{user.business_website && (
-												<p className="text-muted mb-0">
-													<a href={user.business_website} target="_blank" rel="noopener noreferrer">
-														{user.business_website}
-													</a>
-												</p>
-											)}
+											
 											<div className="mt-3">
 												<Link to="/dase/profile" className="btn btn-primary btn-sm">View Profile</Link>
 											</div>
