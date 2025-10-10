@@ -70,20 +70,19 @@ axiosInstance.interceptors.response.use(
             });
         }
         
-        // Handle 401 Unauthorized - redirect to login
+        // Handle 401 Unauthorized - redirect to login unless on verification routes
         if (response?.status === 401) {
-            localStorage.clear();
-            window.location.href = '/dase/login';
+            const url = error.config?.url || '';
+            const isVerificationFlow = url.includes('/confirm-account') || url.includes('/verify-code');
+            if (!isVerificationFlow) {
+                localStorage.clear();
+                window.location.href = '/dase/login';
+            }
         }
         
         // Handle 403 Forbidden - account not verified
         if (response?.status === 403 && response?.data?.message?.includes('verify your account')) {
-            // Don't clear signup_record if user is in verification flow
-            const signupRecord = localStorage.getItem('signup_record');
-            localStorage.clear();
-            if (signupRecord) {
-                localStorage.setItem('signup_record', signupRecord);
-            }
+            // Do not clear localStorage; we need auth_data for subsequent steps
             window.location.href = '/dase/verifyotp';
         }
         
