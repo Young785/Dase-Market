@@ -101,40 +101,34 @@ export default function LogIn() {
     setIsUploading(true);
 
     try {
-      const response = await axiosInstance.post('/login', formData);
-      console.log('📥 Login response:', response.data);
+      // If login is a phone number, backend expects business_phone_code
+      const isPhoneLogin = /^\d{10,}$/.test(formData.login);
+      const payload = isPhoneLogin
+        ? { ...formData, business_phone_code: '234' } // default to NG code to satisfy API
+        : { ...formData };
+
+      const response = await axiosInstance.post('/login', payload);
       
       if (response.data.status) {
-        notifySuccess(response.data.message);
-        
-        // Wait a bit to ensure token is saved in axios interceptor
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Verify token was saved
-        const savedAuth = localStorage.getItem('auth_data');
-        console.log('✅ Saved auth_data:', savedAuth ? 'Yes' : 'No');
-        
-        // Now update profile
-        const profileUpdated = await updateProfile(true);
-        console.log('📋 Profile updated:', profileUpdated);
-        
-        if (profileUpdated) {
-          navigate('/dase/dashboard');
-        } else {
-          console.error('❌ Failed to load profile after login');
-          notifyError('Failed to load profile. Please try logging in again.');
+        // Persist auth immediately to avoid race conditions with interceptors
+        const{ access_token, user, permissions } = response.data;
+        if (access_token) {
+          localStorage.setItem('auth_data', JSON.stringify({ access_token, user, permissions }));
         }
+
+        notifySuccess(response.data.message);
+        await updateProfile(true);
+        navigate('/dase/dashboard');
       } else {
         notifyError(response.data.message);
       }
     } catch (err) {
-      console.error('❌ Login error:', err.response?.data || err.message);
       const errorMessage = err.response?.data?.message || 'An unexpected error occurred';
       notifyError(errorMessage);
       
       // Handle specific error cases
-      if (err.response?.data?.requiresVerification || err.response?.status === 403) {
-        navigate('/dase/verifyotp');
+      if (err.response?.data?.requiresVerification) {
+        navigate('/dase/verify-account');
       }
     } finally {
       setIsUploading(false);

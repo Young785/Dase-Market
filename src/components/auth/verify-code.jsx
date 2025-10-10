@@ -11,6 +11,7 @@ import OtpInput from "react-otp-input"
 export default function VerifyCode() {
   const [OTPcode, setOTPCode] = useState("")
   const [isUploading, setIsUploading] = useState(false)
+  const [signupUser, setSignupUser] = useState(null)
   const navigate = useNavigate()
 
   const notifySuccess = (text) =>
@@ -41,19 +42,46 @@ export default function VerifyCode() {
     const checkAuth = async () => {
       const signupRecordStr = localStorage.getItem("signup_record")
       console.log("🔍 Checking signup_record:", signupRecordStr)
-      
-      if (!signupRecordStr) {
-        console.error("❌ No signup_record found in localStorage")
-        notifyError("Kindly proceed to login!")
-        setTimeout(() => {
-          navigate("/")
-        }, 1500)
-        return
+
+      let getAuth = null
+      try {
+        if (signupRecordStr) {
+          getAuth = JSON.parse(signupRecordStr)
+          setSignupUser(getAuth)
+          console.log("✅ Parsed signup_record:", getAuth)
+        }
+      } catch (e) {
+        console.error("❌ Error parsing signup_record:", e)
       }
 
-      try {
-        const getAuth = JSON.parse(signupRecordStr)
-        console.log("✅ Parsed signup_record:", getAuth)
+      // Fallback: use authenticated profile if available
+      if (!getAuth) {
+        try {
+          const authLocal = JSON.parse(localStorage.getItem("auth_data"))
+          if (authLocal?.access_token) {
+            const profileRes = await axiosInstance.get("/user/profile")
+            if (profileRes?.data?.data) {
+              const user = profileRes.data.data
+              getAuth = {
+                account_id: user.account_id,
+                business_email: user.business_email,
+                business_phone_code: user.business_phone_code,
+                business_phone: user.business_phone,
+              }
+              setSignupUser(getAuth)
+              console.log("✅ Using profile fallback for OTP:", getAuth)
+            }
+          }
+        } catch (e) {
+          console.error("❌ Could not fetch profile for OTP fallback:", e)
+        }
+      }
+
+      if (!getAuth) {
+        notifyError("Kindly proceed to login!")
+        setTimeout(() => navigate("/"), 1500)
+        return
+      }
 
         // Check if OTP has already been sent from registration page
         const otpAlreadySent = localStorage.getItem("otp_sent")
@@ -69,17 +97,10 @@ export default function VerifyCode() {
         // Only send OTP if it hasn't been sent already
         if (!otpAlreadySent) {
           console.log("📤 Sending OTP request...")
-          handleConfirmAcct()
+          handleConfirmAcct(getAuth)
         } else {
           console.log("✅ OTP already sent, waiting for user input")
         }
-      } catch (error) {
-        console.error("❌ Error parsing signup_record:", error)
-        notifyError("Invalid registration data. Please register again.")
-        setTimeout(() => {
-          navigate("/dase/register")
-        }, 2000)
-      }
     }
 
     checkAuth()
@@ -89,14 +110,37 @@ export default function VerifyCode() {
     }
   }, [navigate])
 
-  const handleConfirmAcct = async () => {
-    const getrecord = JSON.parse(localStorage.getItem("signup_record"))
+  const handleConfirmAcct = async (recordOverride = null) => {
+    let getrecord = recordOverride || JSON.parse(localStorage.getItem("signup_record")) || signupUser
 
-    if (getrecord) {
+    // If we still don't have a record or it lacks email, fetch profile as a last resort
+    if (!getrecord || !getrecord.business_email) {
+      try {
+        const authLocal = JSON.parse(localStorage.getItem("auth_data"))
+        if (authLocal?.access_token) {
+          const profileRes = await axiosInstance.get("/user/profile")
+          const u = profileRes?.data?.data
+          if (u?.business_email) {
+            getrecord = {
+              account_id: u.account_id,
+              business_email: u.business_email,
+              business_phone_code: u.business_phone_code,
+              business_phone: u.business_phone,
+            }
+            setSignupUser(getrecord)
+          }
+        }
+      } catch (e) {
+        // ignore; handled below
+      }
+    }
+
+    if (getrecord && getrecord.business_email) {
       const obj = {
-        phone_code: getrecord.business_phone_code,
-        phone_number: getrecord.business_phone,
         business_email: getrecord.business_email,
+        // phone is optional on backend; include if present
+        ...(getrecord.business_phone_code ? { phone_code: getrecord.business_phone_code } : {}),
+        ...(getrecord.business_phone ? { phone_number: getrecord.business_phone } : {}),
       }
 
       console.log("📧 Sending OTP to:", obj)
@@ -118,6 +162,9 @@ export default function VerifyCode() {
       } finally {
         setIsUploading(false)
       }
+    } else {
+      notifyError("Missing account email. Please login again.")
+      setTimeout(() => navigate("/"), 1500)
     }
   }
 
