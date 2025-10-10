@@ -31,7 +31,7 @@ export default function Home() {
 		const fetchDashboardData = async () => {
 			try {
 				setLoading(true);
-				const response = await axiosInstance.get('/dashboard');
+				const response = await axiosInstance.get('/dase/dashboard');
 				if (response.data && response.data.status === true) {
 					setDashboardData(response.data.data);
 					setError(null);

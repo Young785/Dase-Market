@@ -8,7 +8,8 @@ import { useProfile } from '../../context/ProfileContext';
 // import VerificationModal from './verificationPage';
 
 export default function LogIn() {
-  const [showVerificationModal, showPassword, setShowVerificationModal, setShowPassword] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     login: '',
     password: '',
@@ -39,8 +40,8 @@ export default function LogIn() {
     if (!password) {
       return 'Password is required';
     }
-    if (password.length < 6) {
-      return 'Password must be at least 6 characters';
+    if (password.length < 8) {
+      return 'Password must be at least 8 characters';
     }
     return '';
   };
@@ -100,7 +101,7 @@ export default function LogIn() {
     setIsUploading(true);
 
     try {
-      const response = await axiosInstance.post('/login', formData);
+      const response = await axiosInstance.post('/dase/login', formData);
       
       if (response.data.status) {
         notifySuccess(response.data.message);

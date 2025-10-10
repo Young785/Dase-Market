@@ -45,51 +45,13 @@ axiosInstance.interceptors.response.use(
             console.log(`📥 ${response.config.method.toUpperCase()} ${response.config.url}`, response.data);
         }
         
-        // For login endpoint
+        // For login endpoint - just store auth data
         if (response.config.url.includes('/login') && response.data.status) {
-            try {
-                // Store auth data temporarily to make profile check
-                localStorage.setItem('auth_data', JSON.stringify({
-                    access_token: response.data.access_token,
-                    user: response.data.user,
-                    permissions: response.data.permissions,
-                }));
-
-                // Make profile check after successful login
-                const profileCheck = await axiosInstance.get('/user/profile');
-                
-                // If profile check indicates unverified account
-                if (profileCheck.data.message === "You need to verify your account to gain full access." && 
-                    profileCheck.data.status === false) {
-                    localStorage.clear();
-                    window.location.href = '/dase/verify-account';
-                    return Promise.reject({
-                        response: {
-                            data: {
-                                message: "Please verify your account to continue"
-                            }
-                        }
-                    });
-                }
-
-                // If we get here, user is verified, let the login proceed
-                return response;
-                
-            } catch (error) {
-                localStorage.clear();
-                window.location.href = '/dase/verify-account';
-                return Promise.reject(error);
-            }
-        }
-
-        // For profile endpoint
-        if (response.config.url.includes('/user/profile')) {
-            if (response.data.message === "You need to verify your account to gain full access." && 
-                response.data.status === false) {
-                localStorage.clear();
-                window.location.href = '/dase/verify-account';
-                return Promise.reject(response);
-            }
+            localStorage.setItem('auth_data', JSON.stringify({
+                access_token: response.data.access_token,
+                user: response.data.user,
+                permissions: response.data.permissions,
+            }));
         }
         
         return response;
@@ -108,10 +70,18 @@ axiosInstance.interceptors.response.use(
             });
         }
         
+        // Handle 401 Unauthorized - redirect to login
         if (response?.status === 401) {
             localStorage.clear();
             window.location.href = '/dase/login';
         }
+        
+        // Handle 403 Forbidden - account not verified
+        if (response?.status === 403 && response?.data?.message?.includes('verify your account')) {
+            localStorage.clear();
+            window.location.href = '/dase/verifyotp';
+        }
+        
         return Promise.reject(error);
     }
 );

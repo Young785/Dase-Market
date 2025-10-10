@@ -303,7 +303,7 @@ export default function Register() {
           console.log("Profile photo being sent:", formData.profile_photo)
 
           try {
-            const response = await axiosInstance.post("/register", dataToSend, {
+            const response = await axiosInstance.post("/dase/register", dataToSend, {
               headers: {
                 "Content-Type": "multipart/form-data",
               },
@@ -324,7 +324,7 @@ export default function Register() {
                   business_email: userData.business_email,
                 }
 
-                const otpResponse = await axiosInstance.post("/confirm-account", otpData)
+                const otpResponse = await axiosInstance.post("/dase/confirm-account", otpData)
 
                 if (otpResponse.data.status) {
                   // Set a flag in localStorage to indicate OTP has been sent

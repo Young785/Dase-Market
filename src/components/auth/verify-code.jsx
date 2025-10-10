@@ -84,7 +84,7 @@ export default function VerifyCode() {
       setIsUploading(true)
 
       try {
-        const response = await axiosInstance.post("/confirm-account", obj)
+        const response = await axiosInstance.post("/dase/confirm-account", obj)
         if (response.data.status) {
           localStorage.setItem("otp_sent", "true")
           notifySuccess(response.data.message)
@@ -118,21 +118,17 @@ export default function VerifyCode() {
       setIsUploading(true)
 
       try {
-        const response = await axiosInstance.post("/verify-code", obj)
+        const response = await axiosInstance.post("/dase/verify-code", obj)
         if (response.data.status) {
           notifySuccess(response.data.message)
 
-          // Store auth data if provided in response
-          if (response.data.auth_data) {
-            localStorage.setItem("auth_data", JSON.stringify(response.data.auth_data))
-          }
-
-          // Clear the OTP sent flag
+          // Clear signup record and OTP flag
+          localStorage.removeItem("signup_record")
           localStorage.removeItem("otp_sent")
 
           // Delay navigation to ensure toast messages are visible
           setTimeout(() => {
-            navigate("/dase/dashboard") // Redirect to the dashboard on success
+            navigate("/dase/login") // Redirect to login after verification
           }, 3500)
         } else {
           notifyError(response.data.message)
