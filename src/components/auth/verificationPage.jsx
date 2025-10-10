@@ -31,26 +31,34 @@ export default function VerificationPage() {
         });
 
     const handleConfirmAcct = async () => {
-        const getrecord = JSON.parse(localStorage.getItem('signup_record'));
+        const signupRecordStr = localStorage.getItem('signup_record');
+        console.log('🔍 VerificationPage - signup_record:', signupRecordStr);
 
-        if (!getrecord) {
-            notifyError('Kindly proceed to login!');
+        if (!signupRecordStr) {
+            console.error('❌ No signup_record found');
+            notifyError('No registration data found. Please register first.');
             setTimeout(() => {
-                navigate('/');
-            }, 1500);
+                navigate('/dase/register');
+            }, 2000);
             return;
         }
 
-        const obj = {
-            phone_code: getrecord.business_phone_code,
-            phone_number: getrecord.business_phone,
-            business_email: getrecord.business_email,
-        };
-
-        setIsUploading(true);
-
         try {
+            const getrecord = JSON.parse(signupRecordStr);
+            console.log('✅ Parsed signup_record:', getrecord);
+
+            const obj = {
+                phone_code: getrecord.business_phone_code,
+                phone_number: getrecord.business_phone,
+                business_email: getrecord.business_email,
+            };
+
+            console.log('📧 Sending verification to:', obj);
+            setIsUploading(true);
+
             const response = await axiosInstance.post('/confirm-account', obj);
+            console.log('📥 Response:', response.data);
+            
             if (response.data.status) {
                 localStorage.setItem('otp_sent', 'true');
                 notifySuccess(response.data.message);
@@ -58,13 +66,33 @@ export default function VerificationPage() {
                 notifyError(response.data.message);
             }
         } catch (error) {
-            notifyError('Failed to send verification code.');
+            console.error('❌ Error:', error.response?.data || error.message);
+            notifyError(error.response?.data?.message || 'Failed to send verification code.');
         } finally {
             setIsUploading(false);
         }
     };
 
     useEffect(() => {
+        console.log('🔍 VerificationPage mounted');
+        console.log('📦 All localStorage:', {
+            signup_record: localStorage.getItem('signup_record'),
+            otp_sent: localStorage.getItem('otp_sent'),
+            otp_message: localStorage.getItem('otp_message'),
+            auth_data: localStorage.getItem('auth_data')
+        });
+
+        // Check if signup_record exists first
+        const signupRecord = localStorage.getItem('signup_record');
+        if (!signupRecord) {
+            console.error('❌ No signup_record - redirecting to register');
+            notifyError('No registration data found. Please register first.');
+            setTimeout(() => {
+                navigate('/dase/register');
+            }, 2000);
+            return;
+        }
+
         // If a previous OTP message exists (from registration), show it
         const otpMessage = localStorage.getItem('otp_message');
         if (otpMessage) {
@@ -74,8 +102,13 @@ export default function VerificationPage() {
 
         // Only send OTP automatically if it hasn't already been sent
         const otpAlreadySent = localStorage.getItem('otp_sent');
+        console.log('📧 OTP already sent?', otpAlreadySent);
+        
         if (!otpAlreadySent) {
+            console.log('📤 Auto-sending verification...');
             handleConfirmAcct();
+        } else {
+            console.log('✅ OTP already sent, waiting for user action');
         }
     }, []);
 
