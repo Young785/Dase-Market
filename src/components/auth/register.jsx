@@ -81,11 +81,15 @@ export default function Register() {
   const handlePhoneChange = (value, country) => {
     // Prevent form submission
     setTimeout(() => {
+      const phone = value.slice(country.dialCode.length)
       setFormData({
         ...formData,
-        business_phone: value.slice(country.dialCode.length),
+        business_phone: phone,
         business_phone_code: country.dialCode,
       })
+      // validate phone immediately
+      const phoneError = validateField("business_phone", phone)
+      setErrors((prev) => ({ ...prev, business_phone: phoneError }))
     }, 0)
   }
 
@@ -1040,6 +1044,9 @@ export default function Register() {
                                 containerClass="phone-input-container"
                                 inputClass="form-control phone-input"
                               />
+                              {errors.business_phone && (
+                                <div className="invalid-feedback d-block">{errors.business_phone}</div>
+                              )}
                             </div>
                           </div>
                           <div className="row mb-3">
@@ -1278,8 +1285,11 @@ export default function Register() {
                                   },
                                 }}
                                 containerClass="phone-input-container"
-                                inputClass="form-control phone-input" // Custom class here
+                                inputClass="form-control phone-input"
                               />
+                              {errors.business_phone && (
+                                <div className="invalid-feedback d-block">{errors.business_phone}</div>
+                              )}
                             </div>
                           </div>
 
@@ -1331,6 +1341,9 @@ export default function Register() {
                                 id="business_website"
                                 placeholder="Enter business website"
                               />
+                              {errors.business_website && (
+                                <div className="invalid-feedback d-block">{errors.business_website}</div>
+                              )}
                             </div>
                           </div>
                           <div className="mb-3 row">
