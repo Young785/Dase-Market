@@ -20,6 +20,15 @@ export default function SocialFeed() {
     const [replyTo, setReplyTo] = useState(null);
     const [fileKey, setFileKey] = useState(0);
 
+    const getApiOrigin = () => {
+        try {
+            const base = axiosInstance.defaults.baseURL || '';
+            return new URL(base, window.location.origin).origin;
+        } catch {
+            return 'https://livestream.test';
+        }
+    };
+
     useEffect(() => {
         fetchPosts();
     }, []);
@@ -55,10 +64,13 @@ export default function SocialFeed() {
             if (response.data.success) {
                 // API returns paginated data
                 const postsData = response.data.data.data || [];
+                const apiOrigin = getApiOrigin();
                 // Transform posts to add computed properties
                 const transformedPosts = postsData.map(post => ({
                     ...post,
                     public_id: post.status_update_id || post.id,
+                    media_url: post.media_url ? (post.media_url.startsWith('http') ? post.media_url : `${apiOrigin}/${post.media_url}`) : null,
+                    thumbnail_url: post.thumbnail_url ? (post.thumbnail_url.startsWith('http') ? post.thumbnail_url : `${apiOrigin}/${post.thumbnail_url}`) : null,
                     user: post.account || {
                         account_id: post.account_id,
                         name: 'Unknown User',
@@ -282,9 +294,10 @@ export default function SocialFeed() {
     const renderMedia = (post) => {
         if (!post.media_url) return null;
 
+        const apiOrigin = getApiOrigin();
         const fullMediaUrl = post.media_url.startsWith('http') 
             ? post.media_url 
-            : `${window.location.origin}/${post.media_url}`;
+            : `${apiOrigin}/${post.media_url}`;
 
         switch (post.media_type) {
             case 'image':
@@ -340,7 +353,7 @@ export default function SocialFeed() {
                         {post.thumbnail_url && (
                             <div className="position-relative">
                                 <img 
-                                    src={post.thumbnail_url.startsWith('http') ? post.thumbnail_url : `${window.location.origin}/${post.thumbnail_url}`}
+                                    src={post.thumbnail_url.startsWith('http') ? post.thumbnail_url : `${apiOrigin}/${post.thumbnail_url}`}
                                     alt="Cover"
                                     className="img-fluid w-100"
                                     style={{ maxHeight: '320px', objectFit: 'cover' }}
@@ -560,7 +573,7 @@ export default function SocialFeed() {
                             <div className="d-flex justify-content-around">
                                 <button 
                                     className={`btn btn-sm btn-light flex-fill ${post.user_liked ? 'text-primary' : ''}`}
-                                    onClick={() => handleLikePost(post.id)}
+                                    onClick={() => handleLikePost(post.public_id || post.status_update_id || post.id)}
                                 >
                                     <ThumbsUp size={16} className="me-1" />
                                     {post.user_liked ? 'Liked' : 'Like'}
@@ -572,7 +585,7 @@ export default function SocialFeed() {
                                     <MessageCircle size={16} className="me-1" />
                                     Comment
                                 </button>
-                                <button className="btn btn-sm btn-light flex-fill">
+                                <button className="btn btn-sm btn-light flex-fill" onClick={() => handleShare(post)}>
                                     <Share2 size={16} className="me-1" />
                                     Share
                                 </button>
@@ -814,6 +827,14 @@ export default function SocialFeed() {
                                     </div>
                                     
                                     {selectedPost.content && <p>{selectedPost.content}</p>}
+                                    {selectedPost.media_type === 'audio' && selectedPost.thumbnail_url && (
+                                        <img
+                                            src={selectedPost.thumbnail_url}
+                                            alt="Cover"
+                                            className="img-fluid rounded mb-2"
+                                            style={{ maxHeight: '320px', objectFit: 'cover' }}
+                                        />
+                                    )}
                                     {renderMedia(selectedPost)}
                                 </div>
 
@@ -928,13 +949,13 @@ export default function SocialFeed() {
                                                 onChange={(e) => setComment(e.target.value)}
                                                 onKeyPress={(e) => {
                                                     if (e.key === 'Enter') {
-                                                        handleAddComment(selectedPost.id);
+                                                        handleAddComment(selectedPost.status_update_id || selectedPost.public_id || selectedPost.id);
                                                     }
                                                 }}
                                             />
                                             <button 
                                                 className="btn btn-primary"
-                                                onClick={() => handleAddComment(selectedPost.id)}
+                                                onClick={() => handleAddComment(selectedPost.status_update_id || selectedPost.public_id || selectedPost.id)}
                                             >
                                                 <Send size={16} />
                                             </button>
@@ -946,6 +967,9 @@ export default function SocialFeed() {
                     </div>
                 </div>
             )}
+
+            {/* Hidden share helper */}
+            {/* We keep a copy helper via clipboard API in handleShare */}
         </>
     );
 }
