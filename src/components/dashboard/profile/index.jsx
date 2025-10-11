@@ -28,6 +28,14 @@ export default function ProfilePage() {
 
     // 2FA modal state
     const [show2FAModal, setShow2FAModal] = useState(false);
+    const [twoFAStep, setTwoFAStep] = useState('choice'); // 'choice', 'qrcode', 'verify'
+    const [twoFAType, setTwoFAType] = useState(''); // 'google2fa' or 'email'
+    const [qrCodeUrl, setQrCodeUrl] = useState('');
+    const [secret, setSecret] = useState('');
+    const [twoFACode, setTwoFACode] = useState('');
+    const [twoFAError, setTwoFAError] = useState('');
+    const [enabling2FA, setEnabling2FA] = useState(false);
+    const [verifying2FA, setVerifying2FA] = useState(false);
 
     useEffect(() => {
         if (profile) {
@@ -143,6 +151,93 @@ export default function ProfilePage() {
         } finally {
             setSavingPassword(false);
         }
+    };
+
+    const handleEnable2FA = async (type) => {
+        setEnabling2FA(true);
+        setTwoFAType(type);
+        try {
+            const response = await axiosInstance.get(`/user/2fa/enable/${type}`);
+            if (response.data.status) {
+                if (type === 'google2fa') {
+                    setQrCodeUrl(response.data.qrcode_url);
+                    setSecret(response.data.secret);
+                    setTwoFAStep('qrcode');
+                } else {
+                    setTwoFAStep('verify');
+                }
+                toast.success(response.data.message);
+            } else {
+                toast.error(response.data.message);
+            }
+        } catch (error) {
+            const msg = error.response?.data?.message || 'Failed to enable 2FA';
+            toast.error(msg);
+        } finally {
+            setEnabling2FA(false);
+        }
+    };
+
+    const handleVerify2FA = async (e) => {
+        e.preventDefault();
+        if (!twoFACode || twoFACode.length !== 6) {
+            setTwoFAError('Please enter a valid 6-digit code');
+            return;
+        }
+
+        setVerifying2FA(true);
+        setTwoFAError('');
+        try {
+            const response = await axiosInstance.get('/user/2fa/verify', {
+                params: { code: twoFACode }
+            });
+            
+            if (response.data.status) {
+                toast.success('2FA enabled successfully!');
+                setShow2FAModal(false);
+                reset2FAModal();
+                await updateProfile(true);
+            } else {
+                setTwoFAError(response.data.message);
+                toast.error(response.data.message);
+            }
+        } catch (error) {
+            const msg = error.response?.data?.message || 'Invalid code';
+            setTwoFAError(msg);
+            toast.error(msg);
+        } finally {
+            setVerifying2FA(false);
+        }
+    };
+
+    const handleDisable2FA = async () => {
+        if (!window.confirm('Are you sure you want to disable 2FA?')) return;
+        
+        try {
+            const response = await axiosInstance.get('/user/2fa/disable');
+            if (response.data.status) {
+                toast.success('2FA disabled successfully');
+                await updateProfile(true);
+            } else {
+                toast.error(response.data.message);
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to disable 2FA');
+        }
+    };
+
+    const reset2FAModal = () => {
+        setTwoFAStep('choice');
+        setTwoFAType('');
+        setQrCodeUrl('');
+        setSecret('');
+        setTwoFACode('');
+        setTwoFAError('');
+    };
+
+    const close2FAModal = () => {
+        setShow2FAModal(false);
+        reset2FAModal();
     };
 
     if (profileLoading) {
@@ -390,10 +485,11 @@ export default function ProfilePage() {
                                                 <i className="ri-notification-3-line me-2"></i> Notification Settings
                                             </Link>
                                             <button 
-                                                className="btn btn-outline-warning text-start"
+                                                className={`btn ${profile?.two_factor_enabled ? 'btn-outline-success' : 'btn-outline-warning'} text-start`}
                                                 onClick={() => setShow2FAModal(true)}
                                             >
-                                                <i className="ri-shield-check-line me-2"></i> Enable 2FA
+                                                <i className={`${profile?.two_factor_enabled ? 'ri-shield-check-fill' : 'ri-shield-line'} me-2`}></i> 
+                                                {profile?.two_factor_enabled ? 'Manage 2FA' : 'Enable 2FA'}
                                             </button>
                                                         </div>
                                                     </div>
@@ -487,18 +583,144 @@ export default function ProfilePage() {
                 <div className="modal-dialog modal-dialog-centered">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h5 className="modal-title">Enable Two-Factor Authentication</h5>
-                            <button type="button" className="btn-close" onClick={() => setShow2FAModal(false)}></button>
+                            <h5 className="modal-title">
+                                {twoFAStep === 'choice' && 'Enable Two-Factor Authentication'}
+                                {twoFAStep === 'qrcode' && 'Scan QR Code'}
+                                {twoFAStep === 'verify' && 'Verify Code'}
+                            </h5>
+                            <button type="button" className="btn-close" onClick={close2FAModal}></button>
                         </div>
                         <div className="modal-body">
-                            <p className="text-muted">Two-factor authentication adds an extra layer of security to your account.</p>
-                            <div className="alert alert-info">
-                                <i className="ri-information-line me-2"></i>
-                                This feature will be available soon. Stay tuned!
-                            </div>
+                            {/* Step 1: Choose 2FA Type */}
+                            {twoFAStep === 'choice' && (
+                                <>
+                                    <p className="text-muted mb-4">Two-factor authentication adds an extra layer of security to your account. Choose your preferred method:</p>
+                                    
+                                    <div className="d-grid gap-3">
+                                        {profile?.two_factor_enabled ? (
+                                            <div className="alert alert-success">
+                                                <i className="ri-shield-check-line me-2"></i>
+                                                <strong>2FA is currently enabled</strong>
+                                                <p className="mb-0 mt-2">Method: {profile.two_fa_type === 'google2fa' ? 'Google Authenticator' : 'Email'}</p>
+                                                <button className="btn btn-sm btn-danger mt-3" onClick={handleDisable2FA}>
+                                                    Disable 2FA
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <button 
+                                                    className="btn btn-outline-primary text-start p-3"
+                                                    onClick={() => handleEnable2FA('google2fa')}
+                                                    disabled={enabling2FA}
+                                                >
+                                                    <div className="d-flex align-items-center">
+                                                        <i className="ri-smartphone-line fs-3 me-3"></i>
+                                                        <div>
+                                                            <div className="fw-semibold">Google Authenticator</div>
+                                                            <small className="text-muted">Use an authenticator app to generate codes</small>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                
+                                                <button 
+                                                    className="btn btn-outline-info text-start p-3"
+                                                    onClick={() => handleEnable2FA('email')}
+                                                    disabled={enabling2FA}
+                                                >
+                                                    <div className="d-flex align-items-center">
+                                                        <i className="ri-mail-line fs-3 me-3"></i>
+                                                        <div>
+                                                            <div className="fw-semibold">Email Verification</div>
+                                                            <small className="text-muted">Receive codes via email</small>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+
+                            {/* Step 2: Show QR Code (Google Authenticator) */}
+                            {twoFAStep === 'qrcode' && (
+                                <>
+                                    <div className="alert alert-info">
+                                        <strong>Step 1:</strong> Install Google Authenticator or any compatible app
+                                    </div>
+                                    
+                                    <div className="text-center my-4">
+                                        <p className="fw-semibold mb-3">Scan this QR code with your authenticator app:</p>
+                                        {qrCodeUrl && (
+                                            <img src={qrCodeUrl} alt="QR Code" className="img-fluid border rounded p-3" style={{ maxWidth: '250px' }} />
+                                        )}
+                                    </div>
+
+                                    <div className="alert alert-warning">
+                                        <strong>Manual Entry:</strong>
+                                        <p className="mb-0 mt-2 font-monospace small">{secret}</p>
+                                    </div>
+
+                                    <button 
+                                        className="btn btn-primary w-100"
+                                        onClick={() => setTwoFAStep('verify')}
+                                    >
+                                        Continue to Verification
+                                    </button>
+                                </>
+                            )}
+
+                            {/* Step 3: Verify Code */}
+                            {twoFAStep === 'verify' && (
+                                <form onSubmit={handleVerify2FA}>
+                                    <div className="alert alert-info">
+                                        <i className="ri-information-line me-2"></i>
+                                        Enter the 6-digit code {twoFAType === 'google2fa' ? 'from your authenticator app' : 'sent to your email'}
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label">Verification Code</label>
+                                        <input
+                                            type="text"
+                                            className={`form-control form-control-lg text-center ${twoFAError ? 'is-invalid' : ''}`}
+                                            maxLength="6"
+                                            placeholder="000000"
+                                            value={twoFACode}
+                                            onChange={(e) => {
+                                                setTwoFACode(e.target.value.replace(/\D/g, ''));
+                                                setTwoFAError('');
+                                            }}
+                                            style={{ letterSpacing: '0.5em', fontSize: '1.5rem' }}
+                                        />
+                                        {twoFAError && <div className="invalid-feedback">{twoFAError}</div>}
+                                    </div>
+
+                                    <button 
+                                        type="submit" 
+                                        className="btn btn-success w-100"
+                                        disabled={verifying2FA || twoFACode.length !== 6}
+                                    >
+                                        {verifying2FA ? 'Verifying...' : 'Verify & Enable 2FA'}
+                                    </button>
+
+                                    {twoFAType === 'email' && (
+                                        <div className="text-center mt-3">
+                                            <button
+                                                type="button"
+                                                className="btn btn-link btn-sm"
+                                                onClick={() => handleEnable2FA('email')}
+                                                disabled={enabling2FA}
+                                            >
+                                                Resend Code
+                                            </button>
+                                        </div>
+                                    )}
+                                </form>
+                            )}
                         </div>
                         <div className="modal-footer">
-                            <button type="button" className="btn btn-light" onClick={() => setShow2FAModal(false)}>Close</button>
+                            <button type="button" className="btn btn-light" onClick={close2FAModal}>
+                                {twoFAStep === 'choice' ? 'Close' : 'Cancel'}
+                            </button>
                         </div>
                     </div>
                 </div>
