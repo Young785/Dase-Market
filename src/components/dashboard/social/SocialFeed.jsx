@@ -626,6 +626,33 @@ export default function SocialFeed() {
                                                     <strong className="small">{selectedMedia.name}</strong>
                                                 </div>
                                             </div>
+                                            {audioCover && (
+                                                <div className="mb-2">
+                                                    <img 
+                                                        src={URL.createObjectURL(audioCover)} 
+                                                        alt="Cover preview" 
+                                                        className="img-fluid rounded"
+                                                        style={{ maxHeight: '200px', objectFit: 'cover' }}
+                                                    />
+                                                </div>
+                                            )}
+                                            <div className="d-flex align-items-center gap-2 mb-2">
+                                                <label 
+                                                    className="btn btn-sm btn-outline-primary"
+                                                    title="Add Cover Image"
+                                                >
+                                                    <i className="ri-image-add-line me-1"></i> Cover Image
+                                                    <input 
+                                                        type="file" 
+                                                        accept="image/*" 
+                                                        style={{ display: 'none' }} 
+                                                        onChange={handleAudioCoverChange}
+                                                    />
+                                                </label>
+                                                {!audioCover && (
+                                                    <small className="text-danger">Cover image is required for audio</small>
+                                                )}
+                                            </div>
                                             <ReactPlayer 
                                                 url={URL.createObjectURL(selectedMedia)} 
                                                 controls 
