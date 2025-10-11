@@ -18,9 +18,34 @@ export default function SocialFeed() {
     const [selectedPost, setSelectedPost] = useState(null);
     const [comment, setComment] = useState('');
     const [replyTo, setReplyTo] = useState(null);
+    const [fileKey, setFileKey] = useState(0);
 
     useEffect(() => {
         fetchPosts();
+    }, []);
+
+    useEffect(() => {
+        const modalElement = document.getElementById('createPostModal');
+        if (!modalElement) return;
+
+        const resetCreateModal = () => {
+            setPostContent('');
+            setSelectedMedia(null);
+            setMediaType(null);
+            setAudioCover(null);
+            setFileKey(prev => prev + 1);
+        };
+
+        const onShow = () => resetCreateModal();
+        const onHidden = () => resetCreateModal();
+
+        modalElement.addEventListener('show.bs.modal', onShow);
+        modalElement.addEventListener('hidden.bs.modal', onHidden);
+
+        return () => {
+            modalElement.removeEventListener('show.bs.modal', onShow);
+            modalElement.removeEventListener('hidden.bs.modal', onHidden);
+        };
     }, []);
 
     const fetchPosts = async () => {
@@ -666,6 +691,8 @@ export default function SocialFeed() {
                                         onClick={() => {
                                             setSelectedMedia(null);
                                             setMediaType(null);
+                                            setAudioCover(null);
+                                            setFileKey(prev => prev + 1);
                                         }}
                                         title="Remove media"
                                     >
@@ -685,6 +712,7 @@ export default function SocialFeed() {
                                         >
                                             <i className="ri-image-add-line fs-5"></i>
                                             <input 
+                                                key={fileKey}
                                                 type="file" 
                                                 accept="image/*" 
                                                 style={{ display: 'none' }} 
@@ -698,6 +726,7 @@ export default function SocialFeed() {
                                         >
                                             <i className="ri-video-line fs-5"></i>
                                             <input 
+                                                key={fileKey + '-video'}
                                                 type="file" 
                                                 accept="video/*" 
                                                 style={{ display: 'none' }} 
@@ -711,6 +740,7 @@ export default function SocialFeed() {
                                         >
                                             <i className="ri-mic-line fs-5"></i>
                                             <input 
+                                                key={fileKey + '-audio'}
                                                 type="file" 
                                                 accept="audio/*" 
                                                 style={{ display: 'none' }} 
