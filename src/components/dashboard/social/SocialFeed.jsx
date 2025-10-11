@@ -239,10 +239,16 @@ export default function SocialFeed() {
         }
 
         try {
-            const response = await axiosInstance.post(`/status-updates/${publicId}/comment`, {
-                content: comment.trim(),
-                parent_id: replyTo
-            });
+            const payload = {
+                content: comment.trim()
+            };
+            
+            // Only include parent_id if replying to a comment
+            if (replyTo) {
+                payload.parent_id = replyTo;
+            }
+            
+            const response = await axiosInstance.post(`/status-updates/${publicId}/comment`, payload);
 
             if (response.data.success) {
                 toast.success('Comment added!');
@@ -516,7 +522,7 @@ export default function SocialFeed() {
                             </div>
                         )}
                         <div className="p-3 bg-white">
-                            <div className="d-flex align-items-center mb-2">
+                            <div className="d-flex align-items-center">
                                 <div className="rounded-circle p-2 me-3" style={{ 
                                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                     color: 'white'
@@ -554,51 +560,6 @@ export default function SocialFeed() {
                                     onPause={() => setIsPlaying(prev => ({ ...prev, [postId]: false }))}
                                     onEnded={() => setIsPlaying(prev => ({ ...prev, [postId]: false }))}
                                 />
-                            </div>
-                            {/* Visual Progress Bar */}
-                            <div className="mt-3">
-                                <div className="d-flex justify-content-between align-items-center mb-2">
-                                    <button 
-                                        className="btn btn-sm rounded-circle shadow-sm"
-                                        onClick={(e) => togglePlayPause(postId, e)}
-                                        style={{
-                                            width: '40px',
-                                            height: '40px',
-                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                            border: 'none',
-                                            color: 'white',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center'
-                                        }}
-                                    >
-                                        {playing ? (
-                                            <Pause size={20} fill="white" />
-                                        ) : (
-                                            <Play size={20} fill="white" style={{ marginLeft: '2px' }} />
-                                        )}
-                                    </button>
-                                    <div className="flex-grow-1 mx-3">
-                                        <div 
-                                            className="progress"
-                                            style={{ 
-                                                height: '4px',
-                                                borderRadius: '10px',
-                                                background: '#e9ecef'
-                                            }}
-                                        >
-                                            <div 
-                                                className="progress-bar"
-                                                style={{
-                                                    width: '0%',
-                                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                                    transition: 'width 0.1s linear'
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                    <small className="text-muted">0:00</small>
-                                </div>
                             </div>
                         </div>
                     </div>
