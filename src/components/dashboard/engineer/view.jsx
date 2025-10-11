@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import axiosInstance from '../../../axiosInstance';
+import PublicSamplesView from '../production-samples/PublicSamplesView';
 
 export default function EngineerDetails() {
     const { account_id } = useParams();
@@ -82,6 +84,11 @@ export default function EngineerDetails() {
                                             <li class="nav-item" role="presentation">
                                                 <a class="nav-link fw-semibold active" data-bs-toggle="tab" href="#project-overview" role="tab" aria-selected="true">
                                                     Overview
+                                                </a>
+                                            </li>
+                                            <li class="nav-item" role="presentation">
+                                                <a class="nav-link fw-semibold" data-bs-toggle="tab" href="#production-samples" role="tab" aria-selected="false" tabindex="-1">
+                                                    Production Samples
                                                 </a>
                                             </li>
                                             <li class="nav-item" role="presentation">
@@ -359,6 +366,19 @@ export default function EngineerDetails() {
                                        
                                     </div>
                                     
+                                </div>
+
+                                {/* Production Samples Tab */}
+                                <div class="tab-pane fade" id="production-samples" role="tabpanel">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title mb-4">Production Samples Portfolio</h5>
+                                            <p class="text-muted mb-4">
+                                                Listen to {engineer.first_name}'s production samples and see their creative work in action.
+                                            </p>
+                                            <PublicSamplesView engineerId={account_id} />
+                                        </div>
+                                    </div>
                                 </div>
                                 
                         
