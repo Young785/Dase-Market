@@ -16,6 +16,19 @@ export default function ProfilePage() {
     const [formData, setFormData] = useState({});
     const [errors, setErrors] = useState({});
 
+    // Password change modal state
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [passwordData, setPasswordData] = useState({
+        old_password: '',
+        new_password: '',
+        confirm_password: ''
+    });
+    const [passwordErrors, setPasswordErrors] = useState({});
+    const [savingPassword, setSavingPassword] = useState(false);
+
+    // 2FA modal state
+    const [show2FAModal, setShow2FAModal] = useState(false);
+
     useEffect(() => {
         if (profile) {
             setFormData({
@@ -77,6 +90,58 @@ export default function ProfilePage() {
                 street_address: profile.street_address || '',
                 bio: profile.bio || '',
             });
+        }
+    };
+
+    const handlePasswordChange = (e) => {
+        const { name, value } = e.target;
+        setPasswordData(prev => ({ ...prev, [name]: value }));
+        setPasswordErrors(prev => ({ ...prev, [name]: '' }));
+    };
+
+    const handlePasswordSubmit = async (e) => {
+        e.preventDefault();
+        
+        // Validate
+        const newErrors = {};
+        if (!passwordData.old_password) newErrors.old_password = 'Current password is required';
+        if (!passwordData.new_password) newErrors.new_password = 'New password is required';
+        if (passwordData.new_password && passwordData.new_password.length < 8) {
+            newErrors.new_password = 'Password must be at least 8 characters';
+        }
+        if (passwordData.new_password !== passwordData.confirm_password) {
+            newErrors.confirm_password = 'Passwords do not match';
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setPasswordErrors(newErrors);
+            return;
+        }
+
+        setSavingPassword(true);
+        try {
+            const response = await axiosInstance.put('/user/change-password', {
+                old_password: passwordData.old_password,
+                new_password: passwordData.new_password,
+                new_password_confirmation: passwordData.confirm_password
+            });
+            
+            if (response.data.status) {
+                toast.success('Password changed successfully');
+                setShowPasswordModal(false);
+                setPasswordData({ old_password: '', new_password: '', confirm_password: '' });
+                setPasswordErrors({});
+            } else {
+                toast.error(response.data.message);
+            }
+        } catch (error) {
+            const msg = error.response?.data?.message || 'Failed to change password';
+            toast.error(msg);
+            if (error.response?.data?.errors) {
+                setPasswordErrors(error.response.data.errors);
+            }
+        } finally {
+            setSavingPassword(false);
         }
     };
 
@@ -151,23 +216,13 @@ export default function ProfilePage() {
                                 </div>
                                 <div className="col-auto ms-auto">
                                     <div className="d-flex gap-2">
-                                        {!editMode ? (
+                                        {!editMode && (
                                             <button className="btn btn-success" onClick={() => setEditMode(true)}>
                                                 <i className="ri-edit-box-line align-bottom me-1"></i> Edit Profile
                                             </button>
-                                        ) : (
-                                            <>
-                                                <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
-                                                    <i className="ri-save-line me-1"></i>
-                                                    {saving ? 'Saving...' : 'Save Changes'}
-                                                </button>
-                                                <button className="btn btn-light" onClick={handleCancel} disabled={saving}>
-                                                    <i className="ri-close-line me-1"></i> Cancel
-                                                </button>
-                                            </>
                                         )}
-                                                                                </div>
-                                                                </div>
+                                    </div>
+                                </div>
                                                             </div>
                                                         </div>
 
@@ -300,6 +355,20 @@ export default function ProfilePage() {
                                                 ></textarea>
                                                 {errors.bio && <div className="invalid-feedback">{errors.bio}</div>}
                                                                                 </div>
+
+                                            {editMode && (
+                                                <div className="col-lg-12">
+                                                    <div className="d-flex gap-2 justify-content-end">
+                                                        <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+                                                            <i className="ri-save-line me-1"></i>
+                                                            {saving ? 'Saving...' : 'Save Changes'}
+                                                        </button>
+                                                        <button className="btn btn-light" onClick={handleCancel} disabled={saving}>
+                                                            <i className="ri-close-line me-1"></i> Cancel
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -311,15 +380,21 @@ export default function ProfilePage() {
                                                         <div className="card-body">
                                         <h5 className="card-title mb-3">Quick Actions</h5>
                                         <div className="d-grid gap-2">
-                                            <Link to="/dase/profile/edit" className="btn btn-outline-primary text-start">
+                                            <button 
+                                                className="btn btn-outline-primary text-start"
+                                                onClick={() => setShowPasswordModal(true)}
+                                            >
                                                 <i className="ri-lock-password-line me-2"></i> Change Password
-                                            </Link>
+                                            </button>
                                             <Link to="/dase/notification" className="btn btn-outline-info text-start">
                                                 <i className="ri-notification-3-line me-2"></i> Notification Settings
                                             </Link>
-                                            <Link to="/dase/profile/edit" className="btn btn-outline-warning text-start">
+                                            <button 
+                                                className="btn btn-outline-warning text-start"
+                                                onClick={() => setShow2FAModal(true)}
+                                            >
                                                 <i className="ri-shield-check-line me-2"></i> Enable 2FA
-                                            </Link>
+                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -344,6 +419,86 @@ export default function ProfilePage() {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Change Password Modal */}
+            <div className={`modal fade ${showPasswordModal ? 'show d-block' : ''}`} tabIndex="-1" style={{ backgroundColor: showPasswordModal ? 'rgba(0,0,0,0.5)' : 'transparent' }}>
+                <div className="modal-dialog modal-dialog-centered">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h5 className="modal-title">Change Password</h5>
+                            <button type="button" className="btn-close" onClick={() => setShowPasswordModal(false)}></button>
+                        </div>
+                        <form onSubmit={handlePasswordSubmit}>
+                            <div className="modal-body">
+                                <div className="mb-3">
+                                    <label className="form-label">Current Password</label>
+                                    <input
+                                        type="password"
+                                        name="old_password"
+                                        className={`form-control ${passwordErrors.old_password ? 'is-invalid' : ''}`}
+                                        value={passwordData.old_password}
+                                        onChange={handlePasswordChange}
+                                        placeholder="Enter current password"
+                                    />
+                                    {passwordErrors.old_password && <div className="invalid-feedback">{passwordErrors.old_password}</div>}
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">New Password</label>
+                                    <input
+                                        type="password"
+                                        name="new_password"
+                                        className={`form-control ${passwordErrors.new_password ? 'is-invalid' : ''}`}
+                                        value={passwordData.new_password}
+                                        onChange={handlePasswordChange}
+                                        placeholder="Enter new password (min 8 characters)"
+                                    />
+                                    {passwordErrors.new_password && <div className="invalid-feedback">{passwordErrors.new_password}</div>}
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">Confirm New Password</label>
+                                    <input
+                                        type="password"
+                                        name="confirm_password"
+                                        className={`form-control ${passwordErrors.confirm_password ? 'is-invalid' : ''}`}
+                                        value={passwordData.confirm_password}
+                                        onChange={handlePasswordChange}
+                                        placeholder="Confirm new password"
+                                    />
+                                    {passwordErrors.confirm_password && <div className="invalid-feedback">{passwordErrors.confirm_password}</div>}
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-light" onClick={() => setShowPasswordModal(false)}>Cancel</button>
+                                <button type="submit" className="btn btn-primary" disabled={savingPassword}>
+                                    {savingPassword ? 'Changing...' : 'Change Password'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {/* 2FA Modal */}
+            <div className={`modal fade ${show2FAModal ? 'show d-block' : ''}`} tabIndex="-1" style={{ backgroundColor: show2FAModal ? 'rgba(0,0,0,0.5)' : 'transparent' }}>
+                <div className="modal-dialog modal-dialog-centered">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h5 className="modal-title">Enable Two-Factor Authentication</h5>
+                            <button type="button" className="btn-close" onClick={() => setShow2FAModal(false)}></button>
+                        </div>
+                        <div className="modal-body">
+                            <p className="text-muted">Two-factor authentication adds an extra layer of security to your account.</p>
+                            <div className="alert alert-info">
+                                <i className="ri-information-line me-2"></i>
+                                This feature will be available soon. Stay tuned!
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-light" onClick={() => setShow2FAModal(false)}>Close</button>
                         </div>
                     </div>
                 </div>
