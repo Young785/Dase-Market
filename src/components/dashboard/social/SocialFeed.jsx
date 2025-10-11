@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import axiosInstance from '../../../axiosInstance';
 import toast from 'react-hot-toast';
-import { ThumbsUp, MessageCircle, Share2, Send, MoreVertical, Trash2, Flag, Play, Pause } from 'lucide-react';
+import { ThumbsUp, MessageCircle, Share2, Send, MoreVertical, Trash2, Flag, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import ReactPlayer from 'react-player/lazy';
 import { useProfile } from '../../../context/ProfileContext';
 import SimpleBar from 'simplebar-react';
@@ -410,6 +410,11 @@ export default function SocialFeed() {
         });
     }, []);
 
+    const toggleMute = useCallback((postId, e) => {
+        if (e) e.stopPropagation();
+        setMuted(prev => ({ ...prev, [postId]: !(prev[postId] ?? true) }));
+    }, []);
+
     const renderMedia = (post) => {
         if (!post.media_url) return null;
 
@@ -534,6 +539,7 @@ export default function SocialFeed() {
                                         transition: 'all 0.3s ease',
                                         boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
                                     }}
+                                    onClick={(e) => togglePlayPause(postId, e)}
                                 >
                                     {playing ? (
                                         <Pause size={36} color="white" fill="white" />
@@ -541,6 +547,17 @@ export default function SocialFeed() {
                                         <Play size={36} color="white" fill="white" style={{ marginLeft: '4px' }} />
                                     )}
                                 </div>
+                                {/* Mute toggle */}
+                                <button 
+                                    className="position-absolute top-0 end-0 m-2 btn btn-sm rounded-circle"
+                                    style={{
+                                        width: '36px', height: '36px',
+                                        background: 'rgba(0,0,0,0.55)', color: 'white', border: 'none'
+                                    }}
+                                    onClick={(e) => toggleMute(postId, e)}
+                                >
+                                    { (muted[postId] ?? true) ? <VolumeX size={18} /> : <Volume2 size={18} /> }
+                                </button>
                                 {/* Progress overlay bar */}
                                 <div 
                                     className="position-absolute bottom-0 start-0 end-0"
@@ -554,6 +571,8 @@ export default function SocialFeed() {
                                         const player = mediaRefs.current[postId];
                                         if (player && typeof player.seekTo === 'function') {
                                             player.seekTo(seekTo, 'seconds');
+                                            // Keep playing after seek
+                                            setIsPlaying(prev => ({ ...prev, [postId]: true }));
                                             setMediaProgress(prev => ({ ...prev, [postId]: { ...(prev[postId]||{}), playedSeconds: seekTo } }));
                                         }
                                     }}
