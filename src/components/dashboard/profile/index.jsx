@@ -60,10 +60,83 @@ export default function ProfilePage() {
         setErrors(prev => ({ ...prev, [name]: '' }));
     };
 
+    const validateForm = () => {
+        const newErrors = {};
+        
+        // Required fields
+        if (!formData.first_name?.trim()) {
+            newErrors.first_name = 'First name is required';
+        } else if (formData.first_name.length > 255) {
+            newErrors.first_name = 'First name must not exceed 255 characters';
+        }
+
+        if (!formData.last_name?.trim()) {
+            newErrors.last_name = 'Last name is required';
+        } else if (formData.last_name.length > 255) {
+            newErrors.last_name = 'Last name must not exceed 255 characters';
+        }
+
+        if (!formData.business_name?.trim()) {
+            newErrors.business_name = 'Business name is required';
+        } else if (formData.business_name.length > 255) {
+            newErrors.business_name = 'Business name must not exceed 255 characters';
+        }
+
+        if (!formData.business_phone?.trim()) {
+            newErrors.business_phone = 'Business phone is required';
+        } else if (formData.business_phone.length > 15) {
+            newErrors.business_phone = 'Business phone must not exceed 15 characters';
+        } else if (!/^[0-9+\-\s()]+$/.test(formData.business_phone)) {
+            newErrors.business_phone = 'Business phone must contain only valid phone characters';
+        }
+
+        // Optional fields with max length
+        if (formData.business_website && formData.business_website.length > 100) {
+            newErrors.business_website = 'Website URL must not exceed 100 characters';
+        }
+        if (formData.business_website && formData.business_website.trim() && !/^https?:\/\/.+/.test(formData.business_website)) {
+            newErrors.business_website = 'Website must be a valid URL (e.g., https://example.com)';
+        }
+
+        if (formData.work_experience && formData.work_experience.length > 255) {
+            newErrors.work_experience = 'Work experience must not exceed 255 characters';
+        }
+
+        if (formData.bio && formData.bio.length > 255) {
+            newErrors.bio = 'Bio must not exceed 255 characters';
+        }
+
+        if (formData.street_address && formData.street_address.length > 255) {
+            newErrors.street_address = 'Street address must not exceed 255 characters';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSave = async () => {
+        if (!validateForm()) {
+            toast.error('Please fix the errors before saving');
+            return;
+        }
+
         setSaving(true);
         try {
-            const response = await axiosInstance.put('/user/profile', formData);
+            // Prepare data - ensure all strings are properly formatted
+            const dataToSend = {
+                first_name: formData.first_name?.trim() || '',
+                last_name: formData.last_name?.trim() || '',
+                business_name: formData.business_name?.trim() || '',
+                business_phone: formData.business_phone?.trim() || '',
+                business_phone_code: formData.business_phone_code?.trim() || '+1',
+                business_website: formData.business_website?.trim() || '',
+                work_experience: formData.work_experience?.trim() || '',
+                bio: formData.bio?.trim() || '',
+                dob: formData.dob || '',
+                street_address: formData.street_address?.trim() || '',
+            };
+
+            const response = await axiosInstance.put('/user/profile', dataToSend);
             if (response.data.status) {
                 toast.success('Profile updated successfully');
                 setEditMode(false);
@@ -316,8 +389,8 @@ export default function ProfilePage() {
                                                 <i className="ri-edit-box-line align-bottom me-1"></i> Edit Profile
                                             </button>
                                         )}
-                                    </div>
-                                </div>
+                                                                                </div>
+                                                                </div>
                                                             </div>
                                                         </div>
 
@@ -332,7 +405,7 @@ export default function ProfilePage() {
 
                                                                 <div className="row">
                                             <div className="col-lg-6 mb-3">
-                                                <label className="form-label">First Name</label>
+                                                <label className="form-label">First Name <span className="text-danger">*</span></label>
                                                                                         <input 
                                                                                             type="text" 
                                                     name="first_name"
@@ -340,11 +413,14 @@ export default function ProfilePage() {
                                                     value={formData.first_name}
                                                     onChange={handleChange}
                                                     disabled={!editMode}
+                                                    maxLength="255"
+                                                    placeholder="Enter first name"
+                                                    required
                                                 />
                                                 {errors.first_name && <div className="invalid-feedback">{errors.first_name}</div>}
                                                                                     </div>
                                             <div className="col-lg-6 mb-3">
-                                                <label className="form-label">Last Name</label>
+                                                <label className="form-label">Last Name <span className="text-danger">*</span></label>
                                                 <input
                                                     type="text"
                                                     name="last_name"
@@ -352,11 +428,14 @@ export default function ProfilePage() {
                                                     value={formData.last_name}
                                                     onChange={handleChange}
                                                     disabled={!editMode}
+                                                    maxLength="255"
+                                                    placeholder="Enter last name"
+                                                    required
                                                 />
                                                 {errors.last_name && <div className="invalid-feedback">{errors.last_name}</div>}
                                                                                             </div>
                                             <div className="col-lg-6 mb-3">
-                                                <label className="form-label">Business Name</label>
+                                                <label className="form-label">Business Name <span className="text-danger">*</span></label>
                                                 <input
                                                     type="text"
                                                     name="business_name"
@@ -364,18 +443,24 @@ export default function ProfilePage() {
                                                     value={formData.business_name}
                                                     onChange={handleChange}
                                                     disabled={!editMode}
+                                                    maxLength="255"
+                                                    placeholder="Enter business name"
+                                                    required
                                                 />
                                                 {errors.business_name && <div className="invalid-feedback">{errors.business_name}</div>}
                                                                                     </div>
                                             <div className="col-lg-6 mb-3">
-                                                <label className="form-label">Business Phone</label>
+                                                <label className="form-label">Business Phone <span className="text-danger">*</span></label>
                                                 <input
-                                                    type="text"
+                                                    type="tel"
                                                     name="business_phone"
                                                     className={`form-control ${errors.business_phone ? 'is-invalid' : ''}`}
                                                     value={formData.business_phone}
                                                     onChange={handleChange}
                                                     disabled={!editMode}
+                                                    maxLength="15"
+                                                    placeholder="+1234567890"
+                                                    required
                                                 />
                                                 {errors.business_phone && <div className="invalid-feedback">{errors.business_phone}</div>}
                                                                                 </div>
@@ -417,12 +502,14 @@ export default function ProfilePage() {
                                             <div className="col-lg-6 mb-3">
                                                 <label className="form-label">Website</label>
                                                 <input
-                                                    type="text"
+                                                    type="url"
                                                     name="business_website"
                                                     className={`form-control ${errors.business_website ? 'is-invalid' : ''}`}
                                                     value={formData.business_website}
                                                     onChange={handleChange}
                                                     disabled={!editMode}
+                                                    maxLength="100"
+                                                    placeholder="https://example.com"
                                                 />
                                                 {errors.business_website && <div className="invalid-feedback">{errors.business_website}</div>}
                                                                                         </div>
@@ -439,14 +526,19 @@ export default function ProfilePage() {
                                                 {errors.street_address && <div className="invalid-feedback">{errors.street_address}</div>}
                                                                                     </div>
                                             <div className="col-lg-12 mb-3">
-                                                <label className="form-label">Bio</label>
+                                                <label className="form-label">
+                                                    Bio
+                                                    {editMode && <small className="text-muted ms-2">({(formData.bio || '').length}/255)</small>}
+                                                </label>
                                                 <textarea
                                                     name="bio"
                                                     className={`form-control ${errors.bio ? 'is-invalid' : ''}`}
                                                     rows="3"
+                                                    maxLength="255"
                                                     value={formData.bio}
                                                     onChange={handleChange}
                                                     disabled={!editMode}
+                                                    placeholder="Tell us about your business..."
                                                 ></textarea>
                                                 {errors.bio && <div className="invalid-feedback">{errors.bio}</div>}
                                                                                 </div>
@@ -462,7 +554,7 @@ export default function ProfilePage() {
                                                             <i className="ri-close-line me-1"></i> Cancel
                                                         </button>
                                                     </div>
-                                                </div>
+                                                                                </div>
                                             )}
                                                                             </div>
                                                                         </div>
@@ -490,7 +582,7 @@ export default function ProfilePage() {
                                             >
                                                 <i className={`${profile?.two_factor_enabled ? 'ri-shield-check-fill' : 'ri-shield-line'} me-2`}></i> 
                                                 {profile?.two_factor_enabled ? 'Manage 2FA' : 'Enable 2FA'}
-                                            </button>
+                                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -512,13 +604,13 @@ export default function ProfilePage() {
                                                 <strong>Status:</strong> <span className={`badge ${status === 'ACTIVE' ? 'bg-success' : 'bg-warning'}`}>{status || 'Pending'}</span>
                                                                                                 </li>
                                                                                         </ul>
-                                    </div>
+                                                                                </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                                                                        </div>
+                                                                    </div>
 
             {/* Change Password Modal */}
             <div className={`modal fade ${showPasswordModal ? 'show d-block' : ''}`} tabIndex="-1" style={{ backgroundColor: showPasswordModal ? 'rgba(0,0,0,0.5)' : 'transparent' }}>
@@ -576,8 +668,8 @@ export default function ProfilePage() {
                         </form>
                     </div>
                 </div>
-            </div>
-
+                                                                </div>
+                                        
             {/* 2FA Modal */}
             <div className={`modal fade ${show2FAModal ? 'show d-block' : ''}`} tabIndex="-1" style={{ backgroundColor: show2FAModal ? 'rgba(0,0,0,0.5)' : 'transparent' }}>
                 <div className="modal-dialog modal-dialog-centered">
@@ -605,7 +697,7 @@ export default function ProfilePage() {
                                                 <button className="btn btn-sm btn-danger mt-3" onClick={handleDisable2FA}>
                                                     Disable 2FA
                                                 </button>
-                                            </div>
+                                                            </div>
                                         ) : (
                                             <>
                                                 <button 
@@ -619,7 +711,7 @@ export default function ProfilePage() {
                                                             <div className="fw-semibold">Google Authenticator</div>
                                                             <small className="text-muted">Use an authenticator app to generate codes</small>
                                                         </div>
-                                                    </div>
+                                                   </div>
                                                 </button>
                                                 
                                                 <button 
@@ -637,7 +729,7 @@ export default function ProfilePage() {
                                                 </button>
                                             </>
                                         )}
-                                    </div>
+                                            </div>
                                 </>
                             )}
 
@@ -692,8 +784,8 @@ export default function ProfilePage() {
                                             style={{ letterSpacing: '0.5em', fontSize: '1.5rem' }}
                                         />
                                         {twoFAError && <div className="invalid-feedback">{twoFAError}</div>}
-                                    </div>
-
+                                </div>
+                            
                                     <button 
                                         type="submit" 
                                         className="btn btn-success w-100"
@@ -716,7 +808,7 @@ export default function ProfilePage() {
                                     )}
                                 </form>
                             )}
-                        </div>
+                            </div>
                         <div className="modal-footer">
                             <button type="button" className="btn btn-light" onClick={close2FAModal}>
                                 {twoFAStep === 'choice' ? 'Close' : 'Cancel'}
