@@ -91,11 +91,12 @@ export default function ProfilePage() {
         }
 
         // Optional fields with max length
-        if (formData.business_website && formData.business_website.length > 100) {
-            newErrors.business_website = 'Website URL must not exceed 100 characters';
-        }
-        if (formData.business_website && formData.business_website.trim() && !/^https?:\/\/.+/.test(formData.business_website)) {
-            newErrors.business_website = 'Website must be a valid URL (e.g., https://example.com)';
+        if (formData.business_website && formData.business_website.trim()) {
+            if (formData.business_website.length > 100) {
+                newErrors.business_website = 'Website URL must not exceed 100 characters';
+            } else if (!/^https?:\/\/.+\..+/.test(formData.business_website.trim())) {
+                newErrors.business_website = 'Website must be a valid URL (e.g., https://example.com)';
+            }
         }
 
         if (formData.work_experience && formData.work_experience.length > 255) {
@@ -509,7 +510,7 @@ export default function ProfilePage() {
                                                     onChange={handleChange}
                                                     disabled={!editMode}
                                                     maxLength="100"
-                                                    placeholder="https://example.com"
+                                                    placeholder="https://example.com (optional)"
                                                 />
                                                 {errors.business_website && <div className="invalid-feedback">{errors.business_website}</div>}
                                                                                         </div>
