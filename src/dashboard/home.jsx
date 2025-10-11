@@ -18,6 +18,8 @@ import { companiesImg8 } from '../assets/images';
 import Footer from "../components/dashboard/footer"
 import { Bell, Briefcase, DollarSign, Users, Server } from 'lucide-react'; 
 import NotificationModal from '../components/dashboard/ui/NotificationModal'; // Import the new modal
+import EngineerWelcome from '../components/onboarding/EngineerWelcome';
+import ClientWelcome from '../components/onboarding/ClientWelcome';
 
 // import SideBar from '../dashboard_header/sidebar'
 
@@ -26,6 +28,7 @@ export default function Home() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [showAllNotifications, setShowAllNotifications] = useState(false);
+	const [showWelcome, setShowWelcome] = useState(false);
 
 	useEffect(() => {
 		const fetchDashboardData = async () => {
@@ -35,6 +38,15 @@ export default function Home() {
 				if (response.data && response.data.status === true) {
 					setDashboardData(response.data.data);
 					setError(null);
+
+					// Check if this is first time login and show welcome modal
+					const userType = response.data.data.user?.account_type;
+					const welcomeKey = userType === 'Engineer' ? 'engineer_welcome_shown' : 'client_welcome_shown';
+					
+					if (!localStorage.getItem(welcomeKey)) {
+						// Delay to ensure DOM is ready
+						setTimeout(() => setShowWelcome(true), 500);
+					}
 				} else {
 					setError(response.data.message || 'Failed to fetch dashboard data.');
 				}
@@ -350,6 +362,14 @@ export default function Home() {
 				onClose={() => setShowAllNotifications(false)}
 				notifications={notifications} 
 			/>
+
+			{/* Welcome Modals */}
+			{dashboardData?.user?.account_type === 'Engineer' && (
+				<EngineerWelcome show={showWelcome} onClose={() => setShowWelcome(false)} />
+			)}
+			{dashboardData?.user?.account_type === 'Client' && (
+				<ClientWelcome show={showWelcome} onClose={() => setShowWelcome(false)} />
+			)}
 		</>
 	)
 }
