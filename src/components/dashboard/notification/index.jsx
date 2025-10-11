@@ -13,8 +13,24 @@ import { useProfile } from '../../../context/ProfileContext';
 export default function NotificationPage() {
     const { profile, loading: profileLoading } = useProfile();
     const [notifications, setNotifications] = useState([]);
+    const [meta, setMeta] = useState({ current_page: 1, last_page: 1, per_page: 10, total: 0 });
+    const [page, setPage] = useState(1);
+    const [perPage, setPerPage] = useState(10);
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('overview-tab');
+    const [prefLoading, setPrefLoading] = useState(false);
+    const [prefs, setPrefs] = useState({
+        notify_login: true,
+        notify_logout: true,
+        notify_account_delete: true,
+        notify_password_change: true,
+        notify_profile_update: true,
+        notify_new_message: true,
+        notify_invoice: true,
+        notify_project: true,
+        notify_chat: true,
+        notify_engineer: true,
+    });
 
     const notifySuccess = (text) => toast.success(text, {
         position: 'top-right',
@@ -36,33 +52,57 @@ export default function NotificationPage() {
         progress: undefined,
     });
 
-    // Single data fetching effect
+    // Fetch notifications and preferences
     useEffect(() => {
-        
-        const fetchNotifications = async () => {
+        const fetchAll = async () => {
             try {
                 setLoading(true);
-                const response = await axiosInstance.get('/dashboard/notifications');
-                if (response.data && response.data.data) {
-                    setNotifications(response.data.data);
+                const [notifRes, settingsRes] = await Promise.all([
+                    axiosInstance.get(`/dashboard/notifications?page=${page}&per_page=${perPage}`),
+                    axiosInstance.get('/user/settings'),
+                ]);
+
+                if (notifRes?.data?.data) {
+                    const { items, meta } = notifRes.data.data;
+                    setNotifications(items || []);
+                    if (meta) setMeta(meta);
+                }
+
+                const settings = settingsRes?.data?.data;
+                if (settings?.notifications) {
+                    setPrefs((prev) => ({ ...prev, ...settings.notifications }));
                 }
             } catch (error) {
-                console.error('Error fetching notifications:', error);
+                console.error('Error loading notifications/settings:', error);
                 notifyError('Failed to load notifications');
             } finally {
                 setLoading(false);
             }
         };
 
-        // Only fetch if profile is loaded
         if (!profileLoading && profile) {
-            fetchNotifications();
+            fetchAll();
         }
-    }, [profileLoading, profile]); 
+    }, [profileLoading, profile, page, perPage]);
 
     
     const handleTabClick = (tabId) => {
         setActiveTab(tabId);
+    };
+
+    const handleToggle = async (key) => {
+        const next = !prefs[key];
+        setPrefs((p) => ({ ...p, [key]: next }));
+        try {
+            setPrefLoading(true);
+            await axiosInstance.put('/user/settings', { [key]: next });
+            notifySuccess('Preference saved');
+        } catch (e) {
+            setPrefs((p) => ({ ...p, [key]: !next }));
+            notifyError('Failed to save preference');
+        } finally {
+            setPrefLoading(false);
+        }
     };
 
     if (profileLoading) {
@@ -156,7 +196,7 @@ export default function NotificationPage() {
                                                                 <div className="card-body">
                                                                     <div className="row mb-4 mt-2">
                                                                         <h5 className='card-title'>Notification</h5>
-                                                                        <label className='' style={{fontSize:'12px', fontWeight:'500', color:'gray'}}>Tell us a little about your business.</label>
+                                                                        <label className='' style={{fontSize:'12px', fontWeight:'500', color:'gray'}}>All notifications will be displayed here.</label>
                                                                     </div>
                                                                     <div>
                                                                         <SimpleBar style={{ maxHeight: 'calc(80vh - 110px)' }}> 
@@ -189,6 +229,23 @@ export default function NotificationPage() {
                                                                                         <p className="text-muted mb-0">No notifications.</p>
                                                                                     </div>
                                                                                 )}
+                                                                                {/* Pagination */}
+                                                                                <div className="d-flex justify-content-between align-items-center mt-3">
+                                                                                    <div className="d-flex align-items-center gap-2">
+                                                                                        <label htmlFor="perPage" className="me-2">Per page:</label>
+                                                                                        <select id="perPage" className="form-select form-select-sm" style={{ width: '90px' }} value={perPage} onChange={(e)=>{ setPerPage(parseInt(e.target.value)||10); setPage(1); }}>
+                                                                                            <option value={5}>5</option>
+                                                                                            <option value={10}>10</option>
+                                                                                            <option value={20}>20</option>
+                                                                                            <option value={50}>50</option>
+                                                                                        </select>
+                                                                                    </div>
+                                                                                    <div className="btn-group">
+                                                                                        <button className="btn btn-sm btn-outline-secondary" disabled={page<=1 || loading} onClick={()=> setPage((p)=> Math.max(1,p-1))}>Prev</button>
+                                                                                        <span className="btn btn-sm btn-outline-secondary disabled">{meta.current_page} / {meta.last_page}</span>
+                                                                                        <button className="btn btn-sm btn-outline-secondary" disabled={page>=meta.last_page || loading} onClick={()=> setPage((p)=> Math.min(meta.last_page,p+1))}>Next</button>
+                                                                                    </div>
+                                                                                </div>
                                                                             </div>
                                                                         </SimpleBar>
                                                                     </div>
@@ -213,7 +270,7 @@ export default function NotificationPage() {
                                                                         <p className="text-muted mb-0 small">Get notified when someone logs into your account</p>
                                                                     </div>
                                                                     <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="loginNotifications" defaultChecked />
+                                                                        <input className="form-check-input" type="checkbox" id="loginNotifications" checked={!!prefs.notify_login} onChange={()=>handleToggle('notify_login')} disabled={prefLoading} />
                                                                     </div>
                                                                 </div>
                                                                 
@@ -223,7 +280,7 @@ export default function NotificationPage() {
                                                                         <p className="text-muted mb-0 small">Get notified when you log out of your account</p>
                                                                     </div>
                                                                     <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="logoutNotifications" defaultChecked />
+                                                                        <input className="form-check-input" type="checkbox" id="logoutNotifications" checked={!!prefs.notify_logout} onChange={()=>handleToggle('notify_logout')} disabled={prefLoading} />
                                                                     </div>
                                                                 </div>
                                                                 
@@ -233,7 +290,7 @@ export default function NotificationPage() {
                                                                         <p className="text-muted mb-0 small">Get notified when your account is deleted</p>
                                                                     </div>
                                                                     <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="deleteAccountNotifications" defaultChecked />
+                                                                        <input className="form-check-input" type="checkbox" id="deleteAccountNotifications" checked={!!prefs.notify_account_delete} onChange={()=>handleToggle('notify_account_delete')} disabled={prefLoading} />
                                                                     </div>
                                                                 </div>
 
@@ -243,7 +300,7 @@ export default function NotificationPage() {
                                                                         <p className="text-muted mb-0 small">Get notified when your password is changed.</p>
                                                                     </div>
                                                                     <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="passwordChangeNotifications" defaultChecked />
+                                                                        <input className="form-check-input" type="checkbox" id="passwordChangeNotifications" checked={!!prefs.notify_password_change} onChange={()=>handleToggle('notify_password_change')} disabled={prefLoading} />
                                                                     </div>
                                                                 </div>
 
@@ -253,7 +310,7 @@ export default function NotificationPage() {
                                                                         <p className="text-muted mb-0 small">Get notified when your profile information is updated.</p>
                                                                     </div>
                                                                     <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="profileUpdateNotifications" defaultChecked />
+                                                                        <input className="form-check-input" type="checkbox" id="profileUpdateNotifications" checked={!!prefs.notify_profile_update} onChange={()=>handleToggle('notify_profile_update')} disabled={prefLoading} />
                                                                     </div>
                                                                 </div>
 
@@ -263,7 +320,7 @@ export default function NotificationPage() {
                                                                         <p className="text-muted mb-0 small">Get notified when you receive a new message.</p>
                                                                     </div>
                                                                     <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="newMessageNotifications" defaultChecked />
+                                                                        <input className="form-check-input" type="checkbox" id="newMessageNotifications" checked={!!prefs.notify_new_message} onChange={()=>handleToggle('notify_new_message')} disabled={prefLoading} />
                                                                     </div>
                                                                 </div>
 
@@ -273,7 +330,7 @@ export default function NotificationPage() {
                                                                         <p className="text-muted mb-0 small">Get notified when a new invoice is generated.</p>
                                                                     </div>
                                                                     <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="invoiceNotifications" defaultChecked />
+                                                                        <input className="form-check-input" type="checkbox" id="invoiceNotifications" checked={!!prefs.notify_invoice} onChange={()=>handleToggle('notify_invoice')} disabled={prefLoading} />
                                                                     </div>
                                                                 </div>
 
@@ -283,7 +340,7 @@ export default function NotificationPage() {
                                                                         <p className="text-muted mb-0 small">Get notified about updates on your projects.</p>
                                                                     </div>
                                                                     <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="projectNotifications" defaultChecked />
+                                                                        <input className="form-check-input" type="checkbox" id="projectNotifications" checked={!!prefs.notify_project} onChange={()=>handleToggle('notify_project')} disabled={prefLoading} />
                                                                     </div>
                                                                 </div>
 
@@ -293,7 +350,7 @@ export default function NotificationPage() {
                                                                         <p className="text-muted mb-0 small">Get notified when you receive a new chat message.</p>
                                                                     </div>
                                                                     <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="chatNotifications" defaultChecked />
+                                                                        <input className="form-check-input" type="checkbox" id="chatNotifications" checked={!!prefs.notify_chat} onChange={()=>handleToggle('notify_chat')} disabled={prefLoading} />
                                                                     </div>
                                                                 </div>
 
@@ -303,13 +360,12 @@ export default function NotificationPage() {
                                                                         <p className="text-muted mb-0 small">Get notified about updates from your engineering team.</p>
                                                                     </div>
                                                                     <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="engineerNotifications" defaultChecked />
+                                                                        <input className="form-check-input" type="checkbox" id="engineerNotifications" checked={!!prefs.notify_engineer} onChange={()=>handleToggle('notify_engineer')} disabled={prefLoading} />
                                                                     </div>
                                                                 </div>
                                                                 
                                                                 <div className="mt-4">
-                                                                    <p className="text-muted">Feel like you've got it all sorted already? <a href="#" className="text-primary">Unsubscribe from all</a></p>
-                                                                    <button className="btn btn-primary mt-2">Save Preferences</button>
+                                                                    <p className="text-muted">Feel like you've got it all sorted already? <a href="#" className="text-primary" onClick={(e)=>{e.preventDefault(); Object.keys(prefs).forEach(k=> setPrefs((p)=> ({...p,[k]:false})));}}>Unsubscribe from all</a></p>
                                                                 </div>
                                                             </div>
                                                         </div>
