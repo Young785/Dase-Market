@@ -13,6 +13,7 @@ export default function SocialFeed() {
     const [postContent, setPostContent] = useState('');
     const [selectedMedia, setSelectedMedia] = useState(null);
     const [mediaType, setMediaType] = useState(null);
+    const [audioCover, setAudioCover] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [selectedPost, setSelectedPost] = useState(null);
     const [comment, setComment] = useState('');
@@ -32,6 +33,7 @@ export default function SocialFeed() {
                 // Transform posts to add computed properties
                 const transformedPosts = postsData.map(post => ({
                     ...post,
+                    public_id: post.status_update_id || post.id,
                     user: post.account || {
                         account_id: post.account_id,
                         name: 'Unknown User',
@@ -39,7 +41,7 @@ export default function SocialFeed() {
                     },
                     likes: post.reactions?.length || 0,
                     comments_count: post.comments?.length || 0,
-                    user_liked: post.reactions?.some(r => r.account_id === profile?.account_id) || false
+                    user_liked: post.reactions?.some(r => r.account_id === profile?.account_id && r.reaction_type === 'like') || false
                 }));
                 setPosts(transformedPosts);
             }
@@ -56,12 +58,34 @@ export default function SocialFeed() {
         if (file) {
             setSelectedMedia(file);
             setMediaType(type);
+            if (type !== 'audio') {
+                setAudioCover(null);
+            }
+        }
+    };
+
+    const handleAudioCoverChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            setAudioCover(file);
         }
     };
 
     const handleCreatePost = async () => {
         if (!postContent.trim() && !selectedMedia) {
             toast.error('Please add content or media to your post');
+            return;
+        }
+
+        // Disallow video-only or audio-only posts; require text for video/audio
+        if ((mediaType === 'video' || mediaType === 'audio') && !postContent.trim()) {
+            toast.error('Text is required when posting video or audio');
+            return;
+        }
+
+        // Audio requires cover image
+        if (mediaType === 'audio' && !audioCover) {
+            toast.error('Please add a cover image for your audio');
             return;
         }
 
@@ -73,6 +97,9 @@ export default function SocialFeed() {
             if (selectedMedia) {
                 formData.append('media_file', selectedMedia);
                 formData.append('media_type', mediaType);
+            }
+            if (audioCover) {
+                formData.append('thumbnail', audioCover);
             }
             // Note: backend has defaults, so we don't need to send type for text-only posts
 
@@ -87,6 +114,7 @@ export default function SocialFeed() {
                 setPostContent('');
                 setSelectedMedia(null);
                 setMediaType(null);
+                setAudioCover(null);
                 
                 // Close modal
                 const modalElement = document.getElementById('createPostModal');
@@ -104,22 +132,23 @@ export default function SocialFeed() {
         }
     };
 
-    const handleLikePost = async (postId) => {
+    const handleLikePost = async (publicId) => {
         try {
-            const response = await axiosInstance.post(`/status-updates/${postId}/react`);
-            
+            // Determine intended reaction (toggle like)
+            const post = posts.find(p => p.public_id === publicId || p.id === publicId);
+            const wasLiked = !!post?.user_liked;
+            const response = await axiosInstance.post(`/status-updates/${publicId}/react`, { reaction_type: 'like' });
+
             if (response.data.success) {
-                // Update local state
-                setPosts(posts.map(post => 
-                    post.id === postId 
-                        ? {
-                            ...post,
-                            likes: response.data.data.reactions_count || response.data.data.likes_count || 0,
-                            user_liked: response.data.data.user_reacted !== undefined ? response.data.data.user_reacted : !post.user_liked
-                        }
-                        : post
-                ));
-                toast.success(response.data.data.user_reacted ? 'Post liked!' : 'Like removed');
+                setPosts(posts.map(p => {
+                    if (p.public_id === publicId || p.id === publicId) {
+                        const nextLiked = !wasLiked;
+                        const nextLikes = (p.likes || 0) + (nextLiked ? 1 : -1);
+                        return { ...p, user_liked: nextLiked, likes: Math.max(0, nextLikes) };
+                    }
+                    return p;
+                }));
+                toast.success(wasLiked ? 'Like removed' : 'Post liked!');
             }
         } catch (error) {
             toast.error('Failed to react to post');
@@ -127,15 +156,15 @@ export default function SocialFeed() {
         }
     };
 
-    const handleAddComment = async (postId) => {
+    const handleAddComment = async (publicId) => {
         if (!comment.trim()) {
             toast.error('Please enter a comment');
             return;
         }
 
         try {
-            const response = await axiosInstance.post(`/status-updates/${postId}/comment`, {
-                comment: comment.trim(),
+            const response = await axiosInstance.post(`/status-updates/${publicId}/comment`, {
+                content: comment.trim(),
                 parent_id: replyTo
             });
 
@@ -145,15 +174,15 @@ export default function SocialFeed() {
                 setReplyTo(null);
                 
                 // Refresh post details if modal is open
-                if (selectedPost && selectedPost.id === postId) {
-                    fetchPostDetails(postId);
+                if (selectedPost && (selectedPost.status_update_id === publicId)) {
+                    fetchPostDetails(publicId);
                 }
                 
                 // Update comment count
-                setPosts(posts.map(post =>
-                    post.id === postId
-                        ? { ...post, comments_count: (post.comments_count || 0) + 1 }
-                        : post
+                setPosts(posts.map(p =>
+                    (p.public_id === publicId || p.id === publicId)
+                        ? { ...p, comments_count: (p.comments_count || 0) + 1 }
+                        : p
                 ));
             }
         } catch (error) {
@@ -162,28 +191,37 @@ export default function SocialFeed() {
         }
     };
 
-    const fetchPostDetails = async (postId) => {
+    const fetchPostDetails = async (publicId) => {
         try {
-            const response = await axiosInstance.get(`/status-updates/${postId}`);
+            const response = await axiosInstance.get(`/status-updates/${publicId}`);
             if (response.data.success) {
-                setSelectedPost(response.data.data);
+                const data = response.data.data || {};
+                // Normalize comment user field for UI
+                if (data?.comments?.length) {
+                    data.comments = data.comments.map(c => ({
+                        ...c,
+                        user: c.user || c.account,
+                        replies: (c.replies || []).map(r => ({ ...r, user: r.user || r.account }))
+                    }));
+                }
+                setSelectedPost(data);
             }
         } catch (error) {
             console.error('Error fetching post details:', error);
         }
     };
 
-    const handleDeletePost = async (postId) => {
+    const handleDeletePost = async (publicId) => {
         if (!window.confirm('Are you sure you want to delete this post?')) {
             return;
         }
 
         try {
-            const response = await axiosInstance.delete(`/status-updates/${postId}`);
+            const response = await axiosInstance.delete(`/status-updates/${publicId}`);
             
             if (response.data.success) {
                 toast.success('Post deleted successfully!');
-                setPosts(posts.filter(post => post.id !== postId));
+                setPosts(posts.filter(p => (p.public_id !== publicId && p.id !== publicId)));
             }
         } catch (error) {
             toast.error('Failed to delete post');
@@ -198,7 +236,7 @@ export default function SocialFeed() {
 
     const openPostDetailsModal = (post) => {
         setSelectedPost(post);
-        fetchPostDetails(post.id);
+        fetchPostDetails(post.public_id || post.status_update_id || post.id);
         const modal = new bootstrap.Modal(document.getElementById('postDetailsModal'));
         modal.show();
     };
@@ -273,29 +311,41 @@ export default function SocialFeed() {
                 );
             case 'audio':
                 return (
-                    <div className="border rounded p-3 bg-light">
-                        <div className="d-flex align-items-center mb-2">
-                            <div className="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
-                                <i className="ri-music-2-line fs-4 text-primary"></i>
+                    <div className="border rounded bg-light">
+                        {post.thumbnail_url && (
+                            <div className="position-relative">
+                                <img 
+                                    src={post.thumbnail_url.startsWith('http') ? post.thumbnail_url : `${window.location.origin}/${post.thumbnail_url}`}
+                                    alt="Cover"
+                                    className="img-fluid w-100"
+                                    style={{ maxHeight: '320px', objectFit: 'cover' }}
+                                />
                             </div>
-                            <div className="flex-grow-1">
-                                <h6 className="mb-0">Audio Track</h6>
-                                <small className="text-muted">Posted by {post.user?.name || 'User'}</small>
+                        )}
+                        <div className="p-3">
+                            <div className="d-flex align-items-center mb-2">
+                                <div className="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
+                                    <i className="ri-music-2-line fs-4 text-primary"></i>
+                                </div>
+                                <div className="flex-grow-1">
+                                    <h6 className="mb-0">Audio Track</h6>
+                                    <small className="text-muted">Posted by {post.user?.name || 'User'}</small>
+                                </div>
                             </div>
-                        </div>
-                        <ReactPlayer 
-                            url={fullMediaUrl} 
-                            controls 
-                            width="100%" 
-                            height="50px"
-                            config={{
-                                file: {
-                                    attributes: {
-                                        controlsList: 'nodownload'
+                            <ReactPlayer 
+                                url={fullMediaUrl} 
+                                controls 
+                                width="100%" 
+                                height="50px"
+                                config={{
+                                    file: {
+                                        attributes: {
+                                            controlsList: 'nodownload'
+                                        }
                                     }
-                                }
-                            }}
-                        />
+                                }}
+                            />
+                        </div>
                     </div>
                 );
             default:
