@@ -6,6 +6,13 @@ import ReactPlayer from 'react-player/lazy';
 import { useProfile } from '../../../context/ProfileContext';
 import SimpleBar from 'simplebar-react';
 
+// Helper to get backend base URL
+const getBackendBaseUrl = () => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+    // Remove /api from the end
+    return apiUrl.replace(/\/api\/?$/, '');
+};
+
 export default function SocialFeed() {
     const { profile } = useProfile();
     const [posts, setPosts] = useState([]);
@@ -19,15 +26,6 @@ export default function SocialFeed() {
     const [comment, setComment] = useState('');
     const [replyTo, setReplyTo] = useState(null);
     const [fileKey, setFileKey] = useState(0);
-
-    const getApiOrigin = () => {
-        try {
-            const base = axiosInstance.defaults.baseURL || '';
-            return new URL(base, window.location.origin).origin;
-        } catch {
-            return 'https://livestream.test';
-        }
-    };
 
     useEffect(() => {
         fetchPosts();
@@ -64,22 +62,23 @@ export default function SocialFeed() {
             if (response.data.success) {
                 // API returns paginated data
                 const postsData = response.data.data.data || [];
-                const apiOrigin = getApiOrigin();
                 // Transform posts to add computed properties
-                const transformedPosts = postsData.map(post => ({
-                    ...post,
-                    public_id: post.status_update_id || post.id,
-                    media_url: post.media_url ? (post.media_url.startsWith('http') ? post.media_url : `${apiOrigin}/${post.media_url}`) : null,
-                    thumbnail_url: post.thumbnail_url ? (post.thumbnail_url.startsWith('http') ? post.thumbnail_url : `${apiOrigin}/${post.thumbnail_url}`) : null,
-                    user: post.account || {
-                        account_id: post.account_id,
-                        name: 'Unknown User',
-                        photo: null
-                    },
-                    likes: post.reactions?.length || 0,
-                    comments_count: post.comments?.length || 0,
-                    user_liked: post.reactions?.some(r => r.account_id === profile?.account_id && r.reaction_type === 'like') || false
-                }));
+                const transformedPosts = postsData.map(post => {
+                    const account = post.account || {};
+                    return {
+                        ...post,
+                        public_id: post.status_update_id || post.id,
+                        user: {
+                            account_id: account.account_id || post.account_id,
+                            name: account.business_name || `${account.first_name || ''} ${account.last_name || ''}`.trim() || 'Unknown User',
+                            first_name: account.first_name || '',
+                            photo: account.profile_photo || null
+                        },
+                        likes: post.reactions?.length || 0,
+                        comments_count: post.comments?.length || 0,
+                        user_liked: post.reactions?.some(r => r.account_id === profile?.account_id && r.reaction_type === 'like') || false
+                    };
+                });
                 setPosts(transformedPosts);
             }
         } catch (error) {
@@ -266,6 +265,31 @@ export default function SocialFeed() {
         }
     };
 
+    const handleSharePost = (post) => {
+        const shareUrl = `${window.location.origin}/social?post=${post.public_id || post.id}`;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: `Post by ${post.user?.name}`,
+                text: post.content || 'Check out this post on DASE',
+                url: shareUrl
+            }).catch(() => {
+                // Fallback if share cancelled
+                copyToClipboard(shareUrl);
+            });
+        } else {
+            copyToClipboard(shareUrl);
+        }
+    };
+
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text).then(() => {
+            toast.success('Link copied to clipboard!');
+        }).catch(() => {
+            toast.error('Failed to copy link');
+        });
+    };
+
     const openCreatePostModal = () => {
         const modal = new bootstrap.Modal(document.getElementById('createPostModal'));
         modal.show();
@@ -291,13 +315,22 @@ export default function SocialFeed() {
         return date.toLocaleDateString();
     };
 
+    const buildMediaUrl = (url) => {
+        if (!url) return '';
+        return url.startsWith('http') ? url : `${getBackendBaseUrl()}/${url}`;
+    };
+
+    const buildUserPhotoUrl = (photo) => {
+        if (!photo) return '';
+        if (photo.startsWith('http')) return photo;
+        // Profile photos are stored in public/images/dase/users/
+        return `${getBackendBaseUrl()}/images/dase/users/${photo}`;
+    };
+
     const renderMedia = (post) => {
         if (!post.media_url) return null;
 
-        const apiOrigin = getApiOrigin();
-        const fullMediaUrl = post.media_url.startsWith('http') 
-            ? post.media_url 
-            : `${apiOrigin}/${post.media_url}`;
+        const fullMediaUrl = buildMediaUrl(post.media_url);
 
         switch (post.media_type) {
             case 'image':
@@ -348,15 +381,22 @@ export default function SocialFeed() {
                     </div>
                 );
             case 'audio':
+                const thumbnailUrl = buildMediaUrl(post.thumbnail_url);
                 return (
-                    <div className="border rounded bg-light">
+                    <div className="border rounded overflow-hidden bg-light">
                         {post.thumbnail_url && (
                             <div className="position-relative">
                                 <img 
-                                    src={post.thumbnail_url.startsWith('http') ? post.thumbnail_url : `${apiOrigin}/${post.thumbnail_url}`}
-                                    alt="Cover"
+                                    src={thumbnailUrl}
+                                    alt="Audio Cover"
                                     className="img-fluid w-100"
                                     style={{ maxHeight: '320px', objectFit: 'cover' }}
+                                    onError={(e) => {
+                                        if (!e.target.dataset.errorHandled) {
+                                            e.target.dataset.errorHandled = 'true';
+                                            e.target.style.display = 'none';
+                                        }
+                                    }}
                                 />
                             </div>
                         )}
@@ -367,7 +407,7 @@ export default function SocialFeed() {
                                 </div>
                                 <div className="flex-grow-1">
                                     <h6 className="mb-0">Audio Track</h6>
-                                    <small className="text-muted">Posted by {post.user?.name || 'User'}</small>
+                                    <small className="text-muted">Posted by {post.user?.name || post.user?.first_name || 'User'}</small>
                                 </div>
                             </div>
                             <ReactPlayer 
@@ -472,7 +512,7 @@ export default function SocialFeed() {
                                         {post.user?.photo ? (
                                             <>
                                                 <img 
-                                                    src={post.user.photo.startsWith('http') ? post.user.photo : `${window.location.origin}/${post.user.photo}`} 
+                                                    src={buildUserPhotoUrl(post.user.photo)} 
                                                     alt={post.user?.name}
                                                     className="rounded-circle"
                                                     style={{ width: '40px', height: '40px', objectFit: 'cover', border: '2px solid #f0f0f0' }}
@@ -495,7 +535,7 @@ export default function SocialFeed() {
                                                         fontSize: '16px'
                                                     }}
                                                 >
-                                                    {(post.user?.name || 'U').charAt(0).toUpperCase()}
+                                                    {(post.user?.first_name || post.user?.name || 'U').charAt(0).toUpperCase()}
                                                 </div>
                                             </>
                                         ) : (
@@ -507,7 +547,7 @@ export default function SocialFeed() {
                                                     fontSize: '16px'
                                                 }}
                                             >
-                                                {(post.user?.name || 'U').charAt(0).toUpperCase()}
+                                                {(post.user?.first_name || post.user?.name || 'U').charAt(0).toUpperCase()}
                                             </div>
                                         )}
                                     </div>
@@ -573,7 +613,7 @@ export default function SocialFeed() {
                             <div className="d-flex justify-content-around">
                                 <button 
                                     className={`btn btn-sm btn-light flex-fill ${post.user_liked ? 'text-primary' : ''}`}
-                                    onClick={() => handleLikePost(post.public_id || post.status_update_id || post.id)}
+                                    onClick={() => handleLikePost(post.public_id || post.id)}
                                 >
                                     <ThumbsUp size={16} className="me-1" />
                                     {post.user_liked ? 'Liked' : 'Like'}
@@ -585,7 +625,10 @@ export default function SocialFeed() {
                                     <MessageCircle size={16} className="me-1" />
                                     Comment
                                 </button>
-                                <button className="btn btn-sm btn-light flex-fill" onClick={() => handleShare(post)}>
+                                <button 
+                                    className="btn btn-sm btn-light flex-fill"
+                                    onClick={() => handleSharePost(post)}
+                                >
                                     <Share2 size={16} className="me-1" />
                                     Share
                                 </button>
@@ -807,17 +850,20 @@ export default function SocialFeed() {
                                     <div className="d-flex align-items-center gap-2 mb-3">
                                         {selectedPost.user?.photo ? (
                                             <img 
-                                                src={selectedPost.user.photo.startsWith('http') ? selectedPost.user.photo : `${window.location.origin}/${selectedPost.user.photo}`} 
+                                                src={buildUserPhotoUrl(selectedPost.user.photo)} 
                                                 alt={selectedPost.user?.name}
                                                 className="rounded-circle"
                                                 style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                }}
                                             />
                                         ) : (
                                             <div 
                                                 className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
                                                 style={{ width: '40px', height: '40px', fontSize: '16px' }}
                                             >
-                                                {(selectedPost.user?.name || 'U').charAt(0).toUpperCase()}
+                                                {(selectedPost.user?.first_name || selectedPost.user?.name || 'U').charAt(0).toUpperCase()}
                                             </div>
                                         )}
                                         <div>
@@ -827,14 +873,6 @@ export default function SocialFeed() {
                                     </div>
                                     
                                     {selectedPost.content && <p>{selectedPost.content}</p>}
-                                    {selectedPost.media_type === 'audio' && selectedPost.thumbnail_url && (
-                                        <img
-                                            src={selectedPost.thumbnail_url}
-                                            alt="Cover"
-                                            className="img-fluid rounded mb-2"
-                                            style={{ maxHeight: '320px', objectFit: 'cover' }}
-                                        />
-                                    )}
                                     {renderMedia(selectedPost)}
                                 </div>
 
@@ -846,25 +884,28 @@ export default function SocialFeed() {
                                     {selectedPost.comments && selectedPost.comments.length > 0 ? (
                                         selectedPost.comments.map(comment => (
                                             <div key={comment.id} className="d-flex gap-2 mb-3">
-                                                {comment.user?.photo ? (
+                                                {comment.user?.photo || comment.account?.profile_photo ? (
                                                     <img 
-                                                        src={comment.user.photo.startsWith('http') ? comment.user.photo : `${window.location.origin}/${comment.user.photo}`} 
-                                                        alt={comment.user?.name}
+                                                        src={buildUserPhotoUrl(comment.user?.photo || comment.account?.profile_photo)} 
+                                                        alt={comment.user?.name || comment.account?.first_name}
                                                         className="rounded-circle"
                                                         style={{ width: '32px', height: '32px', objectFit: 'cover' }}
+                                                        onError={(e) => {
+                                                            e.target.style.display = 'none';
+                                                        }}
                                                     />
                                                 ) : (
                                                     <div 
                                                         className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold"
                                                         style={{ width: '32px', height: '32px', fontSize: '14px' }}
                                                     >
-                                                        {(comment.user?.name || 'U').charAt(0).toUpperCase()}
+                                                        {((comment.user?.first_name || comment.user?.name || comment.account?.first_name || 'U')).charAt(0).toUpperCase()}
                                                     </div>
                                                 )}
                                                 <div className="flex-grow-1">
                                                     <div className="bg-light rounded p-2">
-                                                        <h6 className="mb-0 small">{comment.user?.name}</h6>
-                                                        <p className="mb-0 small">{comment.comment}</p>
+                                                        <h6 className="mb-0 small">{comment.user?.name || `${comment.account?.first_name || ''} ${comment.account?.last_name || ''}`.trim() || 'User'}</h6>
+                                                        <p className="mb-0 small">{comment.comment || comment.content}</p>
                                                     </div>
                                                     <div className="d-flex gap-3 small text-muted mt-1">
                                                         <span>{formatTimeAgo(comment.created_at)}</span>
@@ -879,25 +920,28 @@ export default function SocialFeed() {
                                                     {/* Nested Replies */}
                                                     {comment.replies && comment.replies.map(reply => (
                                                         <div key={reply.id} className="d-flex gap-2 mt-2 ms-4">
-                                                            {reply.user?.photo ? (
+                                                            {reply.user?.photo || reply.account?.profile_photo ? (
                                                                 <img 
-                                                                    src={reply.user.photo.startsWith('http') ? reply.user.photo : `${window.location.origin}/${reply.user.photo}`} 
-                                                                    alt={reply.user?.name}
+                                                                    src={buildUserPhotoUrl(reply.user?.photo || reply.account?.profile_photo)} 
+                                                                    alt={reply.user?.name || reply.account?.first_name}
                                                                     className="rounded-circle"
                                                                     style={{ width: '28px', height: '28px', objectFit: 'cover' }}
+                                                                    onError={(e) => {
+                                                                        e.target.style.display = 'none';
+                                                                    }}
                                                                 />
                                                             ) : (
                                                                 <div 
                                                                     className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold"
                                                                     style={{ width: '28px', height: '28px', fontSize: '12px' }}
                                                                 >
-                                                                    {(reply.user?.name || 'U').charAt(0).toUpperCase()}
+                                                                    {((reply.user?.first_name || reply.user?.name || reply.account?.first_name || 'U')).charAt(0).toUpperCase()}
                                                                 </div>
                                                             )}
                                                             <div className="flex-grow-1">
                                                                 <div className="bg-light rounded p-2">
-                                                                    <h6 className="mb-0 small">{reply.user?.name}</h6>
-                                                                    <p className="mb-0 small">{reply.comment}</p>
+                                                                    <h6 className="mb-0 small">{reply.user?.name || `${reply.account?.first_name || ''} ${reply.account?.last_name || ''}`.trim() || 'User'}</h6>
+                                                                    <p className="mb-0 small">{reply.comment || reply.content}</p>
                                                                 </div>
                                                                 <span className="small text-muted">{formatTimeAgo(reply.created_at)}</span>
                                                             </div>
@@ -949,13 +993,13 @@ export default function SocialFeed() {
                                                 onChange={(e) => setComment(e.target.value)}
                                                 onKeyPress={(e) => {
                                                     if (e.key === 'Enter') {
-                                                        handleAddComment(selectedPost.status_update_id || selectedPost.public_id || selectedPost.id);
+                                                        handleAddComment(selectedPost.id);
                                                     }
                                                 }}
                                             />
                                             <button 
                                                 className="btn btn-primary"
-                                                onClick={() => handleAddComment(selectedPost.status_update_id || selectedPost.public_id || selectedPost.id)}
+                                                onClick={() => handleAddComment(selectedPost.id)}
                                             >
                                                 <Send size={16} />
                                             </button>
@@ -967,9 +1011,6 @@ export default function SocialFeed() {
                     </div>
                 </div>
             )}
-
-            {/* Hidden share helper */}
-            {/* We keep a copy helper via clipboard API in handleShare */}
         </>
     );
 }
