@@ -8,8 +8,7 @@ import SimpleBar from 'simplebar-react';
 
 // Helper to get backend base URL
 const getBackendBaseUrl = () => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-    // Remove /api from the end
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
     return apiUrl.replace(/\/api\/?$/, '');
 };
 
@@ -444,46 +443,129 @@ export default function SocialFeed() {
 
     return (
         <>
-            {/* Create Post Card */}
-            <div className="card mb-4">
-                <div className="card-body">
-                    <div className="d-flex align-items-center gap-3">
+            {/* Create Post Card - Modern Design */}
+            <div className="card mb-4 shadow-sm border-0" style={{ 
+                background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                borderRadius: '16px',
+                overflow: 'hidden'
+            }}>
+                <div className="card-body p-4">
+                    <div className="d-flex align-items-center gap-3 mb-3">
                         {profile?.profile_photo ? (
                             <img 
                                 src={profile.profile_photo} 
                                 alt="Profile" 
-                                className="rounded-circle"
-                                style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                                className="rounded-circle shadow-sm"
+                                style={{ 
+                                    width: '48px', 
+                                    height: '48px', 
+                                    objectFit: 'cover',
+                                    border: '3px solid #fff'
+                                }}
                                 onError={(e) => {
                                     e.target.style.display = 'none';
                                 }}
                             />
                         ) : (
                             <div 
-                                className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
-                                style={{ width: '40px', height: '40px', fontSize: '16px' }}
+                                className="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm"
+                                style={{ 
+                                    width: '48px', 
+                                    height: '48px', 
+                                    fontSize: '18px',
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    border: '3px solid #fff'
+                                }}
                             >
                                 {(profile?.first_name || 'U').charAt(0).toUpperCase()}
                             </div>
                         )}
                         <div 
-                            className="form-control cursor-pointer" 
+                            className="flex-grow-1 py-3 px-4 rounded-pill bg-white shadow-sm"
                             onClick={openCreatePostModal}
-                            style={{ cursor: 'pointer' }}
+                            style={{ 
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                border: '2px solid transparent'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.borderColor = '#667eea';
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = 'transparent';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                            }}
                         >
-                            What's on your mind, {profile?.first_name}?
+                            <span className="text-muted">What's on your mind, {profile?.first_name}?</span>
                         </div>
                     </div>
-                    <hr className="my-3" />
-                    <div className="d-flex justify-content-around">
-                        <button className="btn btn-light btn-sm" onClick={openCreatePostModal}>
-                            <i className="ri-image-add-line me-1"></i> Photo
+                    <div className="d-flex justify-content-around gap-2">
+                        <button 
+                            className="btn flex-fill py-2 border-0 shadow-sm"
+                            onClick={openCreatePostModal}
+                            style={{
+                                background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                                color: 'white',
+                                borderRadius: '12px',
+                                fontWeight: '500',
+                                transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                e.currentTarget.style.boxShadow = '0 8px 20px rgba(240, 147, 251, 0.4)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = '';
+                            }}
+                        >
+                            <i className="ri-image-add-line me-2 fs-5"></i>
+                            Photo
                         </button>
-                        <button className="btn btn-light btn-sm" onClick={openCreatePostModal}>
-                            <i className="ri-video-line me-1"></i> Video
+                        <button 
+                            className="btn flex-fill py-2 border-0 shadow-sm"
+                            onClick={openCreatePostModal}
+                            style={{
+                                background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                                color: 'white',
+                                borderRadius: '12px',
+                                fontWeight: '500',
+                                transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                e.currentTarget.style.boxShadow = '0 8px 20px rgba(79, 172, 254, 0.4)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = '';
+                            }}
+                        >
+                            <i className="ri-video-line me-2 fs-5"></i>
+                            Video
                         </button>
-                        <button className="btn btn-light btn-sm" onClick={openCreatePostModal}>
-                            <i className="ri-mic-line me-1"></i> Audio
+                        <button 
+                            className="btn flex-fill py-2 border-0 shadow-sm"
+                            onClick={openCreatePostModal}
+                            style={{
+                                background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                                color: 'white',
+                                borderRadius: '12px',
+                                fontWeight: '500',
+                                transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                e.currentTarget.style.boxShadow = '0 8px 20px rgba(250, 112, 154, 0.4)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = '';
+                            }}
+                        >
+                            <i className="ri-mic-line me-2 fs-5"></i>
+                            Audio
                         </button>
                     </div>
                 </div>
@@ -491,21 +573,66 @@ export default function SocialFeed() {
 
             {/* Posts Feed */}
             {posts.length === 0 ? (
-                <div className="card">
+                <div className="card shadow-sm border-0" style={{ borderRadius: '16px' }}>
                     <div className="card-body text-center py-5">
-                        <MessageCircle size={64} className="text-muted mb-3" />
-                        <h5>No posts yet</h5>
-                        <p className="text-muted">Be the first to share something!</p>
-                        <button className="btn btn-primary" onClick={openCreatePostModal}>
-                            Create Post
+                        <div 
+                            className="mb-4 mx-auto rounded-circle d-flex align-items-center justify-content-center"
+                            style={{
+                                width: '100px',
+                                height: '100px',
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                opacity: 0.1
+                            }}
+                        >
+                            <MessageCircle size={50} className="text-primary" style={{ opacity: 1 }} />
+                        </div>
+                        <h4 className="fw-bold mb-2">No posts yet</h4>
+                        <p className="text-muted mb-4">Be the first to share something amazing with the community!</p>
+                        <button 
+                            className="btn btn-lg px-5 py-3 border-0 shadow"
+                            onClick={openCreatePostModal}
+                            style={{
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                color: 'white',
+                                borderRadius: '12px',
+                                fontWeight: '600',
+                                transition: 'all 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-3px)';
+                                e.currentTarget.style.boxShadow = '0 10px 30px rgba(102, 126, 234, 0.4)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = '';
+                            }}
+                        >
+                            <i className="ri-add-line me-2 fs-5"></i>
+                            Create Your First Post
                         </button>
                     </div>
                 </div>
             ) : (
                 posts.map(post => (
-                    <div key={post.id} className="card mb-4">
+                    <div 
+                        key={post.id} 
+                        className="card mb-4 shadow-sm border-0" 
+                        style={{ 
+                            borderRadius: '16px',
+                            transition: 'all 0.3s ease',
+                            overflow: 'hidden'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-4px)';
+                            e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.12)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '';
+                        }}
+                    >
                         {/* Post Header */}
-                        <div className="card-header bg-white border-0">
+                        <div className="card-header bg-white border-0 pb-0" style={{ paddingTop: '20px' }}>
                             <div className="d-flex align-items-center justify-content-between">
                                 <div className="d-flex align-items-center gap-2">
                                     <div className="position-relative">
@@ -514,8 +641,14 @@ export default function SocialFeed() {
                                                 <img 
                                                     src={buildUserPhotoUrl(post.user.photo)} 
                                                     alt={post.user?.name}
-                                                    className="rounded-circle"
-                                                    style={{ width: '40px', height: '40px', objectFit: 'cover', border: '2px solid #f0f0f0' }}
+                                                    className="rounded-circle shadow-sm"
+                                                    style={{ 
+                                                        width: '48px', 
+                                                        height: '48px', 
+                                                        objectFit: 'cover', 
+                                                        border: '3px solid #fff',
+                                                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                                    }}
                                                     onError={(e) => {
                                                         if (!e.target.dataset.errorHandled) {
                                                             e.target.dataset.errorHandled = 'true';
@@ -527,12 +660,14 @@ export default function SocialFeed() {
                                                     }}
                                                 />
                                                 <div 
-                                                    className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
+                                                    className="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm"
                                                     style={{ 
-                                                        width: '40px', 
-                                                        height: '40px', 
+                                                        width: '48px', 
+                                                        height: '48px', 
                                                         display: 'none',
-                                                        fontSize: '16px'
+                                                        fontSize: '18px',
+                                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                        border: '3px solid #fff'
                                                     }}
                                                 >
                                                     {(post.user?.first_name || post.user?.name || 'U').charAt(0).toUpperCase()}
@@ -540,11 +675,13 @@ export default function SocialFeed() {
                                             </>
                                         ) : (
                                             <div 
-                                                className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
+                                                className="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-sm"
                                                 style={{ 
-                                                    width: '40px', 
-                                                    height: '40px', 
-                                                    fontSize: '16px'
+                                                    width: '48px', 
+                                                    height: '48px', 
+                                                    fontSize: '18px',
+                                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                    border: '3px solid #fff'
                                                 }}
                                             >
                                                 {(post.user?.first_name || post.user?.name || 'U').charAt(0).toUpperCase()}
@@ -552,9 +689,9 @@ export default function SocialFeed() {
                                         )}
                                     </div>
                                     <div>
-                                        <h6 className="mb-0">{post.user?.name || 'DASE User'}</h6>
-                                        <small className="text-muted">
-                                            <i className="ri-time-line me-1"></i>
+                                        <h6 className="mb-0 fw-bold">{post.user?.name || 'DASE User'}</h6>
+                                        <small className="text-muted d-flex align-items-center gap-1">
+                                            <i className="ri-time-line"></i>
                                             {formatTimeAgo(post.created_at)}
                                         </small>
                                     </div>
@@ -592,44 +729,118 @@ export default function SocialFeed() {
                         </div>
 
                         {/* Post Stats */}
-                        <div className="card-body pt-0">
-                            <div className="d-flex justify-content-between text-muted small mb-2">
-                                <span>
+                        <div className="card-body pt-0 pb-3">
+                            <div className="d-flex justify-content-between align-items-center text-muted small mb-3 px-2">
+                                <span className="d-flex align-items-center gap-1">
                                     {post.likes > 0 && (
-                                        <>
-                                            <ThumbsUp size={14} className="me-1" style={{ color: '#0d6efd' }} />
-                                            {post.likes}
-                                        </>
+                                        <div 
+                                            className="d-flex align-items-center gap-1 px-2 py-1 rounded-pill"
+                                            style={{ 
+                                                background: 'linear-gradient(135deg, #667eea22 0%, #764ba222 100%)',
+                                                color: '#667eea'
+                                            }}
+                                        >
+                                            <ThumbsUp size={14} />
+                                            <span className="fw-semibold">{post.likes}</span>
+                                        </div>
                                     )}
                                 </span>
                                 <span>
-                                    {post.comments_count > 0 && `${post.comments_count} comments`}
+                                    {post.comments_count > 0 && (
+                                        <span className="text-muted">
+                                            {post.comments_count} {post.comments_count === 1 ? 'comment' : 'comments'}
+                                        </span>
+                                    )}
                                 </span>
                             </div>
                             
-                            <hr className="my-2" />
+                            <div style={{ 
+                                height: '1px', 
+                                background: 'linear-gradient(90deg, transparent, #e9ecef 50%, transparent)',
+                                marginBottom: '12px'
+                            }} />
 
                             {/* Action Buttons */}
-                            <div className="d-flex justify-content-around">
+                            <div className="d-flex justify-content-around gap-2 px-2">
                                 <button 
-                                    className={`btn btn-sm btn-light flex-fill ${post.user_liked ? 'text-primary' : ''}`}
+                                    className="btn flex-fill py-2 border-0"
                                     onClick={() => handleLikePost(post.public_id || post.id)}
+                                    style={{
+                                        background: post.user_liked 
+                                            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                                            : '#f8f9fa',
+                                        color: post.user_liked ? 'white' : '#6c757d',
+                                        borderRadius: '10px',
+                                        fontWeight: '600',
+                                        fontSize: '0.9rem',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (!post.user_liked) {
+                                            e.currentTarget.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                                            e.currentTarget.style.color = 'white';
+                                            e.currentTarget.style.transform = 'translateY(-2px)';
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (!post.user_liked) {
+                                            e.currentTarget.style.background = '#f8f9fa';
+                                            e.currentTarget.style.color = '#6c757d';
+                                            e.currentTarget.style.transform = 'translateY(0)';
+                                        }
+                                    }}
                                 >
-                                    <ThumbsUp size={16} className="me-1" />
+                                    <ThumbsUp size={18} className="me-2" />
                                     {post.user_liked ? 'Liked' : 'Like'}
                                 </button>
                                 <button 
-                                    className="btn btn-sm btn-light flex-fill"
+                                    className="btn flex-fill py-2 border-0"
                                     onClick={() => openPostDetailsModal(post)}
+                                    style={{
+                                        background: '#f8f9fa',
+                                        color: '#6c757d',
+                                        borderRadius: '10px',
+                                        fontWeight: '600',
+                                        fontSize: '0.9rem',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+                                        e.currentTarget.style.color = 'white';
+                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = '#f8f9fa';
+                                        e.currentTarget.style.color = '#6c757d';
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                    }}
                                 >
-                                    <MessageCircle size={16} className="me-1" />
+                                    <MessageCircle size={18} className="me-2" />
                                     Comment
                                 </button>
                                 <button 
-                                    className="btn btn-sm btn-light flex-fill"
+                                    className="btn flex-fill py-2 border-0"
                                     onClick={() => handleSharePost(post)}
+                                    style={{
+                                        background: '#f8f9fa',
+                                        color: '#6c757d',
+                                        borderRadius: '10px',
+                                        fontWeight: '600',
+                                        fontSize: '0.9rem',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)';
+                                        e.currentTarget.style.color = 'white';
+                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = '#f8f9fa';
+                                        e.currentTarget.style.color = '#6c757d';
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                    }}
                                 >
-                                    <Share2 size={16} className="me-1" />
+                                    <Share2 size={18} className="me-2" />
                                     Share
                                 </button>
                             </div>
