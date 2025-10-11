@@ -29,6 +29,7 @@ import Engineer from './dashboard/engineer/App'
 import Notification from './dashboard/notification/App'
 import EngineerDetails from './dashboard/engineer/view/App'
 import ProductionSamples from './dashboard/production-samples/App'
+import FileSharing from './dashboard/file-sharing/App'
 import { loadExternalScripts } from './utils/external-scripts';
 
 // New component to wrap dashboard routes
@@ -51,6 +52,7 @@ const DashboardWrapper = () => {
       <Route path="notification" element={<Notification />} />
       <Route path="engineer/view/:account_id" element={<EngineerDetails />} />
       <Route path="production-samples" element={<ProductionSamples />} />
+      <Route path="file-sharing" element={<FileSharing />} />
       {/* Redirect to dashboard home for any unmatched routes */}
       <Route path="*" element={<Navigate to="/dase/dashboard" replace />} />
     </Routes>

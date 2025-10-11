@@ -59,6 +59,9 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
             case '/dase/production-samples':
                 setTitle('Production Samples');
                 break;
+            case '/dase/file-sharing':
+                setTitle('File Sharing');
+                break;
             default:
                 setTitle('Welcome, Lawal Wahab');
         }
@@ -187,6 +190,19 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                                     </svg>
 
                                     Production Samples
+                                </span>
+                            </Link>
+                        </li>
+
+                        <li className={`nav-item ${isActive(["/dase/file-sharing"])}`}>
+                            <Link to="/dase/file-sharing" className={`nav-link ${isActive(["/dase/file-sharing"])}`} data-key="t-files">
+                                <span data-key="t-files">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" stroke="#6882B6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <polyline points="13 2 13 9 20 9" stroke="#6882B6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+
+                                    File Sharing
                                 </span>
                             </Link>
                         </li>
