@@ -409,11 +409,11 @@ export default function SocialFeed() {
             <div className="modal fade" id="createPostModal" tabIndex="-1">
                 <div className="modal-dialog modal-dialog-centered">
                     <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">Create Post</h5>
+                        <div className="modal-header border-0 pb-0">
+                            <h5 className="modal-title fw-bold">Create Post</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                         </div>
-                        <div className="modal-body">
+                        <div className="modal-body pt-2">
                             <div className="d-flex align-items-center mb-3">
                                 <img 
                                     src={profile?.profile_photo || 'https://via.placeholder.com/40'} 
@@ -423,7 +423,7 @@ export default function SocialFeed() {
                                 />
                                 <div>
                                     <h6 className="mb-0">{profile?.first_name} {profile?.last_name}</h6>
-                                    <small className="text-muted">Public</small>
+                                    <small className="text-muted"><i className="ri-global-line"></i> Public</small>
                                 </div>
                             </div>
 
@@ -433,31 +433,45 @@ export default function SocialFeed() {
                                 placeholder="What's on your mind?"
                                 value={postContent}
                                 onChange={(e) => setPostContent(e.target.value)}
+                                style={{ resize: 'none', fontSize: '1rem' }}
                             />
 
                             {selectedMedia && (
-                                <div className="mb-3 position-relative">
+                                <div className="mb-3 position-relative border rounded overflow-hidden">
                                     {mediaType === 'image' && (
                                         <img 
                                             src={URL.createObjectURL(selectedMedia)} 
                                             alt="Preview" 
-                                            className="img-fluid rounded"
+                                            className="img-fluid w-100"
+                                            style={{ maxHeight: '400px', objectFit: 'cover' }}
                                         />
                                     )}
                                     {mediaType === 'video' && (
-                                        <ReactPlayer 
-                                            url={URL.createObjectURL(selectedMedia)} 
-                                            controls 
-                                            width="100%"
-                                        />
+                                        <div style={{ backgroundColor: '#000' }}>
+                                            <ReactPlayer 
+                                                url={URL.createObjectURL(selectedMedia)} 
+                                                controls 
+                                                width="100%"
+                                                height="auto"
+                                            />
+                                        </div>
                                     )}
                                     {mediaType === 'audio' && (
-                                        <ReactPlayer 
-                                            url={URL.createObjectURL(selectedMedia)} 
-                                            controls 
-                                            width="100%" 
-                                            height="50px"
-                                        />
+                                        <div className="p-3 bg-light">
+                                            <div className="d-flex align-items-center mb-2">
+                                                <i className="ri-music-2-line fs-4 me-2"></i>
+                                                <div className="flex-grow-1">
+                                                    <small className="text-muted d-block">Audio File</small>
+                                                    <strong className="small">{selectedMedia.name}</strong>
+                                                </div>
+                                            </div>
+                                            <ReactPlayer 
+                                                url={URL.createObjectURL(selectedMedia)} 
+                                                controls 
+                                                width="100%" 
+                                                height="50px"
+                                            />
+                                        </div>
                                     )}
                                     <button
                                         className="btn btn-sm btn-danger position-absolute top-0 end-0 m-2"
@@ -465,18 +479,23 @@ export default function SocialFeed() {
                                             setSelectedMedia(null);
                                             setMediaType(null);
                                         }}
+                                        title="Remove media"
                                     >
                                         <i className="ri-close-line"></i>
                                     </button>
                                 </div>
                             )}
 
-                            <div className="border rounded p-2">
+                            <div className="border rounded p-3 bg-light">
                                 <div className="d-flex justify-content-between align-items-center">
-                                    <span>Add to your post</span>
-                                    <div className="d-flex gap-1">
-                                        <label className="btn btn-light btn-sm">
-                                            <i className="ri-image-add-line"></i>
+                                    <span className="fw-semibold small">Add to your post</span>
+                                    <div className="d-flex gap-2">
+                                        <label 
+                                            className={`btn btn-sm ${mediaType === 'image' ? 'btn-primary' : 'btn-outline-secondary'} rounded-circle`}
+                                            title="Add Photo"
+                                            style={{ width: '36px', height: '36px', padding: '6px' }}
+                                        >
+                                            <i className="ri-image-add-line fs-5"></i>
                                             <input 
                                                 type="file" 
                                                 accept="image/*" 
@@ -484,8 +503,12 @@ export default function SocialFeed() {
                                                 onChange={(e) => handleMediaChange(e, 'image')} 
                                             />
                                         </label>
-                                        <label className="btn btn-light btn-sm">
-                                            <i className="ri-video-line"></i>
+                                        <label 
+                                            className={`btn btn-sm ${mediaType === 'video' ? 'btn-success' : 'btn-outline-success'} rounded-circle`}
+                                            title="Add Video"
+                                            style={{ width: '36px', height: '36px', padding: '6px' }}
+                                        >
+                                            <i className="ri-video-line fs-5"></i>
                                             <input 
                                                 type="file" 
                                                 accept="video/*" 
@@ -493,8 +516,12 @@ export default function SocialFeed() {
                                                 onChange={(e) => handleMediaChange(e, 'video')} 
                                             />
                                         </label>
-                                        <label className="btn btn-light btn-sm">
-                                            <i className="ri-mic-line"></i>
+                                        <label 
+                                            className={`btn btn-sm ${mediaType === 'audio' ? 'btn-warning' : 'btn-outline-warning'} rounded-circle`}
+                                            title="Add Audio"
+                                            style={{ width: '36px', height: '36px', padding: '6px' }}
+                                        >
+                                            <i className="ri-mic-line fs-5"></i>
                                             <input 
                                                 type="file" 
                                                 accept="audio/*" 
@@ -504,15 +531,30 @@ export default function SocialFeed() {
                                         </label>
                                     </div>
                                 </div>
+                                {selectedMedia && (
+                                    <div className="mt-2">
+                                        <small className="text-muted">
+                                            <i className="ri-check-line text-success"></i> 
+                                            {mediaType === 'image' ? 'Photo' : mediaType === 'video' ? 'Video' : 'Audio'} added
+                                        </small>
+                                    </div>
+                                )}
                             </div>
                         </div>
-                        <div className="modal-footer">
+                        <div className="modal-footer border-0 pt-0">
                             <button 
-                                className="btn btn-primary w-100" 
+                                className="btn btn-primary w-100 py-2 fw-semibold" 
                                 onClick={handleCreatePost}
                                 disabled={uploading || (!postContent.trim() && !selectedMedia)}
                             >
-                                {uploading ? 'Posting...' : 'Post'}
+                                {uploading ? (
+                                    <>
+                                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        Posting...
+                                    </>
+                                ) : (
+                                    'Post'
+                                )}
                             </button>
                         </div>
                     </div>
