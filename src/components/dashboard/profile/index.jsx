@@ -149,21 +149,24 @@ export default function ProfilePage() {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="col-auto">
-                                    {!editMode ? (
-                                        <button className="btn btn-success" onClick={() => setEditMode(true)}>
-                                            <i className="ri-edit-box-line align-bottom me-1"></i> Edit Profile
-                                        </button>
-                                    ) : (
-                                        <div className="btn-group">
-                                            <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
-                                                {saving ? 'Saving...' : 'Save Changes'}
+                                <div className="col-auto ms-auto">
+                                    <div className="d-flex gap-2">
+                                        {!editMode ? (
+                                            <button className="btn btn-success" onClick={() => setEditMode(true)}>
+                                                <i className="ri-edit-box-line align-bottom me-1"></i> Edit Profile
                                             </button>
-                                            <button className="btn btn-light" onClick={handleCancel} disabled={saving}>
-                                                Cancel
-                                            </button>
-                                                </div>
-                                    )}
+                                        ) : (
+                                            <>
+                                                <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+                                                    <i className="ri-save-line me-1"></i>
+                                                    {saving ? 'Saving...' : 'Save Changes'}
+                                                </button>
+                                                <button className="btn btn-light" onClick={handleCancel} disabled={saving}>
+                                                    <i className="ri-close-line me-1"></i> Cancel
+                                                </button>
+                                            </>
+                                        )}
+                                                                                </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -308,18 +311,18 @@ export default function ProfilePage() {
                                                         <div className="card-body">
                                         <h5 className="card-title mb-3">Quick Actions</h5>
                                         <div className="d-grid gap-2">
-                                            <Link to="/dase/profile/edit" className="btn btn-outline-primary">
-                                                <i className="ri-lock-password-line me-1"></i> Change Password
+                                            <Link to="/dase/profile/edit" className="btn btn-outline-primary text-start">
+                                                <i className="ri-lock-password-line me-2"></i> Change Password
                                             </Link>
-                                            <Link to="/dase/notification" className="btn btn-outline-info">
-                                                <i className="ri-notification-3-line me-1"></i> Notification Settings
+                                            <Link to="/dase/notification" className="btn btn-outline-info text-start">
+                                                <i className="ri-notification-3-line me-2"></i> Notification Settings
                                             </Link>
-                                            <button className="btn btn-outline-warning" onClick={() => navigate('/dase/profile/edit')}>
-                                                <i className="ri-shield-check-line me-1"></i> Enable 2FA
-                                                                            </button>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
+                                            <Link to="/dase/profile/edit" className="btn btn-outline-warning text-start">
+                                                <i className="ri-shield-check-line me-2"></i> Enable 2FA
+                                            </Link>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
                                 <div className="card mt-3">
                                                         <div className="card-body">
