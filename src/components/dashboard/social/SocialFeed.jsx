@@ -27,7 +27,21 @@ export default function SocialFeed() {
             setLoading(true);
             const response = await axiosInstance.get('/status-updates');
             if (response.data.success) {
-                setPosts(response.data.data.posts || []);
+                // API returns paginated data
+                const postsData = response.data.data.data || [];
+                // Transform posts to add computed properties
+                const transformedPosts = postsData.map(post => ({
+                    ...post,
+                    user: post.account || {
+                        account_id: post.account_id,
+                        name: 'Unknown User',
+                        photo: null
+                    },
+                    likes: post.reactions?.length || 0,
+                    comments_count: post.comments?.length || 0,
+                    user_liked: post.reactions?.some(r => r.account_id === profile?.account_id) || false
+                }));
+                setPosts(transformedPosts);
             }
         } catch (error) {
             console.error('Error fetching posts:', error);
@@ -57,11 +71,10 @@ export default function SocialFeed() {
             formData.append('content', postContent);
             
             if (selectedMedia) {
-                formData.append('media', selectedMedia);
-                formData.append('type', mediaType);
-            } else {
-                formData.append('type', 'text');
+                formData.append('media_file', selectedMedia);
+                formData.append('media_type', mediaType);
             }
+            // Note: backend has defaults, so we don't need to send type for text-only posts
 
             const response = await axiosInstance.post('/status-updates', formData, {
                 headers: {
@@ -93,7 +106,7 @@ export default function SocialFeed() {
 
     const handleLikePost = async (postId) => {
         try {
-            const response = await axiosInstance.post(`/status-updates/${postId}/like`);
+            const response = await axiosInstance.post(`/status-updates/${postId}/react`);
             
             if (response.data.success) {
                 // Update local state
@@ -101,14 +114,15 @@ export default function SocialFeed() {
                     post.id === postId 
                         ? {
                             ...post,
-                            likes: response.data.data.likes_count,
-                            user_liked: response.data.data.liked
+                            likes: response.data.data.reactions_count || response.data.data.likes_count || 0,
+                            user_liked: response.data.data.user_reacted !== undefined ? response.data.data.user_reacted : !post.user_liked
                         }
                         : post
                 ));
+                toast.success(response.data.data.user_reacted ? 'Post liked!' : 'Like removed');
             }
         } catch (error) {
-            toast.error('Failed to like post');
+            toast.error('Failed to react to post');
             console.error('Error:', error);
         }
     };
@@ -120,7 +134,7 @@ export default function SocialFeed() {
         }
 
         try {
-            const response = await axiosInstance.post(`/status-updates/${postId}/comments`, {
+            const response = await axiosInstance.post(`/status-updates/${postId}/comment`, {
                 comment: comment.trim(),
                 parent_id: replyTo
             });
