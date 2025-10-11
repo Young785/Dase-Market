@@ -32,6 +32,16 @@ export default function SocialFeed() {
     const mediaRefs = useRef({});
     const observerRef = useRef(null);
 
+    // Track media progress per postId
+    const [mediaProgress, setMediaProgress] = useState({}); // { [postId]: { playedSeconds, duration } }
+
+    const getProgressPercent = useCallback((postId) => {
+        const p = mediaProgress[postId];
+        if (!p || !p.duration) return 0;
+        const pct = (p.playedSeconds || 0) / p.duration * 100;
+        return Math.max(0, Math.min(100, pct));
+    }, [mediaProgress]);
+
     useEffect(() => {
         fetchPosts();
     }, []);
@@ -68,23 +78,27 @@ export default function SocialFeed() {
                     const postId = entry.target.dataset.postId;
                     const mediaElement = mediaRefs.current[postId];
                     
-                    if (entry.isIntersecting && entry.intersectionRatio >= 0.7) {
-                        // Post is 70% visible, auto-play
+                    if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+                        // Ensure only one plays at a time
+                        setPlayingPostId((prev) => {
+                            if (prev && prev !== postId) {
+                                setIsPlaying(p => ({ ...p, [prev]: false }));
+                            }
+                            return postId;
+                        });
                         if (mediaElement) {
-                            setPlayingPostId(postId);
                             setIsPlaying(prev => ({ ...prev, [postId]: true }));
                         }
                     } else {
-                        // Post is not visible enough, pause
-                        if (mediaElement && playingPostId === postId) {
+                        if (mediaElement) {
                             setIsPlaying(prev => ({ ...prev, [postId]: false }));
                         }
                     }
                 });
             },
             {
-                threshold: [0, 0.7, 1],
-                rootMargin: '-50px 0px -50px 0px'
+                threshold: [0, 0.5, 1],
+                rootMargin: '-30px 0px -30px 0px'
             }
         );
 
@@ -93,7 +107,7 @@ export default function SocialFeed() {
                 observerRef.current.disconnect();
             }
         };
-    }, [playingPostId]);
+    }, []);
 
     const fetchPosts = async () => {
         try {
@@ -431,16 +445,14 @@ export default function SocialFeed() {
                         className="position-relative"
                         data-post-id={postId}
                         style={{ backgroundColor: '#000', borderRadius: '8px', overflow: 'hidden' }}
+                        ref={(el) => {
+                            if (el && observerRef.current) observerRef.current.observe(el);
+                        }}
                     >
                         <ReactPlayer 
                             ref={(player) => { 
                                 if (player) {
                                     mediaRefs.current[postId] = player;
-                                    // Observe this element for auto-play
-                                    const element = player.wrapper;
-                                    if (element && observerRef.current) {
-                                        observerRef.current.observe(element);
-                                    }
                                 }
                             }}
                             url={fullMediaUrl} 
@@ -458,6 +470,8 @@ export default function SocialFeed() {
                             }}
                             onPlay={() => setIsPlaying(prev => ({ ...prev, [postId]: true }))}
                             onPause={() => setIsPlaying(prev => ({ ...prev, [postId]: false }))}
+                            onDuration={(d) => setMediaProgress(prev => ({ ...prev, [postId]: { ...(prev[postId]||{}), duration: d } }))}
+                            onProgress={({ playedSeconds }) => setMediaProgress(prev => ({ ...prev, [postId]: { ...(prev[postId]||{}), playedSeconds } }))}
                         />
                     </div>
                 );
@@ -469,6 +483,9 @@ export default function SocialFeed() {
                         data-post-id={postId}
                         style={{ 
                             background: 'linear-gradient(135deg, #667eea11 0%, #764ba211 100%)'
+                        }}
+                        ref={(el) => {
+                            if (el && observerRef.current) observerRef.current.observe(el);
                         }}
                     >
                         {post.thumbnail_url && (
@@ -509,20 +526,26 @@ export default function SocialFeed() {
                                         transition: 'all 0.3s ease',
                                         boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
                                     }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.transform = 'scale(1.1)';
-                                        e.currentTarget.style.background = 'rgba(0,0,0,0.8)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.transform = 'scale(1)';
-                                        e.currentTarget.style.background = 'rgba(0,0,0,0.6)';
-                                    }}
                                 >
                                     {playing ? (
                                         <Pause size={36} color="white" fill="white" />
                                     ) : (
                                         <Play size={36} color="white" fill="white" style={{ marginLeft: '4px' }} />
                                     )}
+                                </div>
+                                {/* Progress overlay bar */}
+                                <div 
+                                    className="position-absolute bottom-0 start-0 end-0"
+                                    style={{ height: '4px', background: 'rgba(255,255,255,0.35)' }}
+                                >
+                                    <div 
+                                        style={{
+                                            width: `${getProgressPercent(postId)}%`,
+                                            height: '100%',
+                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                            transition: 'width 0.2s linear'
+                                        }}
+                                    />
                                 </div>
                             </div>
                         )}
@@ -561,6 +584,8 @@ export default function SocialFeed() {
                                             }
                                         }
                                     }}
+                                    onDuration={(d) => setMediaProgress(prev => ({ ...prev, [postId]: { ...(prev[postId]||{}), duration: d } }))}
+                                    onProgress={({ playedSeconds }) => setMediaProgress(prev => ({ ...prev, [postId]: { ...(prev[postId]||{}), playedSeconds } }))}
                                     onPlay={() => setIsPlaying(prev => ({ ...prev, [postId]: true }))}
                                     onPause={() => setIsPlaying(prev => ({ ...prev, [postId]: false }))}
                                     onEnded={() => setIsPlaying(prev => ({ ...prev, [postId]: false }))}
