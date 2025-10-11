@@ -9,7 +9,7 @@ import ProfilePage from '../../components/dashboard/profile'
 
 // import SideBar from '../dashboard_header/sidebar'
 
-export default function Profile() {
+export default function Chat() {
 
 	const [title, setTitle] = useState('Welcome, Lawal Wahab');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);

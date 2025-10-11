@@ -90,13 +90,16 @@ export default function ProfilePage() {
             newErrors.business_phone = 'Business phone must contain only valid phone characters';
         }
 
+        if (formData.business_website == "") {
+            newErrors.business_website = 'Website is required';
+        }
+
         // Optional fields with max length
-        if (formData.business_website && formData.business_website.trim()) {
-            if (formData.business_website.length > 100) {
-                newErrors.business_website = 'Website URL must not exceed 100 characters';
-            } else if (!/^https?:\/\/.+\..+/.test(formData.business_website.trim())) {
-                newErrors.business_website = 'Website must be a valid URL (e.g., https://example.com)';
-            }
+        if (formData.business_website && formData.business_website.length > 100) {
+            newErrors.business_website = 'Website URL must not exceed 100 characters';
+        }
+        if (formData.business_website && formData.business_website.trim() && !/^https?:\/\/.+/.test(formData.business_website)) {
+            newErrors.business_website = 'Website must be a valid URL (e.g., https://example.com)';
         }
 
         if (formData.work_experience && formData.work_experience.length > 255) {
