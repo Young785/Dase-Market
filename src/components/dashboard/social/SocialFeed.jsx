@@ -540,8 +540,11 @@ export default function SocialFeed() {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        transition: 'all 0.3s ease',
-                                        boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                                        opacity: playing ? 0 : 1,
+                                        pointerEvents: playing ? 'none' : 'auto',
+                                        zIndex: 2
                                     }}
                                     onClick={(e) => togglePlayPause(postId, e)}
                                 >
@@ -556,7 +559,7 @@ export default function SocialFeed() {
                                     className="position-absolute top-0 end-0 m-2 btn btn-sm rounded-circle"
                                     style={{
                                         width: '36px', height: '36px',
-                                        background: 'rgba(0,0,0,0.55)', color: 'white', border: 'none'
+                                        background: 'rgba(0,0,0,0.55)', color: 'white', border: 'none', zIndex: 3
                                     }}
                                     onClick={(e) => toggleMute(postId, e)}
                                 >
@@ -565,7 +568,7 @@ export default function SocialFeed() {
                                 {/* Progress overlay bar */}
                                 <div 
                                     className="position-absolute bottom-0 start-0 end-0"
-                                    style={{ height: '4px', background: 'rgba(255,255,255,0.35)', cursor: 'pointer' }}
+                                    style={{ height: '6px', background: 'rgba(255,255,255,0.35)', cursor: 'pointer', zIndex: 4 }}
                                     onClick={(e) => {
                                         const rect = e.currentTarget.getBoundingClientRect();
                                         const clickX = e.clientX - rect.left;
