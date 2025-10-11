@@ -724,6 +724,283 @@ GET /dashboard
 
 ---
 
+## 📱 Social Feed / Status Updates Endpoints
+
+### 19. Create Status Update
+```
+POST /status-updates
+```
+**Headers:**
+- Authorization: Bearer {token}
+- Content-Type: multipart/form-data
+
+**Body (FormData):**
+- `content`: String (optional, but required if no media)
+- `media`: File (optional, image/video/audio)
+- `type`: String (required: 'text', 'image', 'video', 'audio')
+
+**Validation:**
+- At least one of `content` or `media` must be provided
+- Media file size limits:
+  - Images: 10MB max
+  - Videos: 100MB max
+  - Audio: 50MB max
+- Supported formats:
+  - Images: JPEG, PNG, GIF, WebP
+  - Videos: MP4, MOV, AVI
+  - Audio: MP3, WAV, M4A
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "user_id": 123,
+    "content": "Check out my latest production!",
+    "media_url": "https://example.com/media/post-1.mp4",
+    "media_type": "video",
+    "likes": 0,
+    "comments_count": 0,
+    "user_liked": false,
+    "user": {
+      "account_id": "ABC123",
+      "name": "John Doe",
+      "photo": "https://example.com/photos/user.jpg"
+    },
+    "created_at": "2024-01-01T12:00:00Z"
+  },
+  "message": "Post created successfully"
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "Please provide content or media"
+}
+```
+
+---
+
+### 20. Get Status Updates Feed
+```
+GET /status-updates
+```
+**Headers:**
+- Authorization: Bearer {token}
+
+**Query Parameters:**
+- `page`: Integer (default: 1)
+- `per_page`: Integer (default: 10, max: 50)
+- `user_id`: Integer (optional, filter by specific user)
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "posts": [
+      {
+        "id": 1,
+        "user_id": 123,
+        "content": "Working on a new beat!",
+        "media_url": "https://example.com/media/post-1.jpg",
+        "media_type": "image",
+        "likes": 45,
+        "comments_count": 12,
+        "user_liked": true,
+        "user": {
+          "account_id": "ABC123",
+          "name": "John Doe",
+          "photo": "https://example.com/photos/user.jpg"
+        },
+        "created_at": "2024-01-01T12:00:00Z"
+      }
+    ],
+    "pagination": {
+      "current_page": 1,
+      "per_page": 10,
+      "total": 150,
+      "total_pages": 15,
+      "has_more": true
+    }
+  },
+  "message": "Feed retrieved successfully"
+}
+```
+
+---
+
+### 21. Get Single Post Details
+```
+GET /status-updates/{post_id}
+```
+**Headers:**
+- Authorization: Bearer {token}
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "user_id": 123,
+    "content": "Working on a new beat!",
+    "media_url": "https://example.com/media/post-1.jpg",
+    "media_type": "image",
+    "likes": 45,
+    "comments_count": 12,
+    "user_liked": true,
+    "user": {
+      "account_id": "ABC123",
+      "name": "John Doe",
+      "photo": "https://example.com/photos/user.jpg"
+    },
+    "comments": [
+      {
+        "id": 1,
+        "post_id": 1,
+        "user_id": 456,
+        "comment": "This is amazing!",
+        "user": {
+          "account_id": "DEF456",
+          "name": "Jane Smith",
+          "photo": "https://example.com/photos/jane.jpg"
+        },
+        "replies": [
+          {
+            "id": 2,
+            "post_id": 1,
+            "user_id": 123,
+            "parent_id": 1,
+            "comment": "Thanks!",
+            "user": {
+              "account_id": "ABC123",
+              "name": "John Doe",
+              "photo": "https://example.com/photos/user.jpg"
+            },
+            "created_at": "2024-01-01T12:15:00Z"
+          }
+        ],
+        "created_at": "2024-01-01T12:10:00Z"
+      }
+    ],
+    "created_at": "2024-01-01T12:00:00Z"
+  },
+  "message": "Post retrieved successfully"
+}
+```
+
+---
+
+### 22. Like/Unlike Post
+```
+POST /status-updates/{post_id}/like
+```
+**Headers:**
+- Authorization: Bearer {token}
+
+**Description:**
+This endpoint toggles the like status. If user already liked the post, it will unlike it. If not liked, it will like it.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "post_id": 1,
+    "liked": true,
+    "likes_count": 46
+  },
+  "message": "Post liked successfully"
+}
+```
+
+**Unlike Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "post_id": 1,
+    "liked": false,
+    "likes_count": 45
+  },
+  "message": "Post unliked successfully"
+}
+```
+
+---
+
+### 23. Add Comment to Post
+```
+POST /status-updates/{post_id}/comments
+```
+**Headers:**
+- Authorization: Bearer {token}
+- Content-Type: application/json
+
+**Body:**
+```json
+{
+  "comment": "This is a great post!",
+  "parent_id": null
+}
+```
+**Note:** `parent_id` is optional. Set it to comment ID to create a reply.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 5,
+    "post_id": 1,
+    "user_id": 789,
+    "comment": "This is a great post!",
+    "parent_id": null,
+    "user": {
+      "account_id": "GHI789",
+      "name": "Bob Wilson",
+      "photo": "https://example.com/photos/bob.jpg"
+    },
+    "created_at": "2024-01-01T12:30:00Z"
+  },
+  "message": "Comment added successfully"
+}
+```
+
+---
+
+### 24. Delete Status Update
+```
+DELETE /status-updates/{post_id}
+```
+**Headers:**
+- Authorization: Bearer {token}
+
+**Authorization:**
+Only the post owner can delete their own posts.
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Post deleted successfully"
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "message": "You can only delete your own posts"
+}
+```
+
+---
+
 ## Database Schema Requirements
 
 ### Production Samples Table
@@ -833,11 +1110,13 @@ CREATE TABLE status_comments (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     post_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
+    parent_id BIGINT NULL,
     comment TEXT NOT NULL,
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     FOREIGN KEY (post_id) REFERENCES status_updates(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_id) REFERENCES status_comments(id) ON DELETE CASCADE
 );
 ```
 
@@ -881,10 +1160,13 @@ CREATE TABLE payments (
 ---
 
 **Priority Order for Implementation:**
-1. ⭐ Production Samples (Endpoints 1-6)
-2. ⭐ File Sharing (Endpoints 12-16)
-3. ⭐ Payment Integration (Endpoints 17-18)
-4. 🔥 Reviews & Ratings (Endpoints 7-11)
-5. 📱 Status Updates (Endpoints 19-23)
-6. 📊 Dashboard Enhancement (Endpoint 24)
+1. ⭐ Production Samples (Endpoints 1-6) - ✅ Frontend Complete
+2. ⭐ File Sharing (Endpoints 12-16) - ✅ Frontend Complete
+3. 🔥 Reviews & Ratings (Endpoints 7-11) - ✅ Frontend Complete
+4. 📱 Status Updates (Endpoints 19-24) - ✅ Frontend Complete
+5. ⭐ Payment Integration (Endpoints 17-18) - ⏳ Not Started
+6. 📊 Dashboard Enhancement - ⏳ Future Enhancement
+
+**Total Endpoints Documented:** 24  
+**Frontend Implementation:** 22/24 (92%) - All critical features ready!
 
