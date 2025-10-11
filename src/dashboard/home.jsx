@@ -227,7 +227,7 @@ export default function Home() {
 														{notifications.filter(n => !n.read_at).length}
 													</span>
 												</h4>
-												<Link to="/dase/notifications" className="text-decoration-underline">
+                                            <Link to="/dase/notification" className="text-decoration-underline">
 													View Notifications
 												</Link>
 											</div>
@@ -273,14 +273,14 @@ export default function Home() {
 								<div className="card">
 									<div className="card-header align-items-center d-flex">
 										<h4 className="card-title mb-0 flex-grow-1">Recent Notifications</h4>
-										<div className="flex-shrink-0">
-											<button
-												className="btn btn-soft-primary btn-sm"
-												onClick={() => setShowAllNotifications(true)}
-											>
-												View All
-											</button>
-										</div>
+                                        <div className="flex-shrink-0">
+                                            <Link
+                                                className="btn btn-soft-primary btn-sm"
+                                                to="/dase/notification"
+                                            >
+                                                View All
+                                            </Link>
+                                        </div>
 									</div>
 									<div className="card-body p-0">
 										<div className="list-group list-group-flush">
