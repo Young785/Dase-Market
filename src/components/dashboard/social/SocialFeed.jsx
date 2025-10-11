@@ -84,14 +84,13 @@ export default function SocialFeed() {
                         setPlayingPostId((prev) => {
                             if (prev && prev !== postId) {
                                 setIsPlaying(p => ({ ...p, [prev]: false }));
-                                setMuted(m => ({ ...m, [prev]: true }));
+                                // no auto-mute on previous
                             }
                             return postId;
                         });
                         if (mediaElement) {
                             setIsPlaying(prev => ({ ...prev, [postId]: true }));
-                            // Autoplay muted to satisfy browser policy
-                            setMuted(m => ({ ...m, [postId]: true }));
+                            // no auto-mute on autoplay; honor current mute state (defaults to false)
                         }
                     } else {
                         if (mediaElement) {
@@ -123,9 +122,10 @@ export default function SocialFeed() {
                 // Transform posts to add computed properties
                 const transformedPosts = postsData.map(post => {
                     const account = post.account || {};
+                    const pubId = post.status_update_id || post.id;
                     return {
                         ...post,
-                        public_id: post.status_update_id || post.id,
+                        public_id: pubId,
                         user: {
                             account_id: account.account_id || post.account_id,
                             name: account.business_name || `${account.first_name || ''} ${account.last_name || ''}`.trim() || 'Unknown User',
@@ -138,6 +138,10 @@ export default function SocialFeed() {
                     };
                 });
                 setPosts(transformedPosts);
+                // initialize mute defaults to false for all posts
+                const initialMuted = {};
+                transformedPosts.forEach(p => { initialMuted[p.public_id] = false; });
+                setMuted(initialMuted);
             }
         } catch (error) {
             console.error('Error fetching posts:', error);
@@ -573,6 +577,10 @@ export default function SocialFeed() {
                                             player.seekTo(seekTo, 'seconds');
                                             // Keep playing after seek
                                             setIsPlaying(prev => ({ ...prev, [postId]: true }));
+                                            const internal = player.getInternalPlayer ? player.getInternalPlayer() : null;
+                                            try {
+                                                if (internal && internal.play) internal.play();
+                                            } catch (e) {}
                                             setMediaProgress(prev => ({ ...prev, [postId]: { ...(prev[postId]||{}), playedSeconds: seekTo } }));
                                         }
                                     }}
