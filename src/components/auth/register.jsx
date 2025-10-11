@@ -11,6 +11,7 @@ import "./register.css"
 import toast from "react-hot-toast"
 import { Toaster } from "react-hot-toast"
 import axiosInstance from "../../axiosInstance"
+import AttestationModal from "./AttestationModal"
 
 // import CircularProgress from '@mui/material/CircularProgress';
 
@@ -533,6 +534,16 @@ export default function Register() {
   }
 
   const renderModalContent = () => {
+    return (
+      <AttestationModal 
+        isEngineer={activeTab === "engineer"} 
+        onClose={handleCloseModal} 
+      />
+    );
+  }
+
+  // Old renderModalContent - Replaced with AttestationModal
+  const renderModalContentOld = () => {
     if (activeTab === "engineer") {
       return (
         <div className="px-0 mx-0 py-0 my-0">
