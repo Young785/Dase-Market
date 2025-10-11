@@ -8,7 +8,7 @@ import SimpleBar from 'simplebar-react';
 
 // Helper to get backend base URL
 const getBackendBaseUrl = () => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+    const apiUrl = import.meta.env.Backend_url || 'http://livestream.test/api';0
     return apiUrl.replace(/\/api\/?$/, '');
 };
 
@@ -170,13 +170,13 @@ export default function SocialFeed() {
     const handleLikePost = async (publicId) => {
         try {
             // Determine intended reaction (toggle like)
-            const post = posts.find(p => p.public_id === publicId || p.id === publicId);
+            const post = posts.find(p => p.public_id === publicId || p.status_update_id === publicId);
             const wasLiked = !!post?.user_liked;
             const response = await axiosInstance.post(`/status-updates/${publicId}/react`, { reaction_type: 'like' });
 
             if (response.data.success) {
                 setPosts(posts.map(p => {
-                    if (p.public_id === publicId || p.id === publicId) {
+                    if (p.public_id === publicId || p.status_update_id === publicId) {
                         const nextLiked = !wasLiked;
                         const nextLikes = (p.likes || 0) + (nextLiked ? 1 : -1);
                         return { ...p, user_liked: nextLiked, likes: Math.max(0, nextLikes) };
@@ -209,13 +209,13 @@ export default function SocialFeed() {
                 setReplyTo(null);
                 
                 // Refresh post details if modal is open
-                if (selectedPost && (selectedPost.status_update_id === publicId)) {
+                if (selectedPost && (selectedPost.public_id === publicId || selectedPost.status_update_id === publicId)) {
                     fetchPostDetails(publicId);
                 }
                 
                 // Update comment count
                 setPosts(posts.map(p =>
-                    (p.public_id === publicId || p.id === publicId)
+                    (p.public_id === publicId || p.status_update_id === publicId)
                         ? { ...p, comments_count: (p.comments_count || 0) + 1 }
                         : p
                 ));
@@ -256,7 +256,7 @@ export default function SocialFeed() {
             
             if (response.data.success) {
                 toast.success('Post deleted successfully!');
-                setPosts(posts.filter(p => (p.public_id !== publicId && p.id !== publicId)));
+                setPosts(posts.filter(p => (p.public_id !== publicId && p.status_update_id !== publicId)));
             }
         } catch (error) {
             toast.error('Failed to delete post');
@@ -265,7 +265,7 @@ export default function SocialFeed() {
     };
 
     const handleSharePost = (post) => {
-        const shareUrl = `${window.location.origin}/social?post=${post.public_id || post.id}`;
+        const shareUrl = `${window.location.origin}/social?post=${post.public_id || post.status_update_id}`;
         
         if (navigator.share) {
             navigator.share({
@@ -710,7 +710,7 @@ export default function SocialFeed() {
                                             <li>
                                                 <button 
                                                     className="dropdown-item text-danger" 
-                                                    onClick={() => handleDeletePost(post.id)}
+                                                    onClick={() => handleDeletePost(post.public_id || post.status_update_id)}
                                                 >
                                                     <Trash2 size={16} className="me-2" />
                                                     Delete Post
@@ -1204,13 +1204,13 @@ export default function SocialFeed() {
                                                 onChange={(e) => setComment(e.target.value)}
                                                 onKeyPress={(e) => {
                                                     if (e.key === 'Enter') {
-                                                        handleAddComment(selectedPost.id);
+                                                        handleAddComment(selectedPost.public_id || selectedPost.status_update_id);
                                                     }
                                                 }}
                                             />
                                             <button 
                                                 className="btn btn-primary"
-                                                onClick={() => handleAddComment(selectedPost.id)}
+                                                onClick={() => handleAddComment(selectedPost.public_id || selectedPost.status_update_id)}
                                             >
                                                 <Send size={16} />
                                             </button>
