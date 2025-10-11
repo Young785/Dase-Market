@@ -219,34 +219,84 @@ export default function SocialFeed() {
     const renderMedia = (post) => {
         if (!post.media_url) return null;
 
+        const fullMediaUrl = post.media_url.startsWith('http') 
+            ? post.media_url 
+            : `${window.location.origin}/${post.media_url}`;
+
         switch (post.media_type) {
             case 'image':
                 return (
-                    <img 
-                        src={post.media_url} 
-                        alt="Post media" 
-                        className="img-fluid w-100"
-                        style={{ maxHeight: '500px', objectFit: 'cover', cursor: 'pointer' }}
-                        onClick={() => window.open(post.media_url, '_blank')}
-                    />
+                    <div className="position-relative bg-light border rounded" style={{ minHeight: '300px' }}>
+                        <img 
+                            src={fullMediaUrl} 
+                            alt="Post media" 
+                            className="img-fluid w-100"
+                            style={{ maxHeight: '500px', objectFit: 'cover', cursor: 'pointer' }}
+                            onClick={() => window.open(fullMediaUrl, '_blank')}
+                            onError={(e) => {
+                                // Prevent infinite loop - only handle error once
+                                if (!e.target.dataset.errorHandled) {
+                                    e.target.dataset.errorHandled = 'true';
+                                    e.target.style.display = 'none';
+                                    // Show fallback UI
+                                    const fallback = document.createElement('div');
+                                    fallback.className = 'd-flex flex-column align-items-center justify-content-center text-muted p-5';
+                                    fallback.style.height = '300px';
+                                    fallback.innerHTML = `
+                                        <i class="ri-image-off-line" style="font-size: 64px; opacity: 0.3;"></i>
+                                        <p class="mt-3 mb-0">Image not available</p>
+                                        <small class="text-muted">The image could not be loaded</small>
+                                    `;
+                                    e.target.parentNode.appendChild(fallback);
+                                }
+                            }}
+                        />
+                    </div>
                 );
             case 'video':
                 return (
-                    <ReactPlayer 
-                        url={post.media_url} 
-                        controls 
-                        width="100%" 
-                        height="auto"
-                    />
+                    <div style={{ backgroundColor: '#000', borderRadius: '8px', overflow: 'hidden' }}>
+                        <ReactPlayer 
+                            url={fullMediaUrl} 
+                            controls 
+                            width="100%" 
+                            height="auto"
+                            config={{
+                                file: {
+                                    attributes: {
+                                        controlsList: 'nodownload'
+                                    }
+                                }
+                            }}
+                        />
+                    </div>
                 );
             case 'audio':
                 return (
-                    <ReactPlayer 
-                        url={post.media_url} 
-                        controls 
-                        width="100%" 
-                        height="50px"
-                    />
+                    <div className="border rounded p-3 bg-light">
+                        <div className="d-flex align-items-center mb-2">
+                            <div className="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
+                                <i className="ri-music-2-line fs-4 text-primary"></i>
+                            </div>
+                            <div className="flex-grow-1">
+                                <h6 className="mb-0">Audio Track</h6>
+                                <small className="text-muted">Posted by {post.user?.name || 'User'}</small>
+                            </div>
+                        </div>
+                        <ReactPlayer 
+                            url={fullMediaUrl} 
+                            controls 
+                            width="100%" 
+                            height="50px"
+                            config={{
+                                file: {
+                                    attributes: {
+                                        controlsList: 'nodownload'
+                                    }
+                                }
+                            }}
+                        />
+                    </div>
                 );
             default:
                 return null;
@@ -270,12 +320,24 @@ export default function SocialFeed() {
             <div className="card mb-4">
                 <div className="card-body">
                     <div className="d-flex align-items-center gap-3">
-                        <img 
-                            src={profile?.profile_photo || 'https://via.placeholder.com/40'} 
-                            alt="Profile" 
-                            className="rounded-circle"
-                            style={{ width: '40px', height: '40px', objectFit: 'cover' }}
-                        />
+                        {profile?.profile_photo ? (
+                            <img 
+                                src={profile.profile_photo} 
+                                alt="Profile" 
+                                className="rounded-circle"
+                                style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                                onError={(e) => {
+                                    e.target.style.display = 'none';
+                                }}
+                            />
+                        ) : (
+                            <div 
+                                className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
+                                style={{ width: '40px', height: '40px', fontSize: '16px' }}
+                            >
+                                {(profile?.first_name || 'U').charAt(0).toUpperCase()}
+                            </div>
+                        )}
                         <div 
                             className="form-control cursor-pointer" 
                             onClick={openCreatePostModal}
@@ -318,15 +380,55 @@ export default function SocialFeed() {
                         <div className="card-header bg-white border-0">
                             <div className="d-flex align-items-center justify-content-between">
                                 <div className="d-flex align-items-center gap-2">
-                                    <img 
-                                        src={post.user?.photo || 'https://via.placeholder.com/40'} 
-                                        alt={post.user?.name}
-                                        className="rounded-circle"
-                                        style={{ width: '40px', height: '40px', objectFit: 'cover' }}
-                                    />
+                                    <div className="position-relative">
+                                        {post.user?.photo ? (
+                                            <>
+                                                <img 
+                                                    src={post.user.photo.startsWith('http') ? post.user.photo : `${window.location.origin}/${post.user.photo}`} 
+                                                    alt={post.user?.name}
+                                                    className="rounded-circle"
+                                                    style={{ width: '40px', height: '40px', objectFit: 'cover', border: '2px solid #f0f0f0' }}
+                                                    onError={(e) => {
+                                                        if (!e.target.dataset.errorHandled) {
+                                                            e.target.dataset.errorHandled = 'true';
+                                                            e.target.style.display = 'none';
+                                                            if (e.target.nextElementSibling) {
+                                                                e.target.nextElementSibling.style.display = 'flex';
+                                                            }
+                                                        }
+                                                    }}
+                                                />
+                                                <div 
+                                                    className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
+                                                    style={{ 
+                                                        width: '40px', 
+                                                        height: '40px', 
+                                                        display: 'none',
+                                                        fontSize: '16px'
+                                                    }}
+                                                >
+                                                    {(post.user?.name || 'U').charAt(0).toUpperCase()}
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div 
+                                                className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
+                                                style={{ 
+                                                    width: '40px', 
+                                                    height: '40px', 
+                                                    fontSize: '16px'
+                                                }}
+                                            >
+                                                {(post.user?.name || 'U').charAt(0).toUpperCase()}
+                                            </div>
+                                        )}
+                                    </div>
                                     <div>
-                                        <h6 className="mb-0">{post.user?.name || 'Unknown User'}</h6>
-                                        <small className="text-muted">{formatTimeAgo(post.created_at)}</small>
+                                        <h6 className="mb-0">{post.user?.name || 'DASE User'}</h6>
+                                        <small className="text-muted">
+                                            <i className="ri-time-line me-1"></i>
+                                            {formatTimeAgo(post.created_at)}
+                                        </small>
                                     </div>
                                 </div>
                                 
@@ -415,12 +517,21 @@ export default function SocialFeed() {
                         </div>
                         <div className="modal-body pt-2">
                             <div className="d-flex align-items-center mb-3">
-                                <img 
-                                    src={profile?.profile_photo || 'https://via.placeholder.com/40'} 
-                                    className="rounded-circle me-2"
-                                    alt="Profile"
-                                    style={{ width: '40px', height: '40px', objectFit: 'cover' }}
-                                />
+                                {profile?.profile_photo ? (
+                                    <img 
+                                        src={profile.profile_photo} 
+                                        className="rounded-circle me-2"
+                                        alt="Profile"
+                                        style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                                    />
+                                ) : (
+                                    <div 
+                                        className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold me-2"
+                                        style={{ width: '40px', height: '40px', fontSize: '16px' }}
+                                    >
+                                        {(profile?.first_name || 'U').charAt(0).toUpperCase()}
+                                    </div>
+                                )}
                                 <div>
                                     <h6 className="mb-0">{profile?.first_name} {profile?.last_name}</h6>
                                     <small className="text-muted"><i className="ri-global-line"></i> Public</small>
@@ -574,12 +685,21 @@ export default function SocialFeed() {
                                 {/* Post Content */}
                                 <div className="mb-3">
                                     <div className="d-flex align-items-center gap-2 mb-3">
-                                        <img 
-                                            src={selectedPost.user?.photo || 'https://via.placeholder.com/40'} 
-                                            alt={selectedPost.user?.name}
-                                            className="rounded-circle"
-                                            style={{ width: '40px', height: '40px', objectFit: 'cover' }}
-                                        />
+                                        {selectedPost.user?.photo ? (
+                                            <img 
+                                                src={selectedPost.user.photo.startsWith('http') ? selectedPost.user.photo : `${window.location.origin}/${selectedPost.user.photo}`} 
+                                                alt={selectedPost.user?.name}
+                                                className="rounded-circle"
+                                                style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                                            />
+                                        ) : (
+                                            <div 
+                                                className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
+                                                style={{ width: '40px', height: '40px', fontSize: '16px' }}
+                                            >
+                                                {(selectedPost.user?.name || 'U').charAt(0).toUpperCase()}
+                                            </div>
+                                        )}
                                         <div>
                                             <h6 className="mb-0">{selectedPost.user?.name}</h6>
                                             <small className="text-muted">{formatTimeAgo(selectedPost.created_at)}</small>
@@ -598,12 +718,21 @@ export default function SocialFeed() {
                                     {selectedPost.comments && selectedPost.comments.length > 0 ? (
                                         selectedPost.comments.map(comment => (
                                             <div key={comment.id} className="d-flex gap-2 mb-3">
-                                                <img 
-                                                    src={comment.user?.photo || 'https://via.placeholder.com/32'} 
-                                                    alt={comment.user?.name}
-                                                    className="rounded-circle"
-                                                    style={{ width: '32px', height: '32px', objectFit: 'cover' }}
-                                                />
+                                                {comment.user?.photo ? (
+                                                    <img 
+                                                        src={comment.user.photo.startsWith('http') ? comment.user.photo : `${window.location.origin}/${comment.user.photo}`} 
+                                                        alt={comment.user?.name}
+                                                        className="rounded-circle"
+                                                        style={{ width: '32px', height: '32px', objectFit: 'cover' }}
+                                                    />
+                                                ) : (
+                                                    <div 
+                                                        className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold"
+                                                        style={{ width: '32px', height: '32px', fontSize: '14px' }}
+                                                    >
+                                                        {(comment.user?.name || 'U').charAt(0).toUpperCase()}
+                                                    </div>
+                                                )}
                                                 <div className="flex-grow-1">
                                                     <div className="bg-light rounded p-2">
                                                         <h6 className="mb-0 small">{comment.user?.name}</h6>
@@ -622,12 +751,21 @@ export default function SocialFeed() {
                                                     {/* Nested Replies */}
                                                     {comment.replies && comment.replies.map(reply => (
                                                         <div key={reply.id} className="d-flex gap-2 mt-2 ms-4">
-                                                            <img 
-                                                                src={reply.user?.photo || 'https://via.placeholder.com/28'} 
-                                                                alt={reply.user?.name}
-                                                                className="rounded-circle"
-                                                                style={{ width: '28px', height: '28px', objectFit: 'cover' }}
-                                                            />
+                                                            {reply.user?.photo ? (
+                                                                <img 
+                                                                    src={reply.user.photo.startsWith('http') ? reply.user.photo : `${window.location.origin}/${reply.user.photo}`} 
+                                                                    alt={reply.user?.name}
+                                                                    className="rounded-circle"
+                                                                    style={{ width: '28px', height: '28px', objectFit: 'cover' }}
+                                                                />
+                                                            ) : (
+                                                                <div 
+                                                                    className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold"
+                                                                    style={{ width: '28px', height: '28px', fontSize: '12px' }}
+                                                                >
+                                                                    {(reply.user?.name || 'U').charAt(0).toUpperCase()}
+                                                                </div>
+                                                            )}
                                                             <div className="flex-grow-1">
                                                                 <div className="bg-light rounded p-2">
                                                                     <h6 className="mb-0 small">{reply.user?.name}</h6>
@@ -647,12 +785,21 @@ export default function SocialFeed() {
 
                                 {/* Add Comment */}
                                 <div className="d-flex gap-2">
-                                    <img 
-                                        src={profile?.profile_photo || 'https://via.placeholder.com/32'} 
-                                        alt="Your profile"
-                                        className="rounded-circle"
-                                        style={{ width: '32px', height: '32px', objectFit: 'cover' }}
-                                    />
+                                    {profile?.profile_photo ? (
+                                        <img 
+                                            src={profile.profile_photo} 
+                                            alt="Your profile"
+                                            className="rounded-circle"
+                                            style={{ width: '32px', height: '32px', objectFit: 'cover' }}
+                                        />
+                                    ) : (
+                                        <div 
+                                            className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
+                                            style={{ width: '32px', height: '32px', fontSize: '14px' }}
+                                        >
+                                            {(profile?.first_name || 'U').charAt(0).toUpperCase()}
+                                        </div>
+                                    )}
                                     <div className="flex-grow-1">
                                         {replyTo && (
                                             <div className="alert alert-info alert-dismissible fade show py-1 px-2 small" role="alert">
