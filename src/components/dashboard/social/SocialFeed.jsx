@@ -282,8 +282,13 @@ export default function SocialFeed() {
                 if (data?.comments?.length) {
                     data.comments = data.comments.map(c => ({
                         ...c,
+                        id: c.status_update_comment_id || c.id,
                         user: c.user || c.account,
-                        replies: (c.replies || []).map(r => ({ ...r, user: r.user || r.account }))
+                        replies: (c.replies || []).map(r => ({ 
+                            ...r, 
+                            id: r.status_update_comment_id || r.id,
+                            user: r.user || r.account 
+                        }))
                     }));
                 }
                 setSelectedPost(data);
