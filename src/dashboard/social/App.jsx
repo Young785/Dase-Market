@@ -1,17 +1,10 @@
 import { useState } from 'react';
 import DashboardHeader from '../../components/dashboard/header'
 import SideBar from '../../components/dashboard/sidebar';
-import SocialPage from '../../components/dashboard/social/index'
+import SocialFeed from '../../components/dashboard/social/SocialFeed'
 
-
-
-// import Footer from "../components/dashboard/footer"
-
-// import SideBar from '../dashboard_header/sidebar'
-
-export default function Chat() {
-
-	const [title, setTitle] = useState('Welcome, Lawal Wahab');
+export default function Social() {
+	const [title, setTitle] = useState('Social Feed');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const toggleSidebar = () => {
@@ -19,21 +12,41 @@ export default function Chat() {
     };
 
 	return (
-
 		<>
-			
             <div id="layout-wrapper">
-            
 				<DashboardHeader onToggleSidebar={toggleSidebar}/>
 				<SideBar setTitle={setTitle} isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-				<SocialPage/>
+				
+				<div className="main-content">
+					<div className="page-content">
+						<div className="container-fluid">
+							{/* Page Title */}
+							<div className="row">
+								<div className="col-12">
+									<div className="page-title-box d-sm-flex align-items-center justify-content-between">
+										<h4 className="mb-sm-0">Social Feed</h4>
+										<div className="page-title-right">
+											<ol className="breadcrumb m-0">
+												<li className="breadcrumb-item">
+													<a href="/dase/dashboard">Dashboard</a>
+												</li>
+												<li className="breadcrumb-item active">Social</li>
+											</ol>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							{/* Social Feed */}
+							<div className="row justify-content-center">
+								<div className="col-lg-8">
+									<SocialFeed />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
            </div>
-
-
 		</>
-
-
-
-
 	)
 }
