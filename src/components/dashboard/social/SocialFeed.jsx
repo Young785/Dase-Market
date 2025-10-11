@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import axiosInstance from '../../../axiosInstance';
 import toast from 'react-hot-toast';
-import { ThumbsUp, MessageCircle, Share2, Send, MoreVertical, Trash2, Flag } from 'lucide-react';
+import { ThumbsUp, MessageCircle, Share2, Send, MoreVertical, Trash2, Flag, Play, Pause } from 'lucide-react';
 import ReactPlayer from 'react-player/lazy';
 import { useProfile } from '../../../context/ProfileContext';
 import SimpleBar from 'simplebar-react';
 
 // Helper to get backend base URL
 const getBackendBaseUrl = () => {
-    const apiUrl = import.meta.env.Backend_url || 'http://livestream.test/api';0
+    const apiUrl = import.meta.env.BACKEND_URL || 'http://livestream.test/api';
     return apiUrl.replace(/\/api\/?$/, '');
 };
 
@@ -25,6 +25,12 @@ export default function SocialFeed() {
     const [comment, setComment] = useState('');
     const [replyTo, setReplyTo] = useState(null);
     const [fileKey, setFileKey] = useState(0);
+    
+    // Media playback state
+    const [playingPostId, setPlayingPostId] = useState(null);
+    const [isPlaying, setIsPlaying] = useState({});
+    const mediaRefs = useRef({});
+    const observerRef = useRef(null);
 
     useEffect(() => {
         fetchPosts();
@@ -53,6 +59,41 @@ export default function SocialFeed() {
             modalElement.removeEventListener('hidden.bs.modal', onHidden);
         };
     }, []);
+
+    // Intersection Observer for auto-play on scroll
+    useEffect(() => {
+        observerRef.current = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    const postId = entry.target.dataset.postId;
+                    const mediaElement = mediaRefs.current[postId];
+                    
+                    if (entry.isIntersecting && entry.intersectionRatio >= 0.7) {
+                        // Post is 70% visible, auto-play
+                        if (mediaElement) {
+                            setPlayingPostId(postId);
+                            setIsPlaying(prev => ({ ...prev, [postId]: true }));
+                        }
+                    } else {
+                        // Post is not visible enough, pause
+                        if (mediaElement && playingPostId === postId) {
+                            setIsPlaying(prev => ({ ...prev, [postId]: false }));
+                        }
+                    }
+                });
+            },
+            {
+                threshold: [0, 0.7, 1],
+                rootMargin: '-50px 0px -50px 0px'
+            }
+        );
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
+    }, [playingPostId]);
 
     const fetchPosts = async () => {
         try {
@@ -326,10 +367,22 @@ export default function SocialFeed() {
         return `${getBackendBaseUrl()}/images/dase/users/${photo}`;
     };
 
+    const togglePlayPause = useCallback((postId, e) => {
+        if (e) e.stopPropagation();
+        
+        setIsPlaying(prev => {
+            const newState = { ...prev, [postId]: !prev[postId] };
+            setPlayingPostId(newState[postId] ? postId : null);
+            return newState;
+        });
+    }, []);
+
     const renderMedia = (post) => {
         if (!post.media_url) return null;
 
         const fullMediaUrl = buildMediaUrl(post.media_url);
+        const postId = post.public_id || post.status_update_id;
+        const playing = isPlaying[postId];
 
         switch (post.media_type) {
             case 'image':
@@ -363,12 +416,28 @@ export default function SocialFeed() {
                 );
             case 'video':
                 return (
-                    <div style={{ backgroundColor: '#000', borderRadius: '8px', overflow: 'hidden' }}>
+                    <div 
+                        className="position-relative"
+                        data-post-id={postId}
+                        style={{ backgroundColor: '#000', borderRadius: '8px', overflow: 'hidden' }}
+                    >
                         <ReactPlayer 
+                            ref={(player) => { 
+                                if (player) {
+                                    mediaRefs.current[postId] = player;
+                                    // Observe this element for auto-play
+                                    const element = player.wrapper;
+                                    if (element && observerRef.current) {
+                                        observerRef.current.observe(element);
+                                    }
+                                }
+                            }}
                             url={fullMediaUrl} 
-                            controls 
+                            controls
+                            playing={playing}
                             width="100%" 
                             height="auto"
+                            muted={playingPostId !== postId}
                             config={{
                                 file: {
                                     attributes: {
@@ -376,20 +445,37 @@ export default function SocialFeed() {
                                     }
                                 }
                             }}
+                            onPlay={() => setIsPlaying(prev => ({ ...prev, [postId]: true }))}
+                            onPause={() => setIsPlaying(prev => ({ ...prev, [postId]: false }))}
                         />
                     </div>
                 );
             case 'audio':
                 const thumbnailUrl = buildMediaUrl(post.thumbnail_url);
                 return (
-                    <div className="border rounded overflow-hidden bg-light">
+                    <div 
+                        className="border rounded overflow-hidden"
+                        data-post-id={postId}
+                        style={{ 
+                            background: 'linear-gradient(135deg, #667eea11 0%, #764ba211 100%)'
+                        }}
+                    >
                         {post.thumbnail_url && (
-                            <div className="position-relative">
+                            <div 
+                                className="position-relative"
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => togglePlayPause(postId)}
+                            >
                                 <img 
                                     src={thumbnailUrl}
                                     alt="Audio Cover"
                                     className="img-fluid w-100"
-                                    style={{ maxHeight: '320px', objectFit: 'cover' }}
+                                    style={{ 
+                                        maxHeight: '400px', 
+                                        objectFit: 'cover',
+                                        filter: playing ? 'brightness(0.7)' : 'brightness(1)',
+                                        transition: 'filter 0.3s ease'
+                                    }}
                                     onError={(e) => {
                                         if (!e.target.dataset.errorHandled) {
                                             e.target.dataset.errorHandled = 'true';
@@ -397,31 +483,123 @@ export default function SocialFeed() {
                                         }
                                     }}
                                 />
+                                {/* Play/Pause Overlay */}
+                                <div 
+                                    className="position-absolute top-50 start-50 translate-middle"
+                                    style={{
+                                        width: '80px',
+                                        height: '80px',
+                                        borderRadius: '50%',
+                                        background: 'rgba(0,0,0,0.6)',
+                                        backdropFilter: 'blur(10px)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        transition: 'all 0.3s ease',
+                                        boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1.1)';
+                                        e.currentTarget.style.background = 'rgba(0,0,0,0.8)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1)';
+                                        e.currentTarget.style.background = 'rgba(0,0,0,0.6)';
+                                    }}
+                                >
+                                    {playing ? (
+                                        <Pause size={36} color="white" fill="white" />
+                                    ) : (
+                                        <Play size={36} color="white" fill="white" style={{ marginLeft: '4px' }} />
+                                    )}
+                                </div>
                             </div>
                         )}
-                        <div className="p-3">
+                        <div className="p-3 bg-white">
                             <div className="d-flex align-items-center mb-2">
-                                <div className="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
-                                    <i className="ri-music-2-line fs-4 text-primary"></i>
+                                <div className="rounded-circle p-2 me-3" style={{ 
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    color: 'white'
+                                }}>
+                                    <i className="ri-music-2-line fs-4"></i>
                                 </div>
                                 <div className="flex-grow-1">
-                                    <h6 className="mb-0">Audio Track</h6>
-                                    <small className="text-muted">Posted by {post.user?.name || post.user?.first_name || 'User'}</small>
+                                    <h6 className="mb-0 fw-bold">Audio Track</h6>
+                                    <small className="text-muted">
+                                        <i className="ri-user-voice-line me-1"></i>
+                                        {post.user?.name || post.user?.first_name || 'User'}
+                                    </small>
                                 </div>
                             </div>
-                            <ReactPlayer 
-                                url={fullMediaUrl} 
-                                controls 
-                                width="100%" 
-                                height="50px"
-                                config={{
-                                    file: {
-                                        attributes: {
-                                            controlsList: 'nodownload'
+                            {/* Hidden ReactPlayer for audio playback */}
+                            <div style={{ display: 'none' }}>
+                                <ReactPlayer 
+                                    ref={(player) => { 
+                                        if (player) {
+                                            mediaRefs.current[postId] = player;
                                         }
-                                    }
-                                }}
-                            />
+                                    }}
+                                    url={fullMediaUrl} 
+                                    playing={playing}
+                                    width="0" 
+                                    height="0"
+                                    config={{
+                                        file: {
+                                            attributes: {
+                                                controlsList: 'nodownload'
+                                            }
+                                        }
+                                    }}
+                                    onPlay={() => setIsPlaying(prev => ({ ...prev, [postId]: true }))}
+                                    onPause={() => setIsPlaying(prev => ({ ...prev, [postId]: false }))}
+                                    onEnded={() => setIsPlaying(prev => ({ ...prev, [postId]: false }))}
+                                />
+                            </div>
+                            {/* Visual Progress Bar */}
+                            <div className="mt-3">
+                                <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <button 
+                                        className="btn btn-sm rounded-circle shadow-sm"
+                                        onClick={(e) => togglePlayPause(postId, e)}
+                                        style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                            border: 'none',
+                                            color: 'white',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}
+                                    >
+                                        {playing ? (
+                                            <Pause size={20} fill="white" />
+                                        ) : (
+                                            <Play size={20} fill="white" style={{ marginLeft: '2px' }} />
+                                        )}
+                                    </button>
+                                    <div className="flex-grow-1 mx-3">
+                                        <div 
+                                            className="progress"
+                                            style={{ 
+                                                height: '4px',
+                                                borderRadius: '10px',
+                                                background: '#e9ecef'
+                                            }}
+                                        >
+                                            <div 
+                                                className="progress-bar"
+                                                style={{
+                                                    width: '0%',
+                                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                    transition: 'width 0.1s linear'
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <small className="text-muted">0:00</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 );
