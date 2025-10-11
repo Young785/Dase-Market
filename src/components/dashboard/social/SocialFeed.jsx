@@ -34,6 +34,7 @@ export default function SocialFeed() {
 
     // Track media progress per postId
     const [mediaProgress, setMediaProgress] = useState({}); // { [postId]: { playedSeconds, duration } }
+    const [muted, setMuted] = useState({}); // { [postId]: boolean }
 
     const getProgressPercent = useCallback((postId) => {
         const p = mediaProgress[postId];
@@ -83,11 +84,14 @@ export default function SocialFeed() {
                         setPlayingPostId((prev) => {
                             if (prev && prev !== postId) {
                                 setIsPlaying(p => ({ ...p, [prev]: false }));
+                                setMuted(m => ({ ...m, [prev]: true }));
                             }
                             return postId;
                         });
                         if (mediaElement) {
                             setIsPlaying(prev => ({ ...prev, [postId]: true }));
+                            // Autoplay muted to satisfy browser policy
+                            setMuted(m => ({ ...m, [postId]: true }));
                         }
                     } else {
                         if (mediaElement) {
@@ -396,9 +400,13 @@ export default function SocialFeed() {
         if (e) e.stopPropagation();
         
         setIsPlaying(prev => {
-            const newState = { ...prev, [postId]: !prev[postId] };
-            setPlayingPostId(newState[postId] ? postId : null);
-            return newState;
+            const willPlay = !prev[postId];
+            if (willPlay) {
+                // Unmute on explicit user action
+                setMuted(m => ({ ...m, [postId]: false }));
+                setPlayingPostId(postId);
+            }
+            return { ...prev, [postId]: willPlay };
         });
     }, []);
 
@@ -460,7 +468,7 @@ export default function SocialFeed() {
                             playing={playing}
                             width="100%" 
                             height="auto"
-                            muted={playingPostId !== postId}
+                            muted={muted[postId] ?? true}
                             config={{
                                 file: {
                                     attributes: {
@@ -536,7 +544,19 @@ export default function SocialFeed() {
                                 {/* Progress overlay bar */}
                                 <div 
                                     className="position-absolute bottom-0 start-0 end-0"
-                                    style={{ height: '4px', background: 'rgba(255,255,255,0.35)' }}
+                                    style={{ height: '4px', background: 'rgba(255,255,255,0.35)', cursor: 'pointer' }}
+                                    onClick={(e) => {
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        const clickX = e.clientX - rect.left;
+                                        const ratio = Math.max(0, Math.min(1, clickX / rect.width));
+                                        const duration = mediaProgress[postId]?.duration || 0;
+                                        const seekTo = ratio * duration;
+                                        const player = mediaRefs.current[postId];
+                                        if (player && typeof player.seekTo === 'function') {
+                                            player.seekTo(seekTo, 'seconds');
+                                            setMediaProgress(prev => ({ ...prev, [postId]: { ...(prev[postId]||{}), playedSeconds: seekTo } }));
+                                        }
+                                    }}
                                 >
                                     <div 
                                         style={{
@@ -577,6 +597,7 @@ export default function SocialFeed() {
                                     playing={playing}
                                     width="0" 
                                     height="0"
+                                    muted={muted[postId] ?? true}
                                     config={{
                                         file: {
                                             attributes: {
