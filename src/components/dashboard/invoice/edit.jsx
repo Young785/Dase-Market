@@ -50,6 +50,7 @@ export default function EditInvoice() {
         
     });
     const [items, setItems] = useState([]); // Initialize items state
+    const [errors, setErrors] = useState({});
     const [invoiceData, setInvoiceData] = useState(null); // To hold the fetched invoice data
 
     const handleInputChange = (e) => {
@@ -133,8 +134,27 @@ export default function EditInvoice() {
 
    
 
+    const validate = () => {
+        const newErrors = {};
+        const requiredText = ['company_address','postal_code','email_address','phone_number','invoice_number','date','payment_status','billing_full_name','billing_address','billing_phone_no'];
+        requiredText.forEach((k)=>{ if(!String(formData[k]||'').trim()){ newErrors[k] = 'Required'; }});
+        if (formData.email_address && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email_address)) newErrors.email_address = 'Invalid email';
+        if (!items.length) newErrors.items = 'Add at least one item';
+        items.forEach((it, idx)=>{
+            if(!it.item_name) newErrors[`items.${idx}.item_name`] = 'Product name required';
+            if(!(Number(it.rate) > 0)) newErrors[`items.${idx}.rate`] = 'Rate must be > 0';
+            if(!(Number(it.quantity) > 0)) newErrors[`items.${idx}.quantity`] = 'Quantity must be > 0';
+        });
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!validate()) {
+            notifyError('Please fix the highlighted errors');
+            return;
+        }
         try {
             const response = await axiosInstance.put(`/user/invoices/edit/${invoiceId}`, {
                 ...formData,
@@ -153,7 +173,8 @@ export default function EditInvoice() {
                 navigate('/dase/invoice');
             }, 2000);
         } catch (error) {
-            notifyError(`An error occurred: ${error.response.data.message}`);
+            const msg = error.response?.data?.message || 'An error occurred';
+            notifyError(msg);
         }
     };
 

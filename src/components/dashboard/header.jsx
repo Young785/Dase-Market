@@ -17,8 +17,8 @@ import NotificationModal from '../../components/dashboard/ui/NotificationModal';
 export default function Header({ title, onToggleSidebar }) {
 	const navigate = useNavigate();
 	const { profile } = useProfile();
-	const [notifications, setNotifications] = useState([]);
-	const [loadingNotifications, setLoadingNotifications] = useState(true);
+    const [notifications, setNotifications] = useState([]);
+    const [loadingNotifications, setLoadingNotifications] = useState(true);
 	const [showAllNotificationsModal, setShowAllNotificationsModal] = useState(false);
 
 	const notifyError = (text) => toast.error(text, {
@@ -69,12 +69,13 @@ export default function Header({ title, onToggleSidebar }) {
 	  };
 
 	useEffect(() => {
-		const fetchNotifications = async () => {
+        const fetchNotifications = async () => {
 			try {
 				setLoadingNotifications(true);
-				const res = await axiosInstance.get('/dashboard/notifications');
-				if (res.data && res.data.status) {
-					setNotifications(res.data.data);
+                const res = await axiosInstance.get('/dashboard/notifications?per_page=10');
+                if (res.data && res.data.status) {
+                    const payload = res.data.data;
+                    setNotifications(payload.items || payload || []);
 				}
 			} catch (err) {
 				notifyError('Failed to fetch notifications');
