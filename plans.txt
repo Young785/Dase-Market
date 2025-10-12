@@ -68,7 +68,7 @@ _All Starred Fields Are Required.
 *First Name 
 *Last Name 
 *Profile Photo 
-*Business Email 
+*Business Email x
 *Business Phone Number 
 *Business Name 
 _Business Website 

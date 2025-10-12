@@ -10,9 +10,9 @@ import './ChatApp.css';
 // Import icons
 import { 
     Search, Info, MoreVertical, Send, Smile, Settings, 
-    Image as ImageIcon, Paperclip, Gif, X, Edit2, Trash2,
+    Image as ImageIcon, Paperclip, X, Edit2, Trash2,
     Reply, Check, CheckCheck, Download, Play, Pause,
-    Mic, Video, File
+    Mic, Video, File, Film
 } from 'lucide-react';
 
 // Initialize Giphy Fetch with API key from environment variable
@@ -886,7 +886,7 @@ export default function ChatApp() {
                                                     onClick={() => setShowGifPicker(!showGifPicker)}
                                                     title="GIF"
                                                 >
-                                                    <Gif size={20} />
+                                                    <Film size={20} />
                                                 </button>
                                                 
                                                 <button 
