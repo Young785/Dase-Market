@@ -99,11 +99,8 @@ export default function UploadSamples({ onUploadSuccess }) {
         formData.append('title', file.name.replace(/\.[^/.]+$/, "")); // Remove extension as default title
 
         try {
-            const response = await axiosInstance.post('/user/production-samples/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+            // Let Axios set proper multipart boundaries; do not set Content-Type manually
+            const response = await axiosInstance.post('/user/production-samples/upload', formData);
 
             if (!response.data.success) {
                 throw new Error(response.data.message);
