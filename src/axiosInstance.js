@@ -11,7 +11,7 @@ if (import.meta.env.DEV) {
 const axiosInstance = axios.create({
   baseURL: baseURL,
   headers: {
-    'Content-Type': 'application/json',
+    // Do NOT set Content-Type globally; let Axios infer it
     'Accept': 'application/json',
   },
 });
@@ -27,6 +27,15 @@ axiosInstance.interceptors.request.use(
 
         if (data && data.access_token) {
             config.headers['Authorization'] = `Bearer ${data.access_token}`;
+        }
+
+        // Ensure proper Content-Type handling
+        // - For FormData: let the browser set multipart boundaries
+        // - For JSON payloads: set application/json if not already set
+        if (config.data instanceof FormData) {
+            delete config.headers['Content-Type'];
+        } else if (!config.headers['Content-Type']) {
+            config.headers['Content-Type'] = 'application/json';
         }
         return config;
     },
