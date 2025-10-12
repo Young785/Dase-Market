@@ -107,6 +107,8 @@ export default function ManageSamples({ refreshTrigger }) {
         if (/^https?:\/\//i.test(url)) return url;
         const backend = (import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '');
         if (backend) return `${backend}/${url.replace(/^\//, '')}`;
+        // Dev proxy fallback: if URL is /uploads or /storage, use as-is so Vite proxy handles it
+        if (/^(\/)?(uploads|storage)\//i.test(url)) return `/${url.replace(/^\//, '')}`;
         return url;
     };
 

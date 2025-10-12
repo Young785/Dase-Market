@@ -88,6 +88,16 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path
+      },
+      '/uploads': {
+        target: 'https://livestream.test',
+        changeOrigin: true,
+        secure: false
+      },
+      '/storage': {
+        target: 'https://livestream.test',
+        changeOrigin: true,
+        secure: false
       }
     }
   }
