@@ -38,27 +38,62 @@ export default function Project() {
 
     const handleChange = (e) => {
         const { name, value, files } = e.target;
-        if (name === 'sound' && files[0].size > 5 * 1024 * 1024) {
-            toast.error('File size must be less than 5MB.');
-            return;
+        
+        // Handle file input
+        if (name === 'sound' && files && files[0]) {
+            // Validate file size (5MB max)
+            if (files[0].size > 5 * 1024 * 1024) {
+                toast.error('File size must be less than 5MB.');
+                e.target.value = ''; // Clear the input
+                return;
+            }
+            
+            // Validate file type
+            const allowedTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav'];
+            if (!allowedTypes.includes(files[0].type) && !files[0].name.match(/\.(mp3|wav)$/i)) {
+                toast.error('Only MP3 and WAV audio files are allowed.');
+                e.target.value = ''; // Clear the input
+                return;
+            }
+            
+            setFormData({
+                ...formData,
+                [name]: files[0]
+            });
+        } else {
+            // Handle regular text input
+            setFormData({
+                ...formData,
+                [name]: value
+            });
         }
-        setFormData({
-            ...formData,
-            [name]: files ? files[0] : value
-        });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Validate that required fields are present
+        if (!formData.title || !formData.link) {
+            toast.error('Please fill in all required fields.');
+            return;
+        }
+        
+        // Sound file is now optional based on backend update
         const dataToSend = new FormData();
         dataToSend.append('title', formData.title);
-        dataToSend.append('sound', formData.sound);
+        if (formData.sound) {
+            dataToSend.append('sound', formData.sound);
+        }
         dataToSend.append('link', formData.link);
 
         setLoading(true);
 
         try {
-            const response = await axiosInstance.post('/projects', dataToSend);
+            const response = await axiosInstance.post('/projects', dataToSend, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
             toast.success(response.data.message);
             if (modalRef.current) {
                 const modal = bootstrap.Modal.getInstance(modalRef.current);
@@ -108,16 +143,29 @@ export default function Project() {
 
     const handleUpdate = async (e) => {
         e.preventDefault();
+        
+        // Validate that required fields are present
+        if (!formData.title || !formData.link) {
+            toast.error('Please fill in all required fields.');
+            return;
+        }
+        
         const dataToSend = new FormData();
         dataToSend.append('title', formData.title);
-        dataToSend.append('sound', formData.sound);
+        if (formData.sound) {
+            dataToSend.append('sound', formData.sound);
+        }
         dataToSend.append('link', formData.link);
         dataToSend.append('_method', 'PUT');
 
         setLoading(true);
 
         try {
-            const response = await axiosInstance.post(`/projects/${editingProjectId}`, dataToSend);
+            const response = await axiosInstance.post(`/projects/${editingProjectId}`, dataToSend, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
             toast.success(response.data.message);
 
             if (modalRef.current) {
@@ -341,8 +389,24 @@ export default function Project() {
                                     <input type="text" className="form-control" id="title" name="title" value={formData.title} onChange={handleChange} required />
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="sound" className="col-form-label">Sound:</label>
-                                    <input type="file" className="form-control" id="sound" name="sound" onChange={handleChange} accept=".mp3" />
+                                    <label htmlFor="sound" className="col-form-label">
+                                        Sound File: 
+                                        <small className="text-muted ms-2">(Optional - MP3/WAV, Max 5MB)</small>
+                                    </label>
+                                    <input 
+                                        type="file" 
+                                        className="form-control" 
+                                        id="sound" 
+                                        name="sound" 
+                                        onChange={handleChange} 
+                                        accept=".mp3,.wav,audio/mpeg,audio/wav" 
+                                    />
+                                    {formData.sound && (
+                                        <small className="text-success d-block mt-1">
+                                            <i className="ri-check-line me-1"></i>
+                                            File selected: {formData.sound.name}
+                                        </small>
+                                    )}
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="link" className="col-form-label">Link:</label>
