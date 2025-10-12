@@ -196,7 +196,7 @@ export default function UploadSamples({ onUploadSuccess }) {
                 )}
             </div>
 
-            <style jsx>{`
+            <style>{`
                 .upload-area:hover {
                     border-color: #4CAF50 !important;
                     background-color: #f0f8ff !important;

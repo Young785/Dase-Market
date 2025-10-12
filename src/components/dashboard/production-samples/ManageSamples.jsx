@@ -102,7 +102,16 @@ export default function ManageSamples({ refreshTrigger }) {
         }
     };
 
+    const toAbsoluteUrl = (url) => {
+        if (!url) return url;
+        if (/^https?:\/\//i.test(url)) return url;
+        const backend = (import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '');
+        if (backend) return `${backend}/${url.replace(/^\//, '')}`;
+        return url;
+    };
+
     const togglePlay = (sampleId, audioUrl) => {
+        const safeUrl = toAbsoluteUrl(audioUrl);
         if (playingId === sampleId) {
             // Pause current
             if (wavesurfers[sampleId]) {
@@ -128,7 +137,7 @@ export default function ManageSamples({ refreshTrigger }) {
                     height: 60,
                 });
                 
-                wavesurfer.load(audioUrl);
+                wavesurfer.load(safeUrl);
                 wavesurfer.on('ready', () => {
                     wavesurfer.play();
                 });
