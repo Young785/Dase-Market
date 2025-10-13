@@ -47,6 +47,14 @@ export default function PublicSamplesView({ engineerId }) {
                 const payload = response.data.data;
                 const list = Array.isArray(payload?.reviews) ? payload.reviews : (Array.isArray(payload) ? payload : []);
                 setReviews(list);
+                // Update selected sample stats using API response
+                if (selectedSample && selectedSample.sample_id === samplePublicId) {
+                    setSelectedSample(prev => ({
+                        ...prev,
+                        rating: typeof payload?.average_rating === 'number' ? payload.average_rating : prev?.rating,
+                        reviews_count: typeof payload?.total_reviews === 'number' ? payload.total_reviews : prev?.reviews_count,
+                    }));
+                }
             } else {
                 setReviews([]);
             }
@@ -290,7 +298,7 @@ export default function PublicSamplesView({ engineerId }) {
                                                 <div>
                                                     <Star size={16} fill="#ffc107" color="#ffc107" />
                                                     <span className="fw-bold ms-1">
-                                                        {selectedSample.rating?.toFixed(1) || 'N/A'}
+                                                        {typeof selectedSample.rating === 'number' ? selectedSample.rating.toFixed(1) : (selectedSample.rating || 'N/A')}
                                                     </span>
                                                 </div>
                                             </div>
@@ -300,7 +308,7 @@ export default function PublicSamplesView({ engineerId }) {
                                             </div>
                                             <div>
                                                 <small className="text-muted">Reviews</small>
-                                                <div className="fw-bold">{selectedSample.reviews_count || 0}</div>
+                                                <div className="fw-bold">{typeof selectedSample.reviews_count === 'number' ? selectedSample.reviews_count : (reviews?.length || 0)}</div>
                                             </div>
                                         </div>
 
