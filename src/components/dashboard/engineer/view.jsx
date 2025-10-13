@@ -8,7 +8,9 @@ import PublicSamplesView from '../production-samples/PublicSamplesView';
 export default function EngineerDetails() {
     const { account_id } = useParams();
     const location = useLocation();
-    const [engineer, setEngineer] = useState(location.state?.engineer || null); 
+    const [engineer, setEngineer] = useState(location.state?.engineer || null);
+    const [samplesCount, setSamplesCount] = useState(0);
+    const [totalPlays, setTotalPlays] = useState(0);
 
     useEffect(() => {
         if (!engineer) {
@@ -16,14 +18,60 @@ export default function EngineerDetails() {
         }
     }, [account_id, engineer]);
 
+    const resolveImageUrl = (photo) => {
+        if (!photo) return '/assets/user.png';
+        if (/^https?:\/\//i.test(photo)) return photo;
+        try {
+            const base = axiosInstance?.defaults?.baseURL || '';
+            const origin = base ? new URL(base).origin : '';
+            const path = photo.includes('/') ? photo.replace(/^\/+/, '') : `uploads/dase/users/${photo}`;
+            return origin ? `${origin}/${path}` : `/${path}`;
+        } catch {
+            return photo;
+        }
+    };
+
     const fetchEngineerDetails = async () => {
         try {
             const response = await axiosInstance.get(`/engineers/${account_id}`);
-            setEngineer(response.data);
+            const payload = response?.data?.data || response?.data;
+            if (payload) {
+                setEngineer({ ...payload, profile_photo: resolveImageUrl(payload.profile_photo) });
+            }
         } catch (error) {
             toast.error('Failed to fetch engineer details');
         }
     };
+
+    useEffect(() => {
+        const fetchPublicSamplesSummary = async () => {
+            try {
+                const res = await axiosInstance.get(`/engineers/${account_id}/production-samples`);
+                if (res.data && (res.data.success || res.data.status)) {
+                    const data = res.data.data;
+                    const list = Array.isArray(data?.samples) ? data.samples : [];
+                    setSamplesCount(data?.total_samples || list.length || 0);
+                    setTotalPlays(list.reduce((sum, s) => sum + (s.plays || 0), 0));
+                    if (!engineer && data?.engineer) {
+                        const [first, ...rest] = (data.engineer.name || '').split(' ');
+                        setEngineer({
+                            first_name: first || '',
+                            last_name: rest.join(' ') || '',
+                            business_name: data.engineer.business_name,
+                            business_email: data.engineer.email || data.engineer.business_email,
+                            business_phone: data.engineer.phone || data.engineer.business_phone,
+                            business_website: data.engineer.business_website,
+                            profile_photo: resolveImageUrl(data.engineer.photo),
+                            work_experience: data.engineer.work_experience,
+                            bio: data.engineer.bio,
+                        });
+                    }
+                }
+            } catch (e) {}
+        };
+        fetchPublicSamplesSummary();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [account_id]);
 
     if (!engineer) return <div>Loading...</div>;
 
@@ -43,11 +91,7 @@ export default function EngineerDetails() {
                                             <div class="col-md">
                                                 <div class="row align-items-center g-3">
                                                     <div class="col-md-auto">
-                                                        <div class="avatar-md">
-                                                            <div class="avatar-title bg-white rounded-circle">
-                                                                <img src="assets/images/brands/slack.png" alt="" class="avatar-xs"/>
-                                                            </div>
-                                                        </div>
+                                                        <img src={engineer.profile_photo || '/assets/user.png'} alt="" class="rounded-circle" style={{ width: '64px', height: '64px', objectFit: 'cover', background: '#fff' }}/>
                                                     </div>
                                                     <div className="col-md">
                                                             <div>
@@ -55,27 +99,20 @@ export default function EngineerDetails() {
                                                                 <div className="hstack gap-3 flex-wrap">
                                                                     <div><i className="ri-building-line align-bottom me-1"></i> {engineer.business_name}</div>
                                                                     <div className="vr"></div>
-                                                                    <div>Email: <span className="fw-medium">{engineer.business_email}</span></div>
+                                                                    <div>Email: <a href={`mailto:${engineer.business_email}`} className="fw-medium">{engineer.business_email}</a></div>
                                                                     <div className="vr"></div>
-                                                                    <div>Phone: <span className="fw-medium">{engineer.business_phone}</span></div>
+                                                                    <div>Phone: <a href={`tel:${engineer.business_phone}`} className="fw-medium">{engineer.business_phone}</a></div>
                                                                     <div className="vr"></div>
-                                                                    <div>Work Experience: <span className="fw-medium">{engineer.work_experience}</span></div>
+                                                                    {engineer.business_website && (<div>Website: <a href={engineer.business_website} target="_blank" rel="noreferrer" className="fw-medium">{engineer.business_website}</a></div>)}
                                                                 </div>
                                                             </div>
                                                         </div>
                                                 </div>
                                             </div>
                                             <div class="col-md-auto">
-                                                <div class="hstack gap-1 flex-wrap">
-                                                    <button type="button" class="btn py-0 fs-16 favourite-btn active">
-                                                        <i class="ri-star-fill"></i>
-                                                    </button>
-                                                    <button type="button" class="btn py-0 fs-16 text-body">
-                                                        <i class="ri-share-line"></i>
-                                                    </button>
-                                                    <button type="button" class="btn py-0 fs-16 text-body">
-                                                        <i class="ri-flag-line"></i>
-                                                    </button>
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <span class="badge bg-secondary-subtle text-secondary">{samplesCount} Samples</span>
+                                                    <span class="badge bg-secondary-subtle text-secondary">{totalPlays} Plays</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -91,11 +128,7 @@ export default function EngineerDetails() {
                                                     Production Samples
                                                 </a>
                                             </li>
-                                            <li class="nav-item" role="presentation">
-                                                <a class="nav-link fw-semibold" data-bs-toggle="tab" href="#project-documents" role="tab" aria-selected="false" tabindex="-1">
-                                                    Documents
-                                                </a>
-                                            </li>
+                                            
                                             {/* <li class="nav-item" role="presentation">
                                                 <a class="nav-link fw-semibold" data-bs-toggle="tab" href="#project-activities" role="tab" aria-selected="false" tabindex="-1">
                                                     Activities
@@ -125,120 +158,34 @@ export default function EngineerDetails() {
                                             <div class="card">
                                                 <div class="card-body">
                                                     <div class="text-muted">
-                                                        <h6 class="mb-3 fw-semibold text-uppercase">Summary</h6>
-                                                        <p>It will be as simple as occidental in fact, it will be Occidental. To an English person, it will seem like simplified English, as a skeptical Cambridge friend of mine told me what Occidental is. The European languages are members of the same family. Their separate existence is a myth. For science, music, sport, etc, Europe uses the same vocabulary. The languages only differ in their grammar, their pronunciation and their most common words.</p>
-
-                                                        <ul class="ps-4 vstack gap-2">
-                                                            <li>Product Design, Figma (Software), Prototype</li>
-                                                            <li>Four Dashboards : Ecommerce, Analytics, Project,etc.</li>
-                                                            <li>Create calendar, chat and email app pages.</li>
-                                                            <li>Add authentication pages.</li>
-                                                            <li>Content listing.</li>
-                                                        </ul>
-
-                                                        <div>
-                                                            <button type="button" class="btn btn-link link-success p-0">Read more</button>
-                                                        </div>
+                                                        <h6 class="mb-3 fw-semibold text-uppercase">About</h6>
+                                                        <p>{engineer.bio || 'No bio provided'}</p>
 
                                                         <div class="pt-3 border-top border-top-dashed mt-4">
                                                             <div class="row gy-3">
-
-                                                                <div class="col-lg-3 col-sm-6">
-                                                                    <div>
-                                                                        <p class="mb-2 text-uppercase fw-medium">Create Date :</p>
-                                                                        <h5 class="fs-15 mb-0">15 Sep, 2021</h5>
+                                                                {engineer.work_experience && (
+                                                                    <div class="col-lg-3 col-sm-6">
+                                                                        <div>
+                                                                            <p class="mb-2 text-uppercase fw-medium">Experience</p>
+                                                                            <h5 class="fs-15 mb-0">{engineer.work_experience}</h5>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                                <div class="col-lg-3 col-sm-6">
-                                                                    <div>
-                                                                        <p class="mb-2 text-uppercase fw-medium">Due Date :</p>
-                                                                        <h5 class="fs-15 mb-0">29 Dec, 2021</h5>
+                                                                )}
+                                                                {samplesCount > 0 && (
+                                                                    <div class="col-lg-3 col-sm-6">
+                                                                        <div>
+                                                                            <p class="mb-2 text-uppercase fw-medium">Samples</p>
+                                                                            <h5 class="fs-15 mb-0">{samplesCount}</h5>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
+                                                                )}
                                                                 <div class="col-lg-3 col-sm-6">
                                                                     <div>
-                                                                        <p class="mb-2 text-uppercase fw-medium">Priority :</p>
-                                                                        <div class="badge bg-danger fs-12">High</div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col-lg-3 col-sm-6">
-                                                                    <div>
-                                                                        <p class="mb-2 text-uppercase fw-medium">Status :</p>
-                                                                        <div class="badge bg-warning fs-12">Inprogress</div>
+                                                                        <p class="mb-2 text-uppercase fw-medium">Plays</p>
+                                                                        <h5 class="fs-15 mb-0">{totalPlays}</h5>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-
-                                                        <div class="pt-3 border-top border-top-dashed mt-4">
-                                                            <h6 class="mb-3 fw-semibold text-uppercase">Resources</h6>
-                                                            <div class="row g-3">
-                                                                <div class="col-xxl-4 col-lg-6">
-                                                                    <div class="border rounded border-dashed p-2">
-                                                                        <div class="d-flex align-items-center">
-                                                                            <div class="flex-shrink-0 me-3">
-                                                                                <div class="avatar-sm">
-                                                                                    <div class="avatar-title bg-light text-secondary rounded fs-24">
-                                                                                        <i class="ri-folder-zip-line"></i>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="flex-grow-1 overflow-hidden">
-                                                                                <h5 class="fs-13 mb-1"><a href="#" class="text-body text-truncate d-block">App pages.zip</a></h5>
-                                                                                <div>2.2MB</div>
-                                                                            </div>
-                                                                            <div class="flex-shrink-0 ms-2">
-                                                                                <div class="d-flex gap-1">
-                                                                                    <button type="button" class="btn btn-icon text-muted btn-sm fs-18"><i class="ri-download-2-line"></i></button>
-                                                                                    <div class="dropdown">
-                                                                                        <button class="btn btn-icon text-muted btn-sm fs-18 dropdown" type="button" >
-                                                                                            <i class="ri-more-fill"></i>
-                                                                                        </button>
-                                                                                        <ul class="dropdown-menu">
-                                                                                            <li><a class="dropdown-item" href="#"><i class="ri-pencil-fill align-bottom me-2 text-muted"></i> Rename</a></li>
-                                                                                            <li><a class="dropdown-item" href="#"><i class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> Delete</a></li>
-                                                                                        </ul>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                               
-                                                                <div class="col-xxl-4 col-lg-6">
-                                                                    <div class="border rounded border-dashed p-2">
-                                                                        <div class="d-flex align-items-center">
-                                                                            <div class="flex-shrink-0 me-3">
-                                                                                <div class="avatar-sm">
-                                                                                    <div class="avatar-title bg-light text-secondary rounded fs-24">
-                                                                                        <i class="ri-file-ppt-2-line"></i>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="flex-grow-1 overflow-hidden">
-                                                                                <h5 class="fs-13 mb-1"><a href="#" class="text-body text-truncate d-block">Velzon admin.ppt</a></h5>
-                                                                                <div>2.4MB</div>
-                                                                            </div>
-                                                                            <div class="flex-shrink-0 ms-2">
-                                                                                <div class="d-flex gap-1">
-                                                                                    <button type="button" class="btn btn-icon text-muted btn-sm fs-18"><i class="ri-download-2-line"></i></button>
-                                                                                    <div class="dropdown">
-                                                                                        <button class="btn btn-icon text-muted btn-sm fs-18 dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                                                            <i class="ri-more-fill"></i>
-                                                                                        </button>
-                                                                                        <ul class="dropdown-menu">
-                                                                                            <li><a class="dropdown-item" href="#"><i class="ri-pencil-fill align-bottom me-2 text-muted"></i> Rename</a></li>
-                                                                                            <li><a class="dropdown-item" href="#"><i class="ri-delete-bin-fill align-bottom me-2 text-muted"></i> Delete</a></li>
-                                                                                        </ul>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                            </div>
-                                                            
                                                         </div>
                                                     </div>
                                                 </div>
