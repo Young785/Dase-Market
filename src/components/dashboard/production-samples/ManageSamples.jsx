@@ -104,12 +104,27 @@ export default function ManageSamples({ refreshTrigger }) {
 
     const toAbsoluteUrl = (url) => {
         if (!url) return url;
-        if (/^https?:\/\//i.test(url)) return url;
-        const backend = (import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '');
-        if (backend) return `${backend}/${url.replace(/^\//, '')}`;
-        // Dev proxy fallback: if URL is /uploads or /storage, use as-is so Vite proxy handles it
-        if (/^(\/)?(uploads|storage)\//i.test(url)) return `/${url.replace(/^\//, '')}`;
-        return url;
+        try {
+            const backendBase = (import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '');
+            const urlObj = /^https?:\/\//i.test(url) ? new URL(url) : null;
+
+            // If absolute URL points to livestream.test or the configured backend origin, convert to relative path so Vite proxy serves it (avoids CORS)
+            if (urlObj) {
+                const backendOrigin = backendBase ? new URL(backendBase).origin : 'https://livestream.test';
+                if (urlObj.origin === backendOrigin || /https?:\/\/livestream\.test/i.test(urlObj.origin)) {
+                    return urlObj.pathname + urlObj.search;
+                }
+                return url; // different host; leave as-is
+            }
+
+            // Not absolute; ensure it is rooted and let proxy handle
+            if (/^(\/)?(uploads|storage)\//i.test(url)) return `/${url.replace(/^\//, '')}`;
+            // If we have a backend base, join it
+            if (backendBase) return `${backendBase}/${url.replace(/^\//, '')}`;
+            return url;
+        } catch (e) {
+            return url;
+        }
     };
 
     const togglePlay = (sampleId, audioUrl) => {

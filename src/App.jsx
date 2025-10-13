@@ -38,6 +38,7 @@ const DashboardWrapper = () => {
   return (
     <Routes>
       <Route index path="dashboard" element={<DashboardHome />} />
+      {/* Invoices accessible to both roles (account-scoped server-side) */}
       <Route path="invoice" element={<Invoice />} />
       <Route path="invoice/create" element={<CreateInvoice />} />
       <Route path="invoice/edit/:invoiceId" element={<EditInvoice />} />
@@ -48,12 +49,14 @@ const DashboardWrapper = () => {
       {/* <Route path="setting" element={<Setting />} /> */}
       <Route path="voice" element={<Waveform />} />
       <Route path="social" element={<Social />} />
-      <Route path="project" element={<Project />} />
+      {/* Engineer-only pages */}
+      <Route path="project" element={<ProtectedRoute allowedRoles={["engineer"]}><Project /></ProtectedRoute>} />
       <Route path="engineer" element={<Engineer />} />
       <Route path="notification" element={<Notification />} />
       <Route path="engineer/view/:account_id" element={<EngineerDetails />} />
-      <Route path="production-samples" element={<ProductionSamples />} />
-      <Route path="file-sharing" element={<FileSharing />} />
+      {/* Engineer-only features */}
+      <Route path="production-samples" element={<ProtectedRoute allowedRoles={["engineer"]}><ProductionSamples /></ProtectedRoute>} />
+      <Route path="file-sharing" element={<ProtectedRoute allowedRoles={["engineer"]}><FileSharing /></ProtectedRoute>} />
       <Route path="getting-started" element={<GettingStarted />} />
       {/* Redirect to dashboard home for any unmatched routes */}
       <Route path="*" element={<Navigate to="/dase/dashboard" replace />} />

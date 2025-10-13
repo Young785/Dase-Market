@@ -137,8 +137,8 @@ export default function GettingStarted() {
             <div className="row">
                 <div className="col-12">
                     {/* Welcome Banner */}
-                    <div className="card bg-gradient" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-                        <div className="card-body text-white p-4">
+                    <div className="card bg-gradient">
+                        <div className="card-body text-white p-4" style={{background: 'linear-gradient(135deg, rgb(63 82 137) 0%, rgb(118, 75, 162) 100%)' }}>
                             <div className="row align-items-center">
                                 <div className="col-lg-8">
                                     <h3 className="text-white mb-3">

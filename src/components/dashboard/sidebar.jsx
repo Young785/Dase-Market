@@ -17,6 +17,16 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
     const navigate = useNavigate();
     const location = useLocation();
     const [activeLink, setActiveLink] = useState(location.pathname);
+    const [userRole, setUserRole] = useState(() => {
+        try {
+            const auth = JSON.parse(localStorage.getItem('auth_data'));
+            return (auth?.user?.role || '').toString().toLowerCase();
+        } catch {
+            return '';
+        }
+    });
+    const isEngineer = userRole === 'engineer';
+    const isClient = userRole === 'client';
     
 
 
@@ -68,6 +78,11 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
             default:
                 setTitle('Welcome, Lawal Wahab');
         }
+        // Refresh role from storage in case it changed
+        try {
+            const auth = JSON.parse(localStorage.getItem('auth_data'));
+            setUserRole((auth?.user?.role || '').toString().toLowerCase());
+        } catch {}
     }, [location.pathname, setTitle]);
 
     function isActive(paths) {
@@ -112,8 +127,24 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                     <div id="two-column-menu">
                     </div>
                     <ul className="navbar-nav" id="navbar-nav">
-                        
-                        
+
+                    <li className={`nav-item ${isActive(["/dase/getting-started"])}`}>
+                            <Link to="/dase/getting-started" className={`nav-link ${isActive(["/dase/getting-started"])}`} data-key="t-getting-started">
+                                <span data-key="t-getting-started">
+                                    <svg className="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <g clipPath="url(#clip0_help_circle)">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 19H11V17H13V19ZM15.07 11.25L14.17 12.17C13.45 12.9 13 13.5 13 15H11V14.5C11 13.4 11.45 12.4 12.17 11.67L13.41 10.41C13.78 10.05 14 9.55 14 9C14 7.9 13.1 7 12 7C10.9 7 10 7.9 10 9H8C8 6.79 9.79 5 12 5C14.21 5 16 6.79 16 9C16 9.88 15.64 10.68 15.07 11.25Z" fill="#6882B6"/>
+                                        </g>
+                                        <defs>
+                                            <clipPath id="clip0_help_circle">
+                                                <rect width="24" height="24" fill="white"/>
+                                            </clipPath>
+                                        </defs>
+                                    </svg>
+                                    Getting Started
+                                </span>
+                            </Link>
+                        </li>
                         
                         <li className={`nav-item ${isActive(["/dase/dashboard"])}`}>
                             <Link to="/dase/dashboard" className={`nav-link ${isActive(["/dase/dashboard"])}`} data-key="t-dashboards">
@@ -127,6 +158,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                             </Link>
                         </li>
                         
+                        {isEngineer && (
                         <li className={`nav-item ${isActive(["/dase/invoice", "/dase/invoice/create", "/dase/invoice/view"])}`}>
                             <Link to="/dase/invoice" className={`nav-link ${isActive(["/dase/invoice", "/dase/invoice/create", "/dase/invoice/view"])}`} data-key="t-invoice">
                                 <span data-key="t-invoice">
@@ -139,6 +171,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                                 </span>
                             </Link>
                         </li>
+                        )}
                         
 
                         <li className={`nav-item ${isActive(["/dase/chat"])}`}>
@@ -168,21 +201,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                             </Link>
                         </li>
 
-
-
-                        <li className={`nav-item ${isActive(["/dase/profile"])}`}>
-                            <Link to="/dase/profile" className={`nav-link ${isActive(["/dase/profile"])}`} data-key="t-profile">
-                                <span data-key="t-profile">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <circle cx="12" cy="8" r="4" stroke="#6882B6" strokeWidth="2"/>
-                                        <path d="M4 22a8 8 0 0116 0" stroke="#6882B6" strokeWidth="2"/>
-                                    </svg>
-
-                                    Profile
-                                </span>
-                            </Link>
-                        </li>
-
+                        {isEngineer && (
                         <li className={`nav-item ${isActive(["/dase/production-samples"])}`}>
                             <Link to="/dase/production-samples" className={`nav-link ${isActive(["/dase/production-samples"])}`} data-key="t-samples">
                                 <span data-key="t-samples">
@@ -196,7 +215,9 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                                 </span>
                             </Link>
                         </li>
+                        )}
 
+                        {isEngineer && (
                         <li className={`nav-item ${isActive(["/dase/file-sharing"])}`}>
                             <Link to="/dase/file-sharing" className={`nav-link ${isActive(["/dase/file-sharing"])}`} data-key="t-files">
                                 <span data-key="t-files">
@@ -209,24 +230,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                                 </span>
                             </Link>
                         </li>
-
-                        <li className={`nav-item ${isActive(["/dase/getting-started"])}`}>
-                            <Link to="/dase/getting-started" className={`nav-link ${isActive(["/dase/getting-started"])}`} data-key="t-getting-started">
-                                <span data-key="t-getting-started">
-                                    <svg className="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <g clipPath="url(#clip0_help_circle)">
-                                            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 19H11V17H13V19ZM15.07 11.25L14.17 12.17C13.45 12.9 13 13.5 13 15H11V14.5C11 13.4 11.45 12.4 12.17 11.67L13.41 10.41C13.78 10.05 14 9.55 14 9C14 7.9 13.1 7 12 7C10.9 7 10 7.9 10 9H8C8 6.79 9.79 5 12 5C14.21 5 16 6.79 16 9C16 9.88 15.64 10.68 15.07 11.25Z" fill="#6882B6"/>
-                                        </g>
-                                        <defs>
-                                            <clipPath id="clip0_help_circle">
-                                                <rect width="24" height="24" fill="white"/>
-                                            </clipPath>
-                                        </defs>
-                                    </svg>
-                                    Getting Started
-                                </span>
-                            </Link>
-                        </li>
+                        )}
                        
                         {/* <li className={`nav-item ${isActive(["/dase/voice"])}`}>
                             <Link to="/dase/voice" className={`nav-link ${isActive(["/dase/voice"])}`} data-key="t-voice">
@@ -264,12 +268,13 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                             </Link>
                         </li>
 
+                        {isEngineer && (
                         <li className={`nav-item ${isActive(["/dase/project"])}`}>
                             <Link to="/dase/project" className={`nav-link ${isActive(["/dase/project"])}`} data-key="t-project">
                                 <span data-key="t-project">
                                     <svg className="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <g clipPath="url(#clip0_942_815)">
-                                            <path d="M4 13H10C10.55 13 11 12.55 11 12V4C11 3.45 10.55 3 10 3H4C3.45 3 3 3.45 3 4V12C3 12.55 3.45 13 4 13ZM4 21H10C10.55 21 11 20.55 11 20V16C11 15.45 10.55 15 10 15H4C3.45 15 3 15.45 3 16V20C3 20.55 3.45 21 4 21ZM14 21H20C20.55 21 21 20.55 21 20V12C21 11.45 20.55 11 20 11H14C13.45 11 13 11.45 13 12V20C13 20.55 13.45 21 14 21ZM13 4V8C13 8.55 13.45 9 14 9H20C20.55 9 21 8.55 21 8V4C21 3.45 20.55 3 20 3H14C13.45 3 13 3.45 13 4Z" fill="#6882B6"/>
+                                            <path d="M4 13H10C10.55 13 11 12.55 11 12V4C11 3.45 10.55 3 10 3H4C3.45 3 3 3.45 3 4V12C3 12.55 3.45 13 4 13ZM4 21H10C10.55 21 11 20.55 11 20V16C11 15.45 10.55 15 10 15H4C3.45 15 3 16V20C3 20.55 3.45 21 4 21ZM14 21H20C20.55 21 21 20.55 21 20V12C21 11.45 20.55 11 20 11H14C13.45 11 13 11.45 13 12V20C13 20.55 13.45 21 14 21ZM13 4V8C13 8.55 13.45 9 14 9H20C20.55 9 21 8.55 21 8V4C21 3.45 20.55 3 20 3H14C13.45 3 13 3.45 13 4Z" fill="#6882B6"/>
                                         </g>
                                         <defs>
                                             <clipPath id="clip0_942_815">
@@ -281,12 +286,14 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                                 </span>
                             </Link>
                         </li>
+                        )}
+                        {isClient && (
                         <li className={`nav-item ${isActive(["/dase/engineer"])}`}>
                             <Link to="/dase/engineer" className={`nav-link ${isActive(["/dase/engineer"])}`} data-key="t-project">
                                 <span data-key="t-project">
                                     <svg className="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <g clipPath="url(#clip0_942_815)">
-                                            <path d="M4 13H10C10.55 13 11 12.55 11 12V4C11 3.45 10.55 3 10 3H4C3.45 3 3 3.45 3 4V12C3 12.55 3.45 13 4 13ZM4 21H10C10.55 21 11 20.55 11 20V16C11 15.45 10.55 15 10 15H4C3.45 15 3 15.45 3 16V20C3 20.55 3.45 21 4 21ZM14 21H20C20.55 21 21 20.55 21 20V12C21 11.45 20.55 11 20 11H14C13.45 11 13 11.45 13 12V20C13 20.55 13.45 21 14 21ZM13 4V8C13 8.55 13.45 9 14 9H20C20.55 9 21 8.55 21 8V4C21 3.45 20.55 3 20 3H14C13.45 3 13 3.45 13 4Z" fill="#6882B6"/>
+                                            <path d="M4 13H10C10.55 13 11 12.55 11 12V4C11 3.45 10.55 3 10 3H4C3.45 3 3 3.45 3 4V12C3 12.55 3.45 13 4 13ZM4 21H10C10.55 21 11 20.55 11 20V16C11 15.45 10.55 15 10 15H4C3.45 15 3 16V20C3 20.55 3.45 21 4 21ZM14 21H20C20.55 21 21 20.55 21 20V12C21 11.45 20.55 11 20 11H14C13.45 11 13 11.45 13 12V20C13 20.55 13.45 21 14 21ZM13 4V8C13 8.55 13.45 9 14 9H20C20.55 9 21 8.55 21 8V4C21 3.45 20.55 3 20 3H14C13.45 3 13 3.45 13 4Z" fill="#6882B6"/>
                                         </g>
                                         <defs>
                                             <clipPath id="clip0_942_815">
@@ -295,6 +302,21 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                                         </defs>
                                     </svg>
                                     Engineer
+                                </span>
+                            </Link>
+                        </li>
+                        )}
+
+
+                        <li className={`nav-item ${isActive(["/dase/profile"])}`}>
+                            <Link to="/dase/profile" className={`nav-link ${isActive(["/dase/profile"])}`} data-key="t-profile">
+                                <span data-key="t-profile">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="12" cy="8" r="4" stroke="#6882B6" strokeWidth="2"/>
+                                        <path d="M4 22a8 8 0 0116 0" stroke="#6882B6" strokeWidth="2"/>
+                                    </svg>
+
+                                    Profile
                                 </span>
                             </Link>
                         </li>
