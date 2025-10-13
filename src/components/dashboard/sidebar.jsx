@@ -20,7 +20,9 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
     const [userRole, setUserRole] = useState(() => {
         try {
             const auth = JSON.parse(localStorage.getItem('auth_data'));
-            return (auth?.user?.role || '').toString().toLowerCase();
+            const raw = auth?.user || {};
+            const roleGuess = (raw.role || raw.account_type || raw?.role?.name || '').toString();
+            return roleGuess.toLowerCase();
         } catch {
             return '';
         }
@@ -81,7 +83,9 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
         // Refresh role from storage in case it changed
         try {
             const auth = JSON.parse(localStorage.getItem('auth_data'));
-            setUserRole((auth?.user?.role || '').toString().toLowerCase());
+            const raw = auth?.user || {};
+            const roleGuess = (raw.role || raw.account_type || raw?.role?.name || '').toString();
+            setUserRole(roleGuess.toLowerCase());
         } catch {}
     }, [location.pathname, setTitle]);
 
