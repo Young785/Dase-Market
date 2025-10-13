@@ -39,9 +39,10 @@ export default function PublicSamplesView({ engineerId }) {
         }
     };
 
-    const fetchReviews = async (sampleId) => {
+    // sampleId here should be the public sample_id (UUID) because backend routes use {sample_id}
+    const fetchReviews = async (samplePublicId) => {
         try {
-            const response = await axiosInstance.get(`/production-samples/${sampleId}/reviews`);
+            const response = await axiosInstance.get(`/production-samples/${samplePublicId}/reviews`);
             if (response.data && (response.data.success || response.data.status)) {
                 const payload = response.data.data;
                 const list = Array.isArray(payload?.reviews) ? payload.reviews : (Array.isArray(payload) ? payload : []);
@@ -84,7 +85,18 @@ export default function PublicSamplesView({ engineerId }) {
                     height: 80,
                 });
                 
-                wavesurfer.load(audioUrl);
+                // If backend returns absolute URL to livestream.test, prefer relative for dev proxy to avoid CORS
+                const backendBase = (import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '');
+                let safeUrl = audioUrl;
+                try {
+                    const u = new URL(audioUrl);
+                    const backendOrigin = backendBase ? new URL(backendBase).origin : 'https://livestream.test';
+                    if (u.origin === backendOrigin || /https?:\/\/livestream\.test/i.test(u.origin)) {
+                        safeUrl = u.pathname + u.search;
+                    }
+                } catch {}
+
+                wavesurfer.load(safeUrl);
                 wavesurfer.on('ready', () => {
                     wavesurfer.play();
                 });
@@ -103,7 +115,7 @@ export default function PublicSamplesView({ engineerId }) {
 
     const handleViewDetails = (sample) => {
         setSelectedSample(sample);
-        fetchReviews(sample.id);
+        fetchReviews(sample.sample_id);
     };
 
     const handleSubmitReview = async (e) => {
@@ -116,15 +128,12 @@ export default function PublicSamplesView({ engineerId }) {
 
         try {
             setSubmittingReview(true);
-            const response = await axiosInstance.post(
-                `/production-samples/${selectedSample.id}/reviews`,
-                newReview
-            );
+            const response = await axiosInstance.post(`/production-samples/${selectedSample.sample_id}/reviews`, newReview);
 
             if (response.data.success) {
                 toast.success('Review submitted successfully!');
                 setNewReview({ rating: 5, comment: '', approve: true });
-                fetchReviews(selectedSample.id);
+                fetchReviews(selectedSample.sample_id);
             }
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to submit review');

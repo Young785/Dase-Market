@@ -16,6 +16,7 @@ import LiveSelect from "react-select";
 import LoadingIcons from "react-loading-icons";
 import { fullNameDateFormat } from "../../../../useDateFormat";
 import '../../dashboard/profile/style.css'
+import SocialFeed from '../../dashboard/social/SocialFeed'
 
 export default function Posts() {
   const [downloadedPosts, setDownloadedPosts] = useState([]);
@@ -82,9 +83,7 @@ export default function Posts() {
     setIsPostsLoading(true);
 
     try {
-      const response = await axiosInstance.get(
-        `${config.BASE_URL}/accounts/channels`
-      );
+      const response = await axiosInstance.get(`/accounts/channels`);
       if (response.status < 300) {
         const data = response.data;
         setChannels(data.data.channels);
@@ -149,10 +148,7 @@ export default function Posts() {
         is_new: "NO",
       };
 
-      const response = await axiosInstance.post(
-        `${config.BASE_URL}/accounts/channels/playlists/items/add`,
-        payload
-      );
+      const response = await axiosInstance.post(`/accounts/channels/playlists/items/add`, payload);
 
       if (response.data.status === true) {
         toast.success(response.data.message);
@@ -239,15 +235,7 @@ export default function Posts() {
         // });
 
         try {
-          const response = await axiosInstance.post(
-            `${config.BASE_URL}/accounts/channels/posts/create`,
-            formData,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            }
-          );
+          const response = await axiosInstance.post(`/accounts/channels/posts/create`, formData);
 
           if (response.status < 300) {
             setName("");
@@ -316,16 +304,7 @@ export default function Posts() {
           const data = JSON.parse(localStorage.getItem("auth_data"));
 
           if (data && data.access_token) {
-            const response = await axiosInstance.put(
-              `${config.BASE_URL}/accounts/channels/posts/edit/${PostID}`,
-              edit_payload,
-              {
-                headers: {
-                  Authorization: `Bearer ${data.access_token}`,
-                  "Content-Type": "application/x-www-form-urlencoded",
-                },
-              }
-            );
+            const response = await axiosInstance.put(`/accounts/channels/posts/edit/${PostID}`, edit_payload);
 
             if (response.status < 300) {
               setName("");
@@ -363,15 +342,9 @@ export default function Posts() {
   const fetchPostsList = async () => {
     try {
       setLoading(true);
-      const response = await axiosInstance.get(
-        `${config.BASE_URL}/accounts/channels/posts`,
-        {
-          params: {
-            search: searchTerm || "",
-            status: "ACTIVE",
-          },
-        }
-      );
+      const response = await axiosInstance.get(`/accounts/channels/posts`, {
+        params: { search: searchTerm || "", status: "ACTIVE" },
+      });
       if (response.status !== 200) {
         throw new Error("Network response was not ok");
       }
@@ -384,8 +357,8 @@ export default function Posts() {
         title: post.title,
         slug: post.slug,
         description: post.description,
-        image: `${config.SERVER_URL}/${post.image}`,
-        audio: `${config.SERVER_URL}/${post.audio}`,
+        image: post.image?.startsWith('http') ? post.image : `${(import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '')}/${post.image}`,
+        audio: post.audio?.startsWith('http') ? post.audio : `${(import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '')}/${post.audio}`,
         status: post.status === "ACTIVE" ? "Active" : "Inactive",
         totalViews: post.views,
         createdAt: post.created_at,
@@ -674,9 +647,7 @@ export default function Posts() {
       // console.log('DeletePostId', DeletePostId);
 
       try {
-        const response = await axiosInstance.delete(
-          `${config.BASE_URL}/accounts/channels/posts/delete/${DeletePostId}`
-        );
+      const response = await axiosInstance.delete(`/accounts/channels/posts/delete/${DeletePostId}`);
 
         if (response.status === 200) {
           toast.success(response.data.message);
@@ -750,9 +721,7 @@ export default function Posts() {
   // Function to fetch playlists
   const fetchPlaylists = async () => {
     try {
-      const response = await axiosInstance.get(
-        `${config.BASE_URL}/accounts/channels/playlists/${activeChannelId}`
-      );
+      const response = await axiosInstance.get(`/accounts/channels/playlists/${activeChannelId}`);
       if (response.data.success) {
         setPlaylists(response.data.data.playlists);
       } else {
@@ -952,121 +921,14 @@ export default function Posts() {
         </div>
       )}
 
-      <main className="main" onClick={handleCloseDrop}>
-        <div className="container-fluid pb-5">
-          
-          {/* <!-- releases --> */}
-          <div className="row row--grid">
-            <div className="col-12">
-              
-
-              <div className="tab-content pb-5" id="myTabContent">
-                <div
-                  className="tab-pane fade show active"
-                  id="home-tab-pane"
-                  role="tabpanel"
-                  aria-labelledby="home-tab"
-                  tabindex="0"
-                >
-                  <div className="row row--grid">
-                    {loading && data.length === 0 ? (
-                      <div
-                        className="loader-container py-5"
-                        style={{ width: "fit-content", margin: "auto" }}
-                      >
-                        <LoadingIcons.ThreeDots width="50px" height="50px" />
-                      </div>
-                    ) : data.length === 0 ? (
-                      <div
-                        className="empty-text text-center fit-content mx-auto py-4"
-                        style={{ color: "#ffff" }}
-                      >
-                        No posts available 😧
-                      </div>
-                    ) : (
-                      <>
-                        <div className="release">                                                                      
-                          <div className="release__list"  style={{ position: 'relative', height: '400px', }}>
-                            <PerfectScrollbar >
-                              <div className="scroll-content">
-
-                                {tracksData.length > 0 ? (
-                                  <>
-                                     <ul className="main__list main__list--playlist main__list--dashbox">
-
-                                      {tracksData.map((track, index) => (
-                                        <li key={index} className="single-item">
-                                            <a data-playlist="" data-title={`${index + 1}. ${track.title}`} data-artist={track.artist} data-img="img/covers/cover.svg" href="http://blast.volkovdesign.com/audio/12071151_epic-cinematic-trailer_by_audiopizza_preview.mp3" className="single-item__cover">
-                                                <img  src="https://blast.volkovdesign.com/img/covers/cover.svg" alt=""/>
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.54,9,8.88,3.46a3.42,3.42,0,0,0-5.13,3V17.58A3.42,3.42,0,0,0,7.17,21a3.43,3.43,0,0,0,1.71-.46L18.54,15a3.42,3.42,0,0,0,0-5.92Zm-1,4.19L7.88,18.81a1.44,1.44,0,0,1-1.42,0,1.42,1.42,0,0,1-.71-1.23V6.42a1.42,1.42,0,0,1,.71-1.23A1.51,1.51,0,0,1,7.17,5a1.54,1.54,0,0,1,.71.19l9.66,5.58a1.42,1.42,0,0,1,0,2.46Z"></path></svg>
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16,2a3,3,0,0,0-3,3V19a3,3,0,0,0,6,0V5A3,3,0,0,0,16,2Zm1,17a1,1,0,0,1-2,0V5a1,1,0,0,1,2,0ZM8,2A3,3,0,0,0,5,5V19a3,3,0,0,0,6,0V5A3,3,0,0,0,8,2ZM9,19a1,1,0,0,1-2,0V5A1,1,0,0,1,9,5Z"></path></svg>
-                                            </a>
-                                            <div className='single-item__title'>
-                                                <h4><a href="#">{`${index + 1}. ${track.title}`}</a></h4>
-                                                <span><a href='#'>{track.artist}</a></span>
-                                            </div>
-                                            <a href="#" className="single-item__add">
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,11H13V5a1,1,0,0,0-2,0v6H5a1,1,0,0,0,0,2h6v6a1,1,0,0,0,2,0V13h6a1,1,0,0,0,0-2Z"></path></svg>
-                                            </a>
-                                            <a href="#" className="single-item__export">
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21,14a1,1,0,0,0-1,1v4a1,1,0,0,1-1,1H5a1,1,0,0,1-1-1V15a1,1,0,0,0-2,0v4a3,3,0,0,0,3,3H19a3,3,0,0,0,3-3V15A1,1,0,0,0,21,14Zm-9.71,1.71a1,1,0,0,0,.33.21.94.94,0,0,0,.76,0,1,1,0,0,0,.33-.21l4-4a1,1,0,0,0-1.42-1.42L13,12.59V3a1,1,0,0,0-2,0v9.59l-2.29-2.3a1,1,0,1,0-1.42,1.42Z"></path></svg>
-                                            </a>
-                                            <span class="single-item__time">{track.duration}</span>
-                                            
-                                        
-                                        </li>
-                                      ))}
-                                     </ul>
-                                  </>
-                                ) : (
-                                  <>
-                                    <h4 className="fw-500 fs-16 mb-4 text-center d-block border-top py-4">
-                                      No posts yet!
-                                    </h4>
-                                  </>
-                              
-                                )}
-                              </div>
-                            </PerfectScrollbar>
-                          </div>
-                        </div>
-                                
-                      </>
-                    )}
-                  </div>
-                  {tracksData.length > 12 && (
-                    <button className="main__load" type="button">
-                      Load more
-                    </button>
-                  )}
-                </div>
-
-                <div
-                  className="tab-pane fade"
-                  id="profile-tab-pane"
-                  role="tabpanel"
-                  aria-labelledby="profile-tab"
-                  tabindex="0"
-                >
-                  <h1 className="text-white text-center my-5">Tab Second</h1>
-                </div>
-
-                <div
-                  className="tab-pane fade"
-                  id="contact-tab-pane"
-                  role="tabpanel"
-                  aria-labelledby="contact-tab"
-                  tabindex="0"
-                >
-                  <h1 className="text-white text-center my-5">Tab Third</h1>
-                </div>
-                {/* <div className="tab-pane fade" id="disabled-tab-pane" role="tabpanel" aria-labelledby="disabled-tab" tabindex="0">...</div> */}
-              </div>
-            </div>
+      {/* Replace legacy posts UI with the modern SocialFeed for consistency */}
+      <div className="container-fluid pb-5" onClick={handleCloseDrop}>
+        <div className="row">
+          <div className="col-12 col-lg-10 mx-auto">
+            <SocialFeed />
           </div>
-          {/* <!-- end releases --> */}
         </div>
-      </main>
+      </div>
 
       {/* playlist modal */}
       <div id="modal-topup1" className="zoom-anim-dialog mfp-hide modal modal--form">
