@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogoDark, LogoLight } from '../../../assets/images';
+// Removed logo upload on invoice form
 import axiosInstance from '../../../axiosInstance';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
@@ -28,26 +28,17 @@ export default function CreateInvoice() {
     const [items, setItems] = useState([]); // Initialize items state
     const [errors, setErrors] = useState({});
     const [formData, setFormData] = useState({
-        image: '',
         company_address: '',
-        postal_code: '',
         email_address: '',
         phone_number: '',
         invoice_number: '',
         date: '',
         payment_status: '',
-        total_amount: '',
         billing_full_name: '',
         billing_address: '',
         billing_phone_no: '',
-        billing_tax_no: '',
-        shipping_full_name: '',
-        shipping_address: '',
-        shipping_phone_no: '',
-        shipping_tax_no: '',
         items: [],
         general_note: '',
-        
     });
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -92,7 +83,7 @@ export default function CreateInvoice() {
 
     const validate = () => {
         const newErrors = {};
-        const requiredText = ['company_address','postal_code','email_address','phone_number','invoice_number','date','payment_status','billing_full_name','billing_address','billing_phone_no'];
+        const requiredText = ['company_address','email_address','phone_number','invoice_number','date','payment_status','billing_full_name','billing_address','billing_phone_no'];
         requiredText.forEach((k)=>{ if(!String(formData[k]||'').trim()){ newErrors[k] = 'Required'; }});
         if (formData.email_address && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email_address)) newErrors.email_address = 'Invalid email';
         if (!items.length) newErrors.items = 'Add at least one item';
@@ -113,27 +104,17 @@ export default function CreateInvoice() {
         }
         try {
             const dataToSend = {
-                company_address: formData.company_address || "TheCodeGiant Agency",
-                postal_code: formData.postal_code || "120301",
-                email_address: formData.email_address || "ayomikunariyo@gmail.com",
-                phone_number: formData.phone_number || "08061163188",
-                invoice_number: formData.invoice_number || "INV1234",
-                date: formData.date || "2024-09-16",
-                payment_status: formData.payment_status || "PENDING",
-                total_amount: formData.total_amount || "479.96",
-                billing_full_name: formData.billing_full_name || "Ariyo Ayomikun",
-                billing_address: formData.billing_address || "305 S San Gabriel Blvd",
-                billing_phone_no: formData.billing_phone_no || "+(123) 456-7890",
-                billing_tax_no: formData.billing_tax_no || "12-3456789",
-                shipping_full_name: formData.shipping_full_name || "Ariyo Ayomikun",
-                shipping_address: formData.shipping_address || "305 S San Gabriel Blvd",
-                shipping_phone_no: formData.shipping_phone_no || "+(123) 456-7890",
-                shipping_tax_no: formData.shipping_tax_no || null,
+                company_address: formData.company_address,
+                email_address: formData.email_address,
+                phone_number: formData.phone_number,
+                invoice_number: formData.invoice_number,
+                date: formData.date,
+                payment_status: formData.payment_status || 'PENDING',
+                billing_full_name: formData.billing_full_name,
+                billing_address: formData.billing_address,
+                billing_phone_no: formData.billing_phone_no,
                 items: JSON.stringify(items),
-                general_note: formData.general_note || "No Note",
-                image: formData.image || "",
-                invoice_id: `INV${Math.floor(Math.random() * 90000) + 10000}`,
-                account_id: localStorage.getItem('account_id') || "DU31320"
+                general_note: formData.general_note || null,
             };
             console.log('Data being sent to API:', dataToSend);
 
@@ -143,8 +124,6 @@ export default function CreateInvoice() {
             
             if (response.data.status === false) {
                     notifyError(response.data.message);
-                    notifyError(data.message);
-                    
                     return;
             } 
             const data = response.data;
@@ -195,19 +174,6 @@ export default function CreateInvoice() {
                                             <form onSubmit={handleSubmit} className="needs-validation" id="invoice_form">
                                                 <div className="card-body border-bottom border-bottom-dashed p-4">
                                                     <div className="row">
-                                                        <div className="col-lg-12">
-                                                            <div className="profile-user mx-auto  mb-3">
-                                                                <input id="profile-img-file-input" type="file" className="profile-img-file-input" />
-                                                                <label  className="d-block">
-                                                                    <span className="overflow-hidden border border-dashed d-flex align-items-center justify-content-center rounded" style={{ height: '60px', width: '256px' }}>
-                                                                        <img src={LogoDark} className="card-logo card-logo-dark user-profile-image img-fluid" alt="logo dark"/>
-                                                                        <img src={LogoLight} className="card-logo card-logo-light user-profile-image img-fluid" alt="logo light"/>
-                                                                    </span>
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="row">
                                                         <div className="col-lg-6">
                                                             
                                                             <div>
@@ -220,22 +186,10 @@ export default function CreateInvoice() {
                                                                         Please enter a address
                                                                     </div>
                                                                 </div>
-                                                                <div>
-                                                                    <input onChange={handleInputChange} name="postal_code" value={formData.postal_code} type="text" className="form-control bg-light border-0" id="companyaddpostalcode" minLength="5" maxLength="6" placeholder="Enter Postal Code" required />
-                                                                    <div className="invalid-feedback">
-                                                                        The US zip code must contain 5 digits, Ex. 45678
-                                                                    </div>
-                                                                </div>
                                                             </div>
                                                         </div>
                                                     
                                                         <div className="col-lg-6">
-                                                            <div className="mb-2">
-                                                                <input onChange={handleInputChange} name="registration_number" value={formData.registration_number} type="text" className="form-control bg-light border-0" id="registrationNumber" maxLength="12" placeholder="Legal Registration No" required />
-                                                                <div className="invalid-feedback">
-                                                                    Please enter a registration no, Ex., 012345678912
-                                                                </div>
-                                                            </div>
                                                             <div className="mb-2">
                                                                 <input onChange={handleInputChange} name="email_address" value={formData.email_address} type="email" className="form-control bg-light border-0" id="companyEmail" placeholder="Email Address" required />
                                                                 <div className="invalid-feedback">
@@ -284,12 +238,7 @@ export default function CreateInvoice() {
                                                             </div>
                                                         </div>
                                                     
-                                                        <div className="col-lg-3 col-sm-6">
-                                                            <div>
-                                                                <label >Total Amount</label>
-                                                                <input onChange={handleInputChange} name="total_amount" value={formData.total_amount} type="text" className="form-control bg-light border-0" id="totalamountInput" placeholder="$0.00"  />
-                                                            </div>
-                                                        </div>
+                                                        
                                                     
                                                     </div>
                                                     
@@ -318,53 +267,10 @@ export default function CreateInvoice() {
                                                                     Please enter a phone number
                                                                 </div>
                                                             </div>
-                                                            <div className="mb-3">
-                                                                <input onChange={handleInputChange} name="billing_tax_no" value={formData.billing_tax_no} type="text" className="form-control bg-light border-0" id="billingTaxno" placeholder="Tax Number" required />
-                                                                <div className="invalid-feedback">
-                                                                    Please enter a tax number
-                                                                </div>
-                                                            </div>
-                                                            <div className="form-check">
-                                                                <input  type="checkbox" className="form-check-input" id="same" name="same" onChange="billingFunction()" />
-                                                                <label className="form-check-label">
-                                                                    Will your Billing and Shipping address same?
-                                                                </label>
-                                                            </div>
+                                                            
                                                         </div>
                                                     
-                                                        <div className="col-lg-6 col-sm-12">
-                                                            <div className="row">
-                                                                <div className="">
-                                                                    <div>
-                                                                        <label className="text-muted text-uppercase fw-semibold">Shipping Address</label>
-                                                                    </div>
-                                                                    <div className="mb-2">
-                                                                        <input onChange={handleInputChange} name="shipping_full_name" value={formData.shipping_full_name} type="text" className="form-control bg-light border-0" id="shippingName" placeholder="Full Name" required />
-                                                                        <div className="invalid-feedback">
-                                                                            Please enter a full name
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="mb-2">
-                                                                        <textarea onChange={handleInputChange} name="shipping_address" value={formData.shipping_address} className="form-control bg-light border-0" id="shippingAddress" rows="3" placeholder="Address" required></textarea>
-                                                                        <div className="invalid-feedback">
-                                                                            Please enter a address
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="mb-2">
-                                                                        <input onChange={handleInputChange} name="shipping_phone_no" value={formData.shipping_phone_no} type="text" className="form-control bg-light border-0" data-plugin="cleave-phone" id="shippingPhoneno" placeholder="(123)456-7890" required />
-                                                                        <div className="invalid-feedback">
-                                                                            Please enter a phone number
-                                                                        </div>
-                                                                    </div>
-                                                                    <div>
-                                                                        <input onChange={handleInputChange} name="shipping_tax_no" value={formData.shipping_tax_no} type="text" className="form-control bg-light border-0" id="shippingTaxno" placeholder="Tax Number" required />
-                                                                        <div className="invalid-feedback">
-                                                                            Please enter a tax number
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                        
                                                     
                                                     </div>
                                                     

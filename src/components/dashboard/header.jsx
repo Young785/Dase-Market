@@ -24,6 +24,7 @@ export default function Header({ title, onToggleSidebar }) {
 	const [searchLoading, setSearchLoading] = useState(false);
 	const [searchResults, setSearchResults] = useState({ engineers: [], projects: [], samples: [], posts: [] });
 	const [showSearch, setShowSearch] = useState(false);
+    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
 
 	const notifyError = (text) => toast.error(text, {
         position: 'top-right',
@@ -89,6 +90,19 @@ export default function Header({ title, onToggleSidebar }) {
 		};
 		fetchNotifications();
 	}, []);
+
+    // Apply theme to root element and persist
+    useEffect(() => {
+        const root = document.documentElement;
+        if (theme === 'dark') {
+            root.classList.add('dark-theme');
+        } else {
+            root.classList.remove('dark-theme');
+        }
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+
+    const toggleTheme = () => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
 
 	const handleSearchChange = async (e) => {
 		const value = e.target.value;
@@ -240,11 +254,11 @@ export default function Header({ title, onToggleSidebar }) {
 
 									
 
-									<div className="ms-1 header-item d-none d-sm-flex">
-										<button type="button" className="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle light-dark-mode">
-											<i className='bx bx-moon fs-22'></i>
-										</button>
-									</div>
+                                    <div className="ms-1 header-item d-none d-sm-flex">
+                                        <button type="button" onClick={toggleTheme} className="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle light-dark-mode" aria-label="Toggle theme">
+                                            {theme === 'dark' ? <i className='bx bx-sun fs-22'></i> : <i className='bx bx-moon fs-22'></i>}
+                                        </button>
+                                    </div>
 
 									<div className="dropdown topbar-head-dropdown ms-1 header-item" id="notificationDropdown">
 										<button type="button" className="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle" id="page-header-notifications-dropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
@@ -482,10 +496,7 @@ export default function Header({ title, onToggleSidebar }) {
 												<span className="align-middle">Help</span>
 											</a>
 											<div className="dropdown-divider"></div>
-											<a className="dropdown-item" href='#'>
-												<i className="mdi mdi-wallet text-muted fs-16 align-middle me-1"></i> 
-												<span className="align-middle">Balance : <b>$5971.67</b></span>
-											</a>
+                                            {/* Balance removed until wired to real data */}
 											<Link to="/dase/setting" className="dropdown-item">
 												<span className="badge bg-success-subtle text-success mt-1 float-end">New</span>
 												<i className="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i> 

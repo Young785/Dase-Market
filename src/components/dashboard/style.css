@@ -3,6 +3,26 @@
     font-weight: 500 !important;
     color: #2B3B5A;
 }
+/* Dark theme base */
+.dark-theme body, .dark-theme .main-content, .dark-theme .container-fluid {
+  background-color: #111827 !important;
+  color: #E5E7EB !important;
+}
+.dark-theme .card, .dark-theme .dropdown-menu, .dark-theme .navbar-header, .dark-theme .app-search .form-control {
+  background-color: #1F2937 !important;
+  color: #E5E7EB !important;
+  border-color: #374151 !important;
+}
+.dark-theme .form-control, .dark-theme .bg-light {
+  background-color: #111827 !important;
+  color: #E5E7EB !important;
+}
+.dark-theme .text-muted { color: #9CA3AF !important; }
+.dark-theme .btn-ghost-secondary { color: #E5E7EB !important; }
+.dark-theme .dropdown-header, .dark-theme .badge { color: #E5E7EB !important; }
+.dark-theme .table { color: #E5E7EB !important; }
+.dark-theme .border-0 { border-color: #374151 !important; }
+.dark-theme .header-title{ color: #E5E7EB !important; }
 .upgrade-title{
     font-size: 16px;
     font-weight: 600;
