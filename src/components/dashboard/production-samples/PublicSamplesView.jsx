@@ -362,19 +362,20 @@ export default function PublicSamplesView({ engineerId }) {
                                                     <div key={review.id} className="mb-3 pb-3 border-bottom">
                                                         <div className="d-flex align-items-center mb-2">
                                                             <img
-                                                                src={review.user_photo || 'https://via.placeholder.com/40'}
-                                                                alt={review.user_name}
+                                                                src={(review.user && review.user.photo) ? review.user.photo : '/assets/user.png'}
+                                                                alt={(review.user && review.user.name) ? review.user.name : 'User'}
                                                                 className="rounded-circle me-2"
-                                                                style={{ width: '40px', height: '40px' }}
+                                                                style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                                                                onError={(e) => { e.currentTarget.src = '/assets/user.png'; }}
                                                             />
                                                             <div className="flex-grow-1">
-                                                                <h6 className="mb-0">{review.user_name}</h6>
+                                                                <h6 className="mb-0">{review.user?.name || 'User'}</h6>
                                                                 <small className="text-muted">
                                                                     {new Date(review.created_at).toLocaleDateString()}
                                                                 </small>
                                                             </div>
                                                             <div>
-                                                                {[...Array(review.rating)].map((_, i) => (
+                                                                {Number(review.rating) > 0 && [...Array(Number(review.rating))].map((_, i) => (
                                                                     <Star key={i} size={14} fill="#ffc107" color="#ffc107" />
                                                                 ))}
                                                             </div>
