@@ -34,8 +34,8 @@ const NotificationModal = ({ isOpen, onClose, notifications }) => {
                                             <Bell className="fs-16 text-primary" />
                                         </div>
                                         <div className="flex-grow-1">
-                                            <h6 className="mb-1">{notification.title}</h6>
-                                            <p className="text-muted mb-1" style={{fontSize: '0.85rem'}}>{notification.message}</p>
+                                            <h6 className="mb-1 text-ellipsis-1">{notification.title}</h6>
+                                            <p className="text-muted mb-1 text-ellipsis-2" style={{fontSize: '0.85rem'}}>{notification.message}</p>
                                             <small className="text-muted">
                                                 {new Date(notification.created_at).toLocaleString()}
                                             </small>

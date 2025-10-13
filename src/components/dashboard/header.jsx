@@ -339,12 +339,12 @@ export default function Header({ title, onToggleSidebar }) {
 																			</span>
 																		</div>
 																		<div className="flex-grow-1">
-																			<a href="#!" className="stretched-link">
-																				<h6 className="mt-0 mb-2 lh-base">{notification.title}</h6>
-																			</a>
-																			<p className="mb-0 fs-11 fw-medium text-uppercase text-muted">
-																				<span>{notification.message}</span>
-																			</p>
+                                                                            <a href="#!" className="stretched-link">
+                                                                                <h6 className="mt-0 mb-2 lh-base text-ellipsis-1">{notification.title}</h6>
+                                                                            </a>
+                                                                            <p className="mb-0 fs-11 fw-medium text-uppercase text-muted text-ellipsis-2">
+                                                                                <span>{notification.message}</span>
+                                                                            </p>
 																			<p className="mb-0 fs-11 fw-medium text-uppercase text-muted">
 																				<span>
 																					<i className="mdi mdi-clock-outline"></i> {new Date(notification.created_at).toLocaleString()}

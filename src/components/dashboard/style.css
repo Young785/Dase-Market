@@ -410,3 +410,22 @@
     cursor: pointer;
   }
 }
+
+/* Notification ellipsis helpers */
+.text-ellipsis-1 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1; /* show a single line */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal; /* allow wrapping before clamping */
+}
+
+.text-ellipsis-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* show two lines */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
