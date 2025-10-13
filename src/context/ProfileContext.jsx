@@ -25,7 +25,8 @@ export function ProfileProvider({ children }) {
             }
 
             const response = await axiosInstance.get('/user/profile');
-            if (response.data?.status) {
+            
+            if (response.data.success) {
                 setProfile(response.data.data);
                 setIsVerified(true);
                 return true;
