@@ -31,6 +31,7 @@ export default function SocialFeed({ accountId, hideCreate = false }) {
     const [isPlaying, setIsPlaying] = useState({});
     const mediaRefs = useRef({});
     const observerRef = useRef(null);
+    const [autoplayDisabledFor, setAutoplayDisabledFor] = useState(null);
 
     // Track media progress per postId
     const [mediaProgress, setMediaProgress] = useState({}); // { [postId]: { playedSeconds, duration } }
@@ -71,6 +72,18 @@ export default function SocialFeed({ accountId, hideCreate = false }) {
         };
     }, []);
 
+    // Ensure feed playback pauses and autoplay is disabled when opening details modal
+    useEffect(() => {
+        const detailsEl = document.getElementById('postDetailsModal');
+        if (!detailsEl) return;
+        const onHidden = () => {
+            setAutoplayDisabledFor(null);
+            setSelectedPost(null);
+        };
+        detailsEl.addEventListener('hidden.bs.modal', onHidden);
+        return () => detailsEl.removeEventListener('hidden.bs.modal', onHidden);
+    }, []);
+
     // Intersection Observer for auto-play on scroll
     useEffect(() => {
         observerRef.current = new IntersectionObserver(
@@ -79,6 +92,11 @@ export default function SocialFeed({ accountId, hideCreate = false }) {
                     const postId = entry.target.dataset.postId;
                     const mediaElement = mediaRefs.current[postId];
                     
+                    if (autoplayDisabledFor === postId) {
+                        // Do not autopause/autoplay for the post shown inside modal
+                        return;
+                    }
+
                     if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
                         // Ensure only one plays at a time
                         setPlayingPostId((prev) => {
@@ -371,6 +389,10 @@ export default function SocialFeed({ accountId, hideCreate = false }) {
     const openPostDetailsModal = (post) => {
         setSelectedPost(post);
         fetchPostDetails(post.public_id || post.status_update_id || post.id);
+        // Pause any current playing media in the feed and disable autoplay for this post inside modal
+        const pid = post.public_id || post.status_update_id;
+        setIsPlaying(prev => ({ ...prev, [pid]: false, [playingPostId]: false }));
+        setAutoplayDisabledFor(pid);
         const modal = new bootstrap.Modal(document.getElementById('postDetailsModal'));
         modal.show();
     };
@@ -463,7 +485,7 @@ export default function SocialFeed({ accountId, hideCreate = false }) {
                         data-post-id={postId}
                         style={{ backgroundColor: '#000', borderRadius: '8px', overflow: 'hidden' }}
                         ref={(el) => {
-                            if (el && observerRef.current) observerRef.current.observe(el);
+                            if (el && observerRef.current && autoplayDisabledFor !== postId) observerRef.current.observe(el);
                         }}
                     >
                         <ReactPlayer 
@@ -502,7 +524,7 @@ export default function SocialFeed({ accountId, hideCreate = false }) {
                             background: 'linear-gradient(135deg, #667eea11 0%, #764ba211 100%)'
                         }}
                         ref={(el) => {
-                            if (el && observerRef.current) observerRef.current.observe(el);
+                            if (el && observerRef.current && autoplayDisabledFor !== postId) observerRef.current.observe(el);
                         }}
                     >
                         {post.thumbnail_url && (
