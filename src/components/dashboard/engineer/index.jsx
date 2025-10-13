@@ -14,10 +14,11 @@ export default function Engineer() {
     }, []);
 
     useEffect(() => {
-        const results = engineers.filter(engineer => 
-            `${engineer.first_name} ${engineer.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            engineer.business_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (engineer.work_experience && engineer.work_experience.toLowerCase().includes(searchTerm.toLowerCase()))
+        const list = Array.isArray(engineers) ? engineers : [];
+        const results = list.filter(engineer => 
+            (`${engineer.first_name || ''} ${engineer.last_name || ''}`.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            ((engineer.business_name || '').toLowerCase().includes(searchTerm.toLowerCase())) ||
+            ((engineer.work_experience || '').toLowerCase().includes(searchTerm.toLowerCase()))
         );
         setFilteredEngineers(results);
     }, [searchTerm, engineers]);
@@ -25,8 +26,9 @@ export default function Engineer() {
     const fetchEngineers = async () => {
         try {
             const response = await axiosInstance.get(`/engineers?rating=5&date_order=asc&name_order=asc`);
-            setEngineers(response.data || []);
-            setFilteredEngineers(response.data || []);
+            const list = Array.isArray(response?.data?.data) ? response.data.data : [];
+            setEngineers(list);
+            setFilteredEngineers(list);
         } catch (error) {
             toast.error('Failed to fetch engineers');
             setEngineers([]);
