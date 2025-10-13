@@ -158,7 +158,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                             </Link>
                         </li>
                         
-                        {isEngineer && (
+                        {/* Invoices available for both roles */}
                         <li className={`nav-item ${isActive(["/dase/invoice", "/dase/invoice/create", "/dase/invoice/view"])}`}>
                             <Link to="/dase/invoice" className={`nav-link ${isActive(["/dase/invoice", "/dase/invoice/create", "/dase/invoice/view"])}`} data-key="t-invoice">
                                 <span data-key="t-invoice">
@@ -171,7 +171,6 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                                 </span>
                             </Link>
                         </li>
-                        )}
                         
 
                         <li className={`nav-item ${isActive(["/dase/chat"])}`}>
