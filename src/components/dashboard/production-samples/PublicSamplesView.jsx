@@ -13,6 +13,7 @@ export default function PublicSamplesView({ engineerId }) {
     const [reviews, setReviews] = useState([]);
     const [newReview, setNewReview] = useState({ rating: 5, comment: '', approve: true });
     const [submittingReview, setSubmittingReview] = useState(false);
+    const [engineer, setEngineer] = useState(null);
 
     useEffect(() => {
         fetchSamples();
@@ -22,8 +23,13 @@ export default function PublicSamplesView({ engineerId }) {
         try {
             setLoading(true);
             const response = await axiosInstance.get(`/engineers/${engineerId}/production-samples`);
-            if (response.data.success) {
-                setSamples(response.data.data || []);
+            if (response.data && (response.data.success || response.data.status)) {
+                const payload = response.data.data;
+                const list = Array.isArray(payload?.samples) ? payload.samples : [];
+                setEngineer(payload?.engineer || null);
+                setSamples(list);
+            } else {
+                setSamples([]);
             }
         } catch (error) {
             console.error('Error fetching samples:', error);
@@ -36,8 +42,12 @@ export default function PublicSamplesView({ engineerId }) {
     const fetchReviews = async (sampleId) => {
         try {
             const response = await axiosInstance.get(`/production-samples/${sampleId}/reviews`);
-            if (response.data.success) {
-                setReviews(response.data.data.reviews || []);
+            if (response.data && (response.data.success || response.data.status)) {
+                const payload = response.data.data;
+                const list = Array.isArray(payload?.reviews) ? payload.reviews : (Array.isArray(payload) ? payload : []);
+                setReviews(list);
+            } else {
+                setReviews([]);
             }
         } catch (error) {
             console.error('Error fetching reviews:', error);
@@ -134,7 +144,7 @@ export default function PublicSamplesView({ engineerId }) {
         );
     }
 
-    if (samples.length === 0) {
+    if (!Array.isArray(samples) || samples.length === 0) {
         return (
             <div className="text-center py-5">
                 <p className="text-muted">No production samples available yet.</p>
@@ -144,8 +154,22 @@ export default function PublicSamplesView({ engineerId }) {
 
     return (
         <>
+            {engineer && (
+                <div className="mb-3 d-flex align-items-center justify-content-between">
+                    <div className="d-flex align-items-center">
+                        <img src={engineer.photo || '/assets/user.png'} alt={engineer.name} className="rounded-circle me-2" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
+                        <div>
+                            <h6 className="mb-0">{engineer.name}</h6>
+                            <small className="text-muted">{engineer.business_name}</small>
+                        </div>
+                    </div>
+                    <div>
+                        <span className="badge bg-secondary-subtle text-secondary">{samples.length} samples</span>
+                    </div>
+                </div>
+            )}
             <div className="row g-4">
-                {samples.map((sample) => (
+                {(Array.isArray(samples) ? samples : []).map((sample) => (
                     <div key={sample.id} className="col-md-6 col-lg-4">
                         <div className="card h-100 shadow-sm hover-card">
                             <div className="position-relative">
