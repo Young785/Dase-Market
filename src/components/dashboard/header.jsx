@@ -20,6 +20,10 @@ export default function Header({ title, onToggleSidebar }) {
     const [notifications, setNotifications] = useState([]);
     const [loadingNotifications, setLoadingNotifications] = useState(true);
 	const [showAllNotificationsModal, setShowAllNotificationsModal] = useState(false);
+	const [searchTerm, setSearchTerm] = useState('');
+	const [searchLoading, setSearchLoading] = useState(false);
+	const [searchResults, setSearchResults] = useState({ engineers: [], projects: [], samples: [], posts: [] });
+	const [showSearch, setShowSearch] = useState(false);
 
 	const notifyError = (text) => toast.error(text, {
         position: 'top-right',
@@ -86,6 +90,32 @@ export default function Header({ title, onToggleSidebar }) {
 		fetchNotifications();
 	}, []);
 
+	const handleSearchChange = async (e) => {
+		const value = e.target.value;
+		setSearchTerm(value);
+		if (!value) {
+			setSearchResults({ engineers: [], projects: [], samples: [], posts: [] });
+			return;
+		}
+		setSearchLoading(true);
+		try {
+			const res = await axiosInstance.get(`/search`, { params: { q: value } });
+			if (res.data?.status) {
+				setSearchResults(res.data.data);
+			}
+		} catch (err) {
+			// noop
+		} finally {
+			setSearchLoading(false);
+		}
+	};
+
+	const clearSearch = () => {
+		setSearchTerm('');
+		setShowSearch(false);
+		setSearchResults({ engineers: [], projects: [], samples: [], posts: [] });
+	};
+
 	return (
 		<>
 			<div>
@@ -122,91 +152,72 @@ export default function Header({ title, onToggleSidebar }) {
 										&#9776; {/* Hamburger menu icon */}
 									</button>
 
-									
-									<form className="app-search d-none d-md-block">
-										<div className="position-relative">
-											<input type="text" className="form-control" placeholder="Search..." autoComplete="off" id="search-options" value=""/>
-											<span className="mdi mdi-magnify search-widget-icon"></span>
-											<span className="mdi mdi-close-circle search-widget-icon search-widget-icon-close d-none" id="search-close-options"></span>
-										</div>
-										<div className="dropdown-menu dropdown-menu-lg" id="search-dropdown">
-											<div data-simplebar style={{maxHeight: '320px'}}>
-											
-												<div className="dropdown-header">
-													<h6 className="text-overflow text-muted mb-0 text-uppercase">Recent Searches</h6>
-												</div>
-
-												<div className="dropdown-item bg-transparent text-wrap">
-													<a href="#" className="btn btn-soft-secondary btn-sm rounded-pill">how to setup <i className="mdi mdi-magnify ms-1"></i></a>
-													<a href="#" className="btn btn-soft-secondary btn-sm rounded-pill">buttons <i className="mdi mdi-magnify ms-1"></i></a>
-												</div>
-											
-												<div className="dropdown-header mt-2">
-													<h6 className="text-overflow text-muted mb-1 text-uppercase">Pages</h6>
-												</div>
-
-											
-												<a className="dropdown-item notify-item">
-													<i className="ri-bubble-chart-line align-middle fs-18 text-muted me-2"></i>
-													<span>Analytics Dashboard</span>
-												</a>
-
-											
-												<a className="dropdown-item notify-item">
-													<i className="ri-lifebuoy-line align-middle fs-18 text-muted me-2"></i>
-													<span>Help Center</span>
-												</a>
-
-											
-												<a className="dropdown-item notify-item">
-													<i className="ri-user-settings-line align-middle fs-18 text-muted me-2"></i>
-													<span>My account settings</span>
-												</a>
-
-											
-												<div className="dropdown-header mt-2">
-													<h6 className="text-overflow text-muted mb-2 text-uppercase">Members</h6>
-												</div>
-
-												<div className="notification-list">
-													
-													<a className="dropdown-item notify-item py-2">
-														<div className="d-flex">
-															<img src={UsersAvater2} className="me-3 rounded-circle avatar-xs" alt="user-pic" />
-															<div className="flex-grow-1">
-																<h6 className="m-0">Angela Bernier</h6>
-																<span className="fs-11 mb-0 text-muted">Manager</span>
-															</div>
-														</div>
+							<form className="app-search d-none d-md-block">
+								<div className="position-relative">
+									<input
+										type="text"
+										className="form-control"
+										placeholder="Search engineers, projects, samples, posts..."
+										autoComplete="off"
+										id="search-options"
+										value={searchTerm}
+										onChange={handleSearchChange}
+										onFocus={() => setShowSearch(true)}
+									/>
+									<span className="mdi mdi-magnify search-widget-icon"></span>
+									{searchTerm && (
+										<span className="mdi mdi-close-circle search-widget-icon search-widget-icon-close" onClick={clearSearch}></span>
+									)}
+								</div>
+								{showSearch && (
+								<div className="dropdown-menu dropdown-menu-lg show" id="search-dropdown">
+									<div data-simplebar style={{maxHeight: '320px'}}>
+										{searchLoading ? (
+											<div className="text-center py-3">Loading...</div>
+										) : (
+											<>
+												{searchResults.engineers?.length > 0 && (
+													<div className="dropdown-header mt-2"><h6 className="text-overflow text-muted mb-1 text-uppercase">Engineers</h6></div>
+												)}
+												{searchResults.engineers?.map(e => (
+													<a key={e.account_id} className="dropdown-item notify-item" href={`/dase/engineer/view/${e.account_id}`}>
+														<i className="ri-user-line align-middle fs-18 text-muted me-2"></i>
+														<span>{e.first_name} {e.last_name} - {e.business_name}</span>
 													</a>
-													
-													<a className="dropdown-item notify-item py-2">
-														<div className="d-flex">
-															<img src={UsersAvater3} className="me-3 rounded-circle avatar-xs" alt="user-pic" />
-															<div className="flex-grow-1">
-																<h6 className="m-0">David Grasso</h6>
-																<span className="fs-11 mb-0 text-muted">Web Designer</span>
-															</div>
-														</div>
-													</a>
-													
-													<a className="dropdown-item notify-item py-2">
-														<div className="d-flex">
-															<img src={UsersAvater5} className="me-3 rounded-circle avatar-xs" alt="user-pic" />
-															<div className="flex-grow-1">
-																<h6 className="m-0">Mike Bunch</h6>
-																<span className="fs-11 mb-0 text-muted">React Developer</span>
-															</div>
-														</div>
-													</a>
-												</div>
-											</div>
-
-											<div className="text-center pt-3 pb-1">
-												<a href="pages-search-results.html" className="btn btn-primary btn-sm">View All Results <i className="ri-arrow-right-line ms-1"></i></a>
-											</div>
-										</div>
-									</form>
+												))}
+												{searchResults.projects?.length > 0 && (
+													<div className="dropdown-header mt-2"><h6 className="text-overflow text-muted mb-1 text-uppercase">Projects</h6></div>
+												)}
+												{searchResults.projects?.map(p => (
+													<div key={p.project_id} className="dropdown-item notify-item">
+														<i className="ri-folder-line align-middle fs-18 text-muted me-2"></i>
+														<span>{p.title}</span>
+													</div>
+												))}
+												{searchResults.samples?.length > 0 && (
+													<div className="dropdown-header mt-2"><h6 className="text-overflow text-muted mb-1 text-uppercase">My Samples</h6></div>
+												)}
+												{searchResults.samples?.map(s => (
+													<div key={s.sample_id} className="dropdown-item notify-item">
+														<i className="ri-music-2-line align-middle fs-18 text-muted me-2"></i>
+														<span>{s.title}</span>
+													</div>
+												))}
+												{searchResults.posts?.length > 0 && (
+													<div className="dropdown-header mt-2"><h6 className="text-overflow text-muted mb-1 text-uppercase">Posts</h6></div>
+												)}
+												{searchResults.posts?.map(s => (
+													<div key={s.post_id} className="dropdown-item notify-item">
+														<i className="ri-article-line align-middle fs-18 text-muted me-2"></i>
+														<span>{s.title}</span>
+													</div>
+												))}
+											</>
+										)}
+									</div>
+								</div>
+								)}
+							</form>
 								</div>
 
 								<div className="d-flex align-items-center">
