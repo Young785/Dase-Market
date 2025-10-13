@@ -24,7 +24,6 @@ export default function Header({ title, onToggleSidebar }) {
 	const [searchLoading, setSearchLoading] = useState(false);
 	const [searchResults, setSearchResults] = useState({ engineers: [], projects: [], samples: [], posts: [] });
 	const [showSearch, setShowSearch] = useState(false);
-    // Dark theme temporarily disabled
     // const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
 
 	const notifyError = (text) => toast.error(text, {
@@ -92,6 +91,7 @@ export default function Header({ title, onToggleSidebar }) {
 		fetchNotifications();
 	}, []);
 
+    // Dark theme temporarily disabled
     // useEffect(() => {
     //     const root = document.documentElement;
     //     if (theme === 'dark') {
@@ -101,6 +101,7 @@ export default function Header({ title, onToggleSidebar }) {
     //     }
     //     localStorage.setItem('theme', theme);
     // }, [theme]);
+
     // const toggleTheme = () => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
 
 	const handleSearchChange = async (e) => {
@@ -254,6 +255,11 @@ export default function Header({ title, onToggleSidebar }) {
 									
 
                                     {/* Dark theme toggle temporarily disabled */}
+                                    {/* <div className="ms-1 header-item d-none d-sm-flex">
+                                        <button type="button" onClick={toggleTheme} className="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle light-dark-mode" aria-label="Toggle theme">
+                                            {theme === 'dark' ? <i className='bx bx-sun fs-22'></i> : <i className='bx bx-moon fs-22'></i>}
+                                        </button>
+                                    </div> */}
 
 									<div className="dropdown topbar-head-dropdown ms-1 header-item" id="notificationDropdown">
 										<button type="button" className="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle" id="page-header-notifications-dropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">

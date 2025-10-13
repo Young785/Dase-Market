@@ -19,9 +19,9 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
     const location = useLocation();
     const [activeLink, setActiveLink] = useState(location.pathname);
     const { profile } = useProfile();
-    const derivedRole = ((profile?.role?.name || profile?.role || profile?.account_type || '') + '').toLowerCase();
-    const isEngineer = derivedRole === 'engineer';
-    const isClient = derivedRole === 'client';
+    const roleName = (profile?.role?.name || profile?.account_type || profile?.role || '').toString().toLowerCase();
+    const isEngineer = roleName === 'engineer';
+    const isClient = roleName === 'client';
     
 
 
