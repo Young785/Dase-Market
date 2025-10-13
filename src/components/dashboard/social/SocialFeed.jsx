@@ -1304,7 +1304,7 @@ export default function SocialFeed({ accountId, hideCreate = false }) {
                     <div className="modal-dialog modal-lg modal-dialog-scrollable">
                         <div className="modal-content">
                             <div className="modal-header">
-                                <h5 className="modal-title">{selectedPost.user?.name}'s Post</h5>
+                                <h5 className="modal-title">{selectedPost.user?.name ? `${selectedPost.user.name}'s Post` : 'Post'}</h5>
                                 <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                             </div>
                             <div className="modal-body">
@@ -1338,10 +1338,24 @@ export default function SocialFeed({ accountId, hideCreate = false }) {
                                     {selectedPost.content && <p>{selectedPost.content}</p>}
                                     {/* Show static preview only: for image show full image; for audio/video show thumbnail only (no player) */}
                                     {selectedPost.media_type === 'image' && (
-                                        <img src={getModalPreviewUrl(selectedPost)} alt="Media" className="img-fluid w-100 rounded" />
+                                        <div style={{ maxHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <img 
+                                                src={getModalPreviewUrl(selectedPost)} 
+                                                alt="Media" 
+                                                className="rounded"
+                                                style={{ maxWidth: '100%', maxHeight: '70vh', width: '100%', height: 'auto', objectFit: 'contain' }}
+                                            />
+                                        </div>
                                     )}
                                     {selectedPost.media_type !== 'image' && selectedPost.thumbnail_url && (
-                                        <img src={getModalPreviewUrl(selectedPost)} alt="Thumbnail" className="img-fluid w-100 rounded" />
+                                        <div style={{ maxHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <img 
+                                                src={getModalPreviewUrl(selectedPost)} 
+                                                alt="Thumbnail" 
+                                                className="rounded"
+                                                style={{ maxWidth: '100%', maxHeight: '70vh', width: '100%', height: 'auto', objectFit: 'contain' }}
+                                            />
+                                        </div>
                                     )}
                                 </div>
 
