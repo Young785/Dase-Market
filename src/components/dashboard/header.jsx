@@ -24,7 +24,8 @@ export default function Header({ title, onToggleSidebar }) {
 	const [searchLoading, setSearchLoading] = useState(false);
 	const [searchResults, setSearchResults] = useState({ engineers: [], projects: [], samples: [], posts: [] });
 	const [showSearch, setShowSearch] = useState(false);
-    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+    // Dark theme temporarily disabled
+    // const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
 
 	const notifyError = (text) => toast.error(text, {
         position: 'top-right',
@@ -91,18 +92,16 @@ export default function Header({ title, onToggleSidebar }) {
 		fetchNotifications();
 	}, []);
 
-    // Apply theme to root element and persist
-    useEffect(() => {
-        const root = document.documentElement;
-        if (theme === 'dark') {
-            root.classList.add('dark-theme');
-        } else {
-            root.classList.remove('dark-theme');
-        }
-        localStorage.setItem('theme', theme);
-    }, [theme]);
-
-    const toggleTheme = () => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+    // useEffect(() => {
+    //     const root = document.documentElement;
+    //     if (theme === 'dark') {
+    //         root.classList.add('dark-theme');
+    //     } else {
+    //         root.classList.remove('dark-theme');
+    //     }
+    //     localStorage.setItem('theme', theme);
+    // }, [theme]);
+    // const toggleTheme = () => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
 
 	const handleSearchChange = async (e) => {
 		const value = e.target.value;
@@ -254,11 +253,7 @@ export default function Header({ title, onToggleSidebar }) {
 
 									
 
-                                    <div className="ms-1 header-item d-none d-sm-flex">
-                                        <button type="button" onClick={toggleTheme} className="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle light-dark-mode" aria-label="Toggle theme">
-                                            {theme === 'dark' ? <i className='bx bx-sun fs-22'></i> : <i className='bx bx-moon fs-22'></i>}
-                                        </button>
-                                    </div>
+                                    {/* Dark theme toggle temporarily disabled */}
 
 									<div className="dropdown topbar-head-dropdown ms-1 header-item" id="notificationDropdown">
 										<button type="button" className="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle" id="page-header-notifications-dropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
@@ -483,29 +478,20 @@ export default function Header({ title, onToggleSidebar }) {
 												<i className="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> 
 												<span className="align-middle">Profile</span>
 											</Link>
-											<a className="dropdown-item" href='#'>
+											<a className="dropdown-item" href='/dase/chat'>
 												<i className="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> 
 												<span className="align-middle">Messages</span>
 											</a>
-											<a className="dropdown-item" href='#'>
+											<a className="dropdown-item" href='/dase/project'>
 												<i className="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> 
-												<span className="align-middle">Taskboard</span>
+												<span className="align-middle">Projects</span>
 											</a>
-											<a className="dropdown-item" href='#'>
+											<a className="dropdown-item" href='/dase/getting-started'>
 												<i className="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> 
 												<span className="align-middle">Help</span>
 											</a>
 											<div className="dropdown-divider"></div>
-                                            {/* Balance removed until wired to real data */}
-											<Link to="/dase/setting" className="dropdown-item">
-												<span className="badge bg-success-subtle text-success mt-1 float-end">New</span>
-												<i className="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i> 
-												<span className="align-middle">Settings</span>
-											</Link>
-											<a className="dropdown-item" href='#'>
-												<i className="mdi mdi-lock text-muted fs-16 align-middle me-1"></i> 
-												<span className="align-middle">Lock screen</span>
-											</a>
+											
 											<a onClick={handleLogout} style={{cursor: 'pointer'}} className="dropdown-item">
 												<i className="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> 
 												<span className="align-middle" data-key="t-logout">Logout</span>

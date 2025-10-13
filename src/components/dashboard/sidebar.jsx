@@ -9,6 +9,7 @@ import { Bell} from 'lucide-react';
 import {LogoSm} from '../../assets/images';
 import {LogoDark} from '../../assets/images';
 import { LogoLight } from '../../assets/images';
+import { useProfile } from '../../context/ProfileContext';
 
 
 
@@ -17,18 +18,10 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
     const navigate = useNavigate();
     const location = useLocation();
     const [activeLink, setActiveLink] = useState(location.pathname);
-    const [userRole, setUserRole] = useState(() => {
-        try {
-            const auth = JSON.parse(localStorage.getItem('auth_data'));
-            const raw = auth?.user || {};
-            const roleGuess = (raw.role || raw.account_type || raw?.role?.name || '').toString();
-            return roleGuess.toLowerCase();
-        } catch {
-            return '';
-        }
-    });
-    const isEngineer = userRole === 'engineer';
-    const isClient = userRole === 'client';
+    const { profile } = useProfile();
+    const derivedRole = ((profile?.role?.name || profile?.role || profile?.account_type || '') + '').toLowerCase();
+    const isEngineer = derivedRole === 'engineer';
+    const isClient = derivedRole === 'client';
     
 
 
@@ -80,13 +73,6 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
             default:
                 setTitle('Welcome, Lawal Wahab');
         }
-        // Refresh role from storage in case it changed
-        try {
-            const auth = JSON.parse(localStorage.getItem('auth_data'));
-            const raw = auth?.user || {};
-            const roleGuess = (raw.role || raw.account_type || raw?.role?.name || '').toString();
-            setUserRole(roleGuess.toLowerCase());
-        } catch {}
     }, [location.pathname, setTitle]);
 
     function isActive(paths) {
