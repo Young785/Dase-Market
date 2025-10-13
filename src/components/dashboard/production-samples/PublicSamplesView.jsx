@@ -310,26 +310,17 @@ export default function PublicSamplesView({ engineerId }) {
                                         <form onSubmit={handleSubmitReview}>
                                             <div className="mb-3">
                                                 <label className="form-label">Rating</label>
-                                                <div className="btn-group d-flex" role="group">
+                                                <div className="d-flex align-items-center gap-1">
                                                     {[1, 2, 3, 4, 5].map(rating => (
-                                                        <input
+                                                        <button
                                                             key={rating}
-                                                            type="radio"
-                                                            className="btn-check"
-                                                            name="rating"
-                                                            id={`rating-${rating}`}
-                                                            checked={newReview.rating === rating}
-                                                            onChange={() => setNewReview(prev => ({ ...prev, rating }))}
-                                                        />
-                                                    ))}
-                                                    {[1, 2, 3, 4, 5].map(rating => (
-                                                        <label
-                                                            key={rating}
-                                                            className="btn btn-outline-warning"
-                                                            htmlFor={`rating-${rating}`}
+                                                            type="button"
+                                                            className="btn btn-link p-0 border-0"
+                                                            onClick={() => setNewReview(prev => ({ ...prev, rating }))}
+                                                            aria-label={`Rate ${rating}`}
                                                         >
-                                                            <Star size={16} fill={newReview.rating >= rating ? '#ffc107' : 'none'} />
-                                                        </label>
+                                                            <Star size={20} color="#ffc107" fill={newReview.rating >= rating ? '#ffc107' : 'none'} />
+                                                        </button>
                                                     ))}
                                                 </div>
                                             </div>
@@ -355,11 +346,7 @@ export default function PublicSamplesView({ engineerId }) {
                                                     I approve this production sample
                                                 </label>
                                             </div>
-                                            <button 
-                                                type="submit" 
-                                                className="btn btn-success"
-                                                disabled={submittingReview}
-                                            >
+                                            <button type="submit" className="btn btn-success" disabled={submittingReview}>
                                                 {submittingReview ? 'Submitting...' : 'Submit Review'}
                                             </button>
                                         </form>
