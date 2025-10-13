@@ -290,26 +290,7 @@ export default function EngineerDetails() {
                                             
                                         </div>
                                         
-                                        <div class="col-xl-3 col-lg-4">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <h5 class="card-title mb-4">Skills</h5>
-                                                    <div class="d-flex flex-wrap gap-2 fs-16">
-                                                        <div class="badge fw-medium bg-secondary-subtle text-secondary">UI/UX</div>
-                                                        <div class="badge fw-medium bg-secondary-subtle text-secondary">Figma</div>
-                                                        <div class="badge fw-medium bg-secondary-subtle text-secondary">HTML</div>
-                                                        <div class="badge fw-medium bg-secondary-subtle text-secondary">CSS</div>
-                                                        <div class="badge fw-medium bg-secondary-subtle text-secondary">Javascript</div>
-                                                        <div class="badge fw-medium bg-secondary-subtle text-secondary">C#</div>
-                                                        <div class="badge fw-medium bg-secondary-subtle text-secondary">Nodejs</div>
-                                                    </div>
-                                                </div>
-                                              
-                                            </div>
-                                            
-
-                                         
-                                        </div>
+                                        {/* Right column reserved for future widgets */}
                                        
                                     </div>
                                     

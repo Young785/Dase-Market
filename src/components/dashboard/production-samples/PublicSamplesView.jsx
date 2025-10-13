@@ -174,7 +174,7 @@ export default function PublicSamplesView({ engineerId }) {
                         <div className="card h-100 shadow-sm hover-card">
                             <div className="position-relative">
                                 <img
-                                    src={sample.cover_image || 'https://via.placeholder.com/400x200/4CAF50/ffffff?text=Audio+Sample'}
+                                    src={sample.cover_image || '/assets/music.png'}
                                     alt={sample.title}
                                     className="card-img-top"
                                     style={{ height: '180px', objectFit: 'cover' }}
@@ -252,7 +252,7 @@ export default function PublicSamplesView({ engineerId }) {
                                 <div className="row">
                                     <div className="col-md-5">
                                         <img
-                                            src={selectedSample.cover_image || 'https://via.placeholder.com/400x300/4CAF50/ffffff?text=Audio+Sample'}
+                                            src={selectedSample.cover_image || '/assets/music.png'}
                                             alt={selectedSample.title}
                                             className="img-fluid rounded mb-3"
                                         />
