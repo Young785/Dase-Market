@@ -55,6 +55,19 @@ export default function Header({ title, onToggleSidebar }) {
         last_login,
     } = profile || {};
 
+    // Resolve image URL similar to engineer list
+    const resolveImageUrl = (photo) => {
+        if (!photo) return '/assets/user.png';
+        if (/^https?:\/\//i.test(photo)) return photo;
+        let origin = '';
+        try {
+            const base = axiosInstance?.defaults?.baseURL || '';
+            origin = base ? new URL(base).origin : '';
+        } catch {}
+        const path = photo.includes('/') ? photo.replace(/^\/+/, '') : `uploads/dase/users/${photo}`;
+        return origin ? `${origin}/${path}` : `/${path}`;
+    };
+
 	
 	const handleLogout = () => {
 		localStorage.removeItem('auth_data');
@@ -469,8 +482,8 @@ export default function Header({ title, onToggleSidebar }) {
 
 									<div className="dropdown ms-sm-3 header-item topbar-user">
 										<button type="button" className="btn" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-											<span className="d-flex align-items-center">
-												<img className="rounded-circle header-profile-user" src={UsersAvater2} alt="" />
+                                            <span className="d-flex align-items-center">
+                                                <img className="rounded-circle header-profile-user" src={resolveImageUrl(profile_photo)} alt="" />
 												<span className="text-start ms-xl-2">
 													<span className="d-none d-xl-inline-block ms-1 fw-medium user-name-text">
 														{first_name && last_name ? `${first_name} ${last_name}` : 'Loading...'}
