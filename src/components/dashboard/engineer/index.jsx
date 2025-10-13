@@ -4,6 +4,19 @@ import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
+// Resolve profile photo to full backend URL with fallback
+function resolveImageUrl(photo) {
+    if (!photo) return '/assets/user.png';
+    if (/^https?:\/\//i.test(photo)) return photo;
+    let origin = '';
+    try {
+        const base = axiosInstance?.defaults?.baseURL || '';
+        origin = base ? new URL(base).origin : '';
+    } catch {}
+    const path = photo.includes('/') ? photo.replace(/^\/+/, '') : `uploads/dase/users/${photo}`;
+    return origin ? `${origin}/${path}` : `/${path}`;
+}
+
 export default function Engineer() {
     const [engineers, setEngineers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -27,8 +40,12 @@ export default function Engineer() {
         try {
             const response = await axiosInstance.get(`/engineers?rating=5&date_order=asc&name_order=asc`);
             const list = Array.isArray(response?.data?.data) ? response.data.data : [];
-            setEngineers(list);
-            setFilteredEngineers(list);
+            const normalized = list.map(e => ({
+                ...e,
+                profile_photo: resolveImageUrl(e.profile_photo),
+            }));
+            setEngineers(normalized);
+            setFilteredEngineers(normalized);
         } catch (error) {
             toast.error('Failed to fetch engineers');
             setEngineers([]);
@@ -88,7 +105,7 @@ export default function Engineer() {
                                             <div className="card-body">
                                                 <div className="text-center">
                                                     <div className="profile-user position-relative d-inline-block mx-auto mb-4">
-                                                        <img src={engineer.profile_photo} className="rounded-circle avatar-xl img-thumbnail user-profile-image" alt="user-profile-image" />
+                                                        <img src={engineer.profile_photo || resolveImageUrl(engineer.profile_photo)} className="rounded-circle avatar-xl img-thumbnail user-profile-image" alt="user-profile-image" />
                                                     </div>
                                                     
                                                         <h5 className="fs-16 mb-1">{engineer.first_name} {engineer.last_name}</h5>
