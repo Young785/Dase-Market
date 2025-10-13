@@ -260,16 +260,16 @@ export default function Register() {
     setIsUploading(true)
     setLoading(true)
 
-    const role = activeTab
-    const updatedFormData = { ...formData, role: role }
+    const selectedRole = activeTab === 'client' ? 'client' : 'engineer'
+    const updatedFormData = { ...formData, role: selectedRole }
 
     // Conditionally validate fields based on the active tab
     const requiredFields = ["first_name", "last_name", "business_email", "password", "password_confirmation"]
     console.log("Payload after required", formData)
 
-    if (activeTab === "engineer") {
+    if (selectedRole === "engineer") {
       requiredFields.push("business_name")
-    } else if (activeTab === "client") {
+    } else if (selectedRole === "client") {
       requiredFields.push("business_name", "business_website")
     }
 
@@ -294,6 +294,9 @@ export default function Register() {
               dataToSend.append(key, value)
             }
           })
+
+          // Ensure role strictly matches current tab selection
+          dataToSend.set('role', selectedRole)
 
           // Only append profile_photo if it exists
           if (formData.profile_photo) {
