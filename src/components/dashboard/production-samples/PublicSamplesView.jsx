@@ -103,7 +103,7 @@ export default function PublicSamplesView({ engineerId }) {
 
     const handleViewDetails = (sample) => {
         setSelectedSample(sample);
-        fetchReviews(sample.id);
+        fetchReviews(sample.sample_id);
     };
 
     const handleSubmitReview = async (e) => {
@@ -117,7 +117,7 @@ export default function PublicSamplesView({ engineerId }) {
         try {
             setSubmittingReview(true);
             const response = await axiosInstance.post(
-                `/production-samples/${selectedSample.id}/reviews`,
+                `/production-samples/${selectedSample.sample_id}/reviews`,
                 newReview
             );
 
