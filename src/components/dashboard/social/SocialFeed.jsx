@@ -12,7 +12,7 @@ const getBackendBaseUrl = () => {
     return apiUrl.replace(/\/api\/?$/, '');
 };
 
-export default function SocialFeed() {
+export default function SocialFeed({ accountId, hideCreate = false }) {
     const { profile } = useProfile();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -45,7 +45,7 @@ export default function SocialFeed() {
 
     useEffect(() => {
         fetchPosts();
-    }, []);
+    }, [accountId]);
 
     useEffect(() => {
         const modalElement = document.getElementById('createPostModal');
@@ -115,7 +115,7 @@ export default function SocialFeed() {
     const fetchPosts = async () => {
         try {
             setLoading(true);
-            const response = await axiosInstance.get('/status-updates');
+            const response = await axiosInstance.get('/status-updates', { params: accountId ? { account_id: accountId, is_public: 1 } : {} });
             if (response.data.success) {
                 // API returns paginated data
                 const postsData = response.data.data.data || [];
@@ -664,6 +664,7 @@ export default function SocialFeed() {
     return (
         <>
             {/* Create Post Card - Modern Design */}
+            {!hideCreate && (
             <div className="card mb-4 shadow-sm border-0" style={{ 
                 background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
                 borderRadius: '16px',
@@ -790,6 +791,7 @@ export default function SocialFeed() {
                     </div>
                 </div>
             </div>
+            )}
 
             {/* Posts Feed */}
             {posts.length === 0 ? (

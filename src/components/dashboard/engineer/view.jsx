@@ -4,6 +4,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import axiosInstance from '../../../axiosInstance';
 import PublicSamplesView from '../production-samples/PublicSamplesView';
+import SocialFeed from '../social/SocialFeed';
 
 export default function EngineerDetails() {
     const { account_id } = useParams();
@@ -338,36 +339,7 @@ export default function EngineerDetails() {
                                 </div>
                                 {/* Posts Tab */}
                                 <div class="tab-pane fade" id="posts" role="tabpanel">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h5 class="card-title mb-4">Recent Posts</h5>
-                                            {loadingPosts ? (
-                                                <div class="text-muted">Loading...</div>
-                                            ) : posts.length === 0 ? (
-                                                <div class="text-muted">No posts yet.</div>
-                                            ) : (
-                                                <div class="vstack gap-3">
-                                                    {posts.map((p) => (
-                                                        <div key={p.status_update_id || p.id} class="border rounded p-3">
-                                                            <div class="d-flex align-items-center mb-2">
-                                                                <div class="flex-grow-1">
-                                                                    <strong>{engineer.first_name} {engineer.last_name}</strong>
-                                                                    <div class="text-muted small">{new Date(p.created_at || p.published_at).toLocaleString()}</div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="mb-2">{p.content}</div>
-                                                            {p.thumbnail_url && (
-                                                                <img src={p.thumbnail_url} alt="" class="img-fluid rounded" />
-                                                            )}
-                                                            {p.media_url && p.media_type === 'image' && (
-                                                                <img src={p.media_url} alt="" class="img-fluid rounded" />
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
+                                    <SocialFeed accountId={account_id} hideCreate={true} />
                                 </div>
                                 
                         
