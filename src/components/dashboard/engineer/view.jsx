@@ -11,6 +11,8 @@ export default function EngineerDetails() {
     const [engineer, setEngineer] = useState(location.state?.engineer || null);
     const [samplesCount, setSamplesCount] = useState(0);
     const [totalPlays, setTotalPlays] = useState(0);
+    const [posts, setPosts] = useState([]);
+    const [loadingPosts, setLoadingPosts] = useState(false);
 
     useEffect(() => {
         if (!engineer) {
@@ -73,6 +75,27 @@ export default function EngineerDetails() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [account_id]);
 
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                setLoadingPosts(true);
+                const res = await axiosInstance.get(`/status-updates`, { params: { account_id, is_public: 1 } });
+                if (res.data && (res.data.success || res.data.status)) {
+                    const payload = res.data.data;
+                    const list = Array.isArray(payload?.data) ? payload.data : (Array.isArray(payload) ? payload : []);
+                    setPosts(list);
+                } else {
+                    setPosts([]);
+                }
+            } catch {
+                setPosts([]);
+            } finally {
+                setLoadingPosts(false);
+            }
+        };
+        fetchPosts();
+    }, [account_id]);
+
     if (!engineer) return <div>Loading...</div>;
 
 
@@ -126,6 +149,11 @@ export default function EngineerDetails() {
                                             <li class="nav-item" role="presentation">
                                                 <a class="nav-link fw-semibold" data-bs-toggle="tab" href="#production-samples" role="tab" aria-selected="false" tabindex="-1">
                                                     Production Samples
+                                                </a>
+                                            </li>
+                                            <li class="nav-item" role="presentation">
+                                                <a class="nav-link fw-semibold" data-bs-toggle="tab" href="#posts" role="tab" aria-selected="false" tabindex="-1">
+                                                    Posts
                                                 </a>
                                             </li>
                                             
@@ -305,6 +333,39 @@ export default function EngineerDetails() {
                                                 Listen to {engineer.first_name}'s production samples and see their creative work in action.
                                             </p>
                                             <PublicSamplesView engineerId={account_id} />
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* Posts Tab */}
+                                <div class="tab-pane fade" id="posts" role="tabpanel">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title mb-4">Recent Posts</h5>
+                                            {loadingPosts ? (
+                                                <div class="text-muted">Loading...</div>
+                                            ) : posts.length === 0 ? (
+                                                <div class="text-muted">No posts yet.</div>
+                                            ) : (
+                                                <div class="vstack gap-3">
+                                                    {posts.map((p) => (
+                                                        <div key={p.status_update_id || p.id} class="border rounded p-3">
+                                                            <div class="d-flex align-items-center mb-2">
+                                                                <div class="flex-grow-1">
+                                                                    <strong>{engineer.first_name} {engineer.last_name}</strong>
+                                                                    <div class="text-muted small">{new Date(p.created_at || p.published_at).toLocaleString()}</div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mb-2">{p.content}</div>
+                                                            {p.thumbnail_url && (
+                                                                <img src={p.thumbnail_url} alt="" class="img-fluid rounded" />
+                                                            )}
+                                                            {p.media_url && p.media_type === 'image' && (
+                                                                <img src={p.media_url} alt="" class="img-fluid rounded" />
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
