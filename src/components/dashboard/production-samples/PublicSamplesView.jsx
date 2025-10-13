@@ -47,14 +47,14 @@ export default function PublicSamplesView({ engineerId }) {
                 const payload = response.data.data;
                 const list = Array.isArray(payload?.reviews) ? payload.reviews : (Array.isArray(payload) ? payload : []);
                 setReviews(list);
-                // Update selected sample stats using API response
-                if (selectedSample && selectedSample.sample_id === samplePublicId) {
-                    setSelectedSample(prev => ({
-                        ...prev,
-                        rating: typeof payload?.average_rating === 'number' ? payload.average_rating : prev?.rating,
-                        reviews_count: typeof payload?.total_reviews === 'number' ? payload.total_reviews : prev?.reviews_count,
-                    }));
-                }
+                // Update selected sample stats using API response (atomic, based on latest state)
+                setSelectedSample(prev => {
+                    if (!prev || prev.sample_id !== samplePublicId) return prev;
+                    const next = { ...prev };
+                    if (typeof payload?.average_rating === 'number') next.rating = payload.average_rating;
+                    if (typeof payload?.total_reviews === 'number') next.reviews_count = payload.total_reviews;
+                    return next;
+                });
             } else {
                 setReviews([]);
             }
@@ -122,7 +122,13 @@ export default function PublicSamplesView({ engineerId }) {
     };
 
     const handleViewDetails = (sample) => {
-        setSelectedSample(sample);
+        // Initialize with previously known counts if present
+        setSelectedSample({
+            ...sample,
+            rating: typeof sample.rating === 'number' ? sample.rating : (sample.rating || null),
+            reviews_count: typeof sample.reviews_count === 'number' ? sample.reviews_count : 0,
+        });
+        // Always refetch to get latest average_rating and total_reviews
         fetchReviews(sample.sample_id);
     };
 
