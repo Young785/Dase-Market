@@ -118,14 +118,17 @@ export default function ChatApp() {
         setIsLoading(true);
         try {
             const response = await axiosInstance.get('/user/messages/contacts');
+            console.log('Contacts API Response:', response.data);
+            
             if (response.data) {
                 const contactsData = response.data.contacts || [];
+                console.log('Contacts loaded:', contactsData.length, 'contacts');
                 setContacts(contactsData);
                 setFilteredContacts(contactsData);
             }
         } catch (error) {
             toast.error('Failed to fetch contacts');
-            console.error(error);
+            console.error('Contacts fetch error:', error);
         } finally {
             setIsLoading(false);
         }
