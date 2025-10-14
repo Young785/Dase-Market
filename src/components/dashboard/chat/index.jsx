@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axiosInstance from '../../../axiosInstance';
 import toast, { Toaster } from 'react-hot-toast';
 import EmojiPicker from 'emoji-picker-react';
@@ -53,6 +53,7 @@ export default function ChatApp() {
     const [messageSearchQuery, setMessageSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [showSearchResults, setShowSearchResults] = useState(false);
+    const [receiverRole, setReceiverRole] = useState(null);
     
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -166,6 +167,11 @@ export default function ChatApp() {
                     console.log('User data from conversation:', userData);
                     setSelectedContact(userData);
                     setReceiverId(userData.account_id);
+                    
+                    // Store receiver's role for profile link logic
+                    const role = userData.role?.name || userData.account_type || 'client';
+                    setReceiverRole(role.toLowerCase());
+                    console.log('Receiver role:', role);
                 }
                 
                 if (!silent && messagesData.length === 0) {
@@ -184,8 +190,14 @@ export default function ChatApp() {
 
   const handleContactClick = (contact) => {
         const contactId = contact.receiver_id || contact.receiver?.account_id;
+        const contactData = contact.receiver || contact;
         setReceiverId(contactId);
-        setSelectedContact(contact.receiver || contact);
+        setSelectedContact(contactData);
+        
+        // Set receiver role
+        const role = contactData.role?.name || contactData.account_type || 'client';
+        setReceiverRole(role.toLowerCase());
+        
         fetchConversation(contactId);
         setShowSearchResults(false);
         setMessageSearchQuery('');
@@ -575,19 +587,40 @@ export default function ChatApp() {
                         {/* Chat Header */}
                         <div className="chat-header">
                             <div className="user-info">
-                                <div className="avatar">
-                                                        <img 
-                                                            src={resolveImageUrl(selectedContact.profile_photo)} 
-                                                            alt={selectedContact.business_name || selectedContact.first_name} 
-                                                        />
-                                                        <span className="status-dot online"></span>
-                                </div>
+                                {receiverRole === 'engineer' ? (
+                                    <Link to={`/dase/engineer/view/${selectedContact.account_id}`} className="avatar" style={{ textDecoration: 'none' }}>
+                                        <img 
+                                            src={resolveImageUrl(selectedContact.profile_photo)} 
+                                            alt={selectedContact.business_name || selectedContact.first_name}
+                                            style={{ cursor: 'pointer' }}
+                                        />
+                                        <span className="status-dot online"></span>
+                                    </Link>
+                                ) : (
+                                    <div className="avatar">
+                                        <img 
+                                            src={resolveImageUrl(selectedContact.profile_photo)} 
+                                            alt={selectedContact.business_name || selectedContact.first_name} 
+                                        />
+                                        <span className="status-dot online"></span>
+                                    </div>
+                                )}
                                 <div>
-                                                        <h3>{selectedContact.business_name || `${selectedContact.first_name || ''} ${selectedContact.last_name || ''}`}</h3>
-                                                        <p className="text-muted small">
-                                                            {typingUsers[receiverId] ? 'Typing...' : 'Online'}
-                                                        </p>
-                </div>
+                                    {receiverRole === 'engineer' ? (
+                                        <Link to={`/dase/engineer/view/${selectedContact.account_id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                            <h3 style={{ cursor: 'pointer', margin: 0 }}>
+                                                {selectedContact.business_name || `${selectedContact.first_name || ''} ${selectedContact.last_name || ''}`}
+                                            </h3>
+                                        </Link>
+                                    ) : (
+                                        <h3 style={{ margin: 0 }}>
+                                            {selectedContact.business_name || `${selectedContact.first_name || ''} ${selectedContact.last_name || ''}`}
+                                        </h3>
+                                    )}
+                                    <p className="text-muted small" style={{ margin: 0 }}>
+                                        {typingUsers[receiverId] ? 'Typing...' : receiverRole === 'engineer' ? 'Engineer • Online' : 'Online'}
+                                    </p>
+                                </div>
                             </div>
                             <div className="header-actions">
                                                     <div className="search-messages-container" style={{ position: 'relative', marginRight: '10px' }}>
@@ -689,7 +722,30 @@ export default function ChatApp() {
                                                                 >
                                                                     {!isSent && (
                                                                         <div className="message-avatar">
-                                                                            <img src={senderPhoto} alt={senderName} />
+                                                                            {receiverRole === 'engineer' ? (
+                                                                                <Link to={`/dase/engineer/view/${msg.sender_id}`}>
+                                                                                    <img 
+                                                                                        src={senderPhoto} 
+                                                                                        alt={senderName}
+                                                                                        style={{ cursor: 'pointer' }}
+                                                                                        title={`View ${senderName}'s profile`}
+                                                                                    />
+                                                                                </Link>
+                                                                            ) : (
+                                                                                <img src={senderPhoto} alt={senderName} />
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                    {isSent && (
+                                                                        <div className="message-avatar" style={{ order: 2, marginLeft: '8px', marginRight: 0 }}>
+                                                                            <Link to="/dase/profile">
+                                                                                <img 
+                                                                                    src={senderPhoto} 
+                                                                                    alt="You"
+                                                                                    style={{ cursor: 'pointer' }}
+                                                                                    title="View your profile"
+                                                                                />
+                                                                            </Link>
                                                                         </div>
                                                                     )}
                                                                     <div className="message-content-wrapper">
