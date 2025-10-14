@@ -11,13 +11,16 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/" replace />;
   }
 
-  // If roles are specified, ensure the user has one of them
+  // If roles are specified, ensure the user matches by role OR account_type/user_type
   if (Array.isArray(allowedRoles) && allowedRoles.length > 0) {
     try {
       const { user } = JSON.parse(authRaw);
-      const userRole = (user?.role || '').toString().toLowerCase();
+      const candidates = [user?.role, user?.account_type, user?.user_type]
+        .filter(Boolean)
+        .map(v => v.toString().toLowerCase());
       const normalizedAllowed = allowedRoles.map(r => r.toString().toLowerCase());
-      if (!normalizedAllowed.includes(userRole)) {
+      const isAllowed = candidates.some(c => normalizedAllowed.includes(c));
+      if (!isAllowed) {
         // Unauthorized for this route; redirect to dashboard
         return <Navigate to="/dase/dashboard" state={{ from: location }} replace />;
       }

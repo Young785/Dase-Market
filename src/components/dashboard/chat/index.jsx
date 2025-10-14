@@ -46,11 +46,27 @@ export default function ChatApp() {
     const messageInputRef = useRef(null);
     const pollingIntervalRef = useRef(null);
 
-  useEffect(() => {
+    useEffect(() => {
         // Get current user ID from localStorage or auth
         const userId = localStorage.getItem('account_id');
         setCurrentUserId(userId);
         fetchContacts();
+
+        // Auto-open conversation if query param ?user=<account_id>
+        const params = new URLSearchParams(window.location.search);
+        const userParam = params.get('user');
+        if (userParam) {
+            // Poll contacts briefly until loaded, then open
+            const openWhenReady = setInterval(() => {
+                const contact = contacts.find(c => (c.receiver_id || c.receiver?.account_id || c.account_id) == userParam);
+                if (contact) {
+                    clearInterval(openWhenReady);
+                    handleContactClick(contact);
+                }
+            }, 300);
+            // Stop trying after 5s
+            setTimeout(() => clearInterval(openWhenReady), 5000);
+        }
     }, []);
 
     useEffect(() => {

@@ -137,6 +137,14 @@ export default function EngineerDetails() {
                                                 <div class="d-flex align-items-center gap-3">
                                                     <span class="badge bg-secondary-subtle text-secondary">{samplesCount} Samples</span>
                                                     <span class="badge bg-secondary-subtle text-secondary">{totalPlays} Plays</span>
+                                                    <a 
+                                                        href={`/dase/chat?user=${account_id}`}
+                                                        class="btn btn-primary btn-sm"
+                                                        title="Chat now"
+                                                    >
+                                                        <i class="ri-message-3-line me-1"></i>
+                                                        Chat now
+                                                    </a>
                                                 </div>
                                             </div>
                                         </div>

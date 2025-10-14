@@ -342,7 +342,8 @@ export default function SocialFeed({ accountId, hideCreate = false }) {
     };
 
     const handleSharePost = (post) => {
-        const shareUrl = `${window.location.origin}/social?post=${post.public_id || post.status_update_id}`;
+        const pid = post?.public_id || post?.status_update_id || post?.id;
+        const shareUrl = `${window.location.origin}/social?post=${pid}`;
         
         if (navigator.share) {
             navigator.share({
@@ -1300,12 +1301,22 @@ export default function SocialFeed({ accountId, hideCreate = false }) {
 
             {/* Post Details Modal with Comments */}
             {selectedPost && (
-                <div className="modal fade" id="postDetailsModal" tabIndex="-1">
+            <div className="modal fade" id="postDetailsModal" tabIndex="-1">
                     <div className="modal-dialog modal-lg modal-dialog-scrollable">
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title">{selectedPost.user?.name ? `${selectedPost.user.name}'s Post` : 'Post'}</h5>
-                                <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+                                <div className="d-flex align-items-center gap-2">
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-sm btn-outline-secondary"
+                                        onClick={() => handleSharePost(selectedPost)}
+                                        title="Share this post"
+                                    >
+                                        <Share2 size={16} className="me-1" /> Share
+                                    </button>
+                                    <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
                             </div>
                             <div className="modal-body">
                                 {/* Post Content */}
@@ -1336,25 +1347,24 @@ export default function SocialFeed({ accountId, hideCreate = false }) {
                                     </div>
                                     
                                     {selectedPost.content && <p>{selectedPost.content}</p>}
-                                    {/* Show static preview only: for image show full image; for audio/video show thumbnail only (no player) */}
-                                    {selectedPost.media_type === 'image' && (
-                                        <div style={{ maxHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <img 
-                                                src={getModalPreviewUrl(selectedPost)} 
-                                                alt="Media" 
-                                                className="rounded"
-                                                style={{ maxWidth: '100%', maxHeight: '70vh', width: '100%', height: 'auto', objectFit: 'contain' }}
-                                            />
-                                        </div>
-                                    )}
-                                    {selectedPost.media_type !== 'image' && selectedPost.thumbnail_url && (
-                                        <div style={{ maxHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <img 
-                                                src={getModalPreviewUrl(selectedPost)} 
-                                                alt="Thumbnail" 
-                                                className="rounded"
-                                                style={{ maxWidth: '100%', maxHeight: '70vh', width: '100%', height: 'auto', objectFit: 'contain' }}
-                                            />
+                                    {/* Responsive, smaller preview area */}
+                                    {(selectedPost.media_type === 'image' || (selectedPost.media_type !== 'image' && selectedPost.thumbnail_url)) && (
+                                        <div 
+                                            className="mx-auto"
+                                            style={{ 
+                                                maxWidth: '720px',
+                                                width: '100%',
+                                                padding: '4px'
+                                            }}
+                                        >
+                                            <div style={{ maxHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <img 
+                                                    src={getModalPreviewUrl(selectedPost)} 
+                                                    alt={selectedPost.media_type === 'image' ? 'Media' : 'Thumbnail'} 
+                                                    className="img-fluid rounded"
+                                                    style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
+                                                />
+                                            </div>
                                         </div>
                                     )}
                                 </div>

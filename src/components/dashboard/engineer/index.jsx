@@ -100,21 +100,27 @@ export default function Engineer() {
                                 filteredEngineers.map(engineer => (
                                     <div key={engineer.account_id} className="col-xxl-3 col-sm-6 project-card">
                                         <div className="card card-height-100">
-                                        <Link to={`view/${engineer.account_id}`} state={{ engineer }} className="text-decoration-none">
-                                            
-                                            <div className="card-body">
-                                                <div className="text-center">
-                                                    <div className="profile-user position-relative d-inline-block mx-auto mb-4">
-                                                        <img src={engineer.profile_photo || resolveImageUrl(engineer.profile_photo)} className="rounded-circle avatar-xl img-thumbnail user-profile-image" alt="user-profile-image" />
-                                                    </div>
-                                                    
+                                            <Link to={`view/${engineer.account_id}`} state={{ engineer }} className="text-decoration-none">
+                                                <div className="card-body">
+                                                    <div className="text-center">
+                                                        <div className="profile-user position-relative d-inline-block mx-auto mb-4">
+                                                            <img src={engineer.profile_photo || resolveImageUrl(engineer.profile_photo)} className="rounded-circle avatar-xl img-thumbnail user-profile-image" alt="user-profile-image" />
+                                                        </div>
                                                         <h5 className="fs-16 mb-1">{engineer.first_name} {engineer.last_name}</h5>
-                                                   
-                                                    <p className="text-muted mb-0">{engineer.business_name}</p>
-                                                    <p className="text-muted mb-0">{engineer.work_experience}</p>
+                                                        <p className="text-muted mb-0">{engineer.business_name}</p>
+                                                        <p className="text-muted mb-0">{engineer.work_experience}</p>
+                                                    </div>
                                                 </div>
-                                            </div>
                                             </Link>
+                                            <div className="card-footer bg-transparent border-top">
+                                                <a 
+                                                    href={`/dase/chat?user=${engineer.account_id}`}
+                                                    className="btn btn-outline-primary btn-sm w-100"
+                                                >
+                                                    <i className="ri-message-3-line me-1"></i>
+                                                    Chat now
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 ))
