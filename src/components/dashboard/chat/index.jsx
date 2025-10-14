@@ -6,6 +6,7 @@ import EmojiPicker from 'emoji-picker-react';
 import { Grid } from '@giphy/react-components';
 import { GiphyFetch } from '@giphy/js-fetch-api';
 import './ChatApp.css';
+import { useProfile } from '../../../context/ProfileContext';
 
 // Import icons
 import { 
@@ -32,6 +33,7 @@ function resolveImageUrl(photo) {
 }
 
 export default function ChatApp() {
+    const { profile } = useProfile();
     const [searchQuery, setSearchQuery] = useState('');
     const [messages, setMessages] = useState([]);
     const [contacts, setContacts] = useState([]);
@@ -61,8 +63,10 @@ export default function ChatApp() {
     const pollingIntervalRef = useRef(null);
 
     useEffect(() => {
-        // Get current user ID from localStorage or auth
-        const userId = localStorage.getItem('account_id');
+        // Prefer ProfileContext; fallback to localStorage
+        const fromProfile = profile?.account_id;
+        const fromStorage = localStorage.getItem('account_id');
+        const userId = fromProfile || fromStorage || null;
         setCurrentUserId(userId);
         fetchContacts();
 
