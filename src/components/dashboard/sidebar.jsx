@@ -10,6 +10,7 @@ import {LogoSm} from '../../assets/images';
 import {LogoDark} from '../../assets/images';
 import { LogoLight } from '../../assets/images';
 import { useProfile } from '../../context/ProfileContext';
+import axiosInstance from '../../axiosInstance';
 
 
 
@@ -18,6 +19,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
     const navigate = useNavigate();
     const location = useLocation();
     const [activeLink, setActiveLink] = useState(location.pathname);
+    const [unreadMessageCount, setUnreadMessageCount] = useState(0);
     const { profile } = useProfile();
     const roleName = (profile?.role?.name || profile?.account_type || profile?.role || '').toString().toLowerCase();
     const isEngineer = roleName === 'engineer';
@@ -74,6 +76,26 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                 setTitle('Welcome, Lawal Wahab');
         }
     }, [location.pathname, setTitle]);
+
+    useEffect(() => {
+        const fetchUnreadMessageCount = async () => {
+            try {
+                const res = await axiosInstance.get('/user/messages/unread-count');
+                if (res.data && res.data.success) {
+                    setUnreadMessageCount(res.data.unread_count || 0);
+                }
+            } catch (err) {
+                console.error('Failed to fetch unread message count:', err);
+            }
+        };
+
+        fetchUnreadMessageCount();
+        
+        // Poll for unread messages every 5 seconds
+        const intervalId = setInterval(fetchUnreadMessageCount, 5000);
+        
+        return () => clearInterval(intervalId);
+    }, []);
 
     function isActive(paths) {
         return paths.some(path => window.location.pathname === path) ? "active" : "";
@@ -164,13 +186,19 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                         
 
                         <li className={`nav-item ${isActive(["/dase/chat"])}`}>
-                            <Link to="/dase/chat" className={`nav-link ${isActive(["/dase/chat"])}`} data-key="t-chat">
-                                <span data-key="t-chat">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V4a2 2 0 012-2h14a2 2 0 012 2v11z" stroke="#6882B6" strokeWidth="2"/>
-                                    </svg>
-
-                                    Chat
+                            <Link to="/dase/chat" className={`nav-link ${isActive(["/dase/chat"])} position-relative`} data-key="t-chat">
+                                <span data-key="t-chat" className="d-flex align-items-center justify-content-between w-100">
+                                    <span className="d-flex align-items-center">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M21 15a2 2 0 01-2 2H7l-4 4V4a2 2 0 012-2h14a2 2 0 012 2v11z" stroke="#6882B6" strokeWidth="2"/>
+                                        </svg>
+                                        Chat
+                                    </span>
+                                    {unreadMessageCount > 0 && (
+                                        <span className="badge bg-danger rounded-pill" style={{ fontSize: '10px', padding: '2px 6px' }}>
+                                            {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+                                        </span>
+                                    )}
                                 </span>
                             </Link>
                         </li>

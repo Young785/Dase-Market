@@ -19,6 +19,7 @@ export default function Header({ title, onToggleSidebar }) {
 	const { profile } = useProfile();
     const [notifications, setNotifications] = useState([]);
     const [loadingNotifications, setLoadingNotifications] = useState(true);
+	const [unreadMessageCount, setUnreadMessageCount] = useState(0);
 	const [showAllNotificationsModal, setShowAllNotificationsModal] = useState(false);
 	const [searchTerm, setSearchTerm] = useState('');
 	const [searchLoading, setSearchLoading] = useState(false);
@@ -101,7 +102,25 @@ export default function Header({ title, onToggleSidebar }) {
 				setLoadingNotifications(false);
 			}
 		};
+		
+		const fetchUnreadMessageCount = async () => {
+			try {
+				const res = await axiosInstance.get('/user/messages/unread-count');
+				if (res.data && res.data.success) {
+					setUnreadMessageCount(res.data.unread_count || 0);
+				}
+			} catch (err) {
+				console.error('Failed to fetch unread message count:', err);
+			}
+		};
+		
 		fetchNotifications();
+		fetchUnreadMessageCount();
+		
+		// Poll for unread messages every 5 seconds
+		const intervalId = setInterval(fetchUnreadMessageCount, 5000);
+		
+		return () => clearInterval(intervalId);
 	}, []);
 
     // Dark theme temporarily disabled
@@ -264,8 +283,19 @@ export default function Header({ title, onToggleSidebar }) {
 											</form>
 										</div>
 									</div>
-
 									
+									{/* Unread Messages Badge */}
+									<div className="ms-1 header-item d-none d-sm-flex">
+										<Link to="/dase/chat" className="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle position-relative">
+											<i className='bx bx-message-square-dots fs-22'></i>
+											{unreadMessageCount > 0 && (
+												<span className="position-absolute topbar-badge fs-10 translate-middle badge rounded-pill bg-danger">
+													{unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+													<span className="visually-hidden">unread messages</span>
+												</span>
+											)}
+										</Link>
+									</div>
 
                                     {/* Dark theme toggle temporarily disabled */}
                                     {/* <div className="ms-1 header-item d-none d-sm-flex">
