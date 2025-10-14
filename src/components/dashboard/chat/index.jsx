@@ -18,6 +18,19 @@ import {
 // Initialize Giphy Fetch with API key from environment variable
 const gf = new GiphyFetch(import.meta.env.VITE_GIPHY_API_KEY || 'YOUR_GIPHY_API_KEY');
 
+// Resolve profile photo to full backend URL with fallback
+function resolveImageUrl(photo) {
+    if (!photo) return '/assets/user.png';
+    if (/^https?:\/\//i.test(photo)) return photo;
+    let origin = '';
+    try {
+        const base = axiosInstance?.defaults?.baseURL || '';
+        origin = base ? new URL(base).origin : '';
+    } catch {}
+    const path = photo.includes('/') ? photo.replace(/^\/+/, '') : `uploads/dase/users/${photo}`;
+    return origin ? `${origin}/${path}` : `/${path}`;
+}
+
 export default function ChatApp() {
     const [searchQuery, setSearchQuery] = useState('');
     const [messages, setMessages] = useState([]);
@@ -137,17 +150,30 @@ export default function ChatApp() {
         if (!silent) setIsLoading(true);
         try {
             const response = await axiosInstance.get(`/user/messages/conversations/${contactId}`);
+            console.log('Conversation API Response:', response.data);
+            
             if (response.data.success || response.data.status) {
-                setMessages(response.data.data?.messages || []);
-                if (!silent && response.data.data?.messages?.length === 0) {
-                    // Empty conversation - this is normal for new chats
+                const messagesData = response.data.data?.messages || [];
+                setMessages(messagesData);
+                console.log('Messages set:', messagesData.length, 'messages');
+                
+                // If user data is provided in the response, use it to set the selected contact
+                if (response.data.data?.user) {
+                    const userData = response.data.data.user;
+                    console.log('User data from conversation:', userData);
+                    setSelectedContact(userData);
+                    setReceiverId(userData.account_id);
+                }
+                
+                if (!silent && messagesData.length === 0) {
+                    console.log('Empty conversation - ready for new messages');
                 }
             } else {
                 if (!silent) toast.error(response.data.message);
             }
         } catch (error) {
             if (!silent) toast.error('Failed to fetch conversation');
-            console.error(error);
+            console.error('Conversation fetch error:', error);
         } finally {
             if (!silent) setIsLoading(false);
         }
@@ -476,7 +502,7 @@ export default function ChatApp() {
                                                             const contactName = contactData.business_name || 
                                                                               `${contactData.first_name || ''} ${contactData.last_name || ''}`.trim() || 
                                                                               'Unknown User';
-                                                            const contactPhoto = contactData.profile_photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(contactName);
+                                                            const contactPhoto = resolveImageUrl(contactData.profile_photo);
                                                             const lastMessage = contact.message || 'Start a conversation';
                                                             const unreadCount = contact.unread_count || 0;
 
@@ -515,7 +541,7 @@ export default function ChatApp() {
                                                     const contactName = contactData.business_name || 
                                                                       `${contactData.first_name || ''} ${contactData.last_name || ''}`.trim() || 
                                                                       'Unknown User';
-                                                    const contactPhoto = contactData.profile_photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(contactName);
+                                                    const contactPhoto = resolveImageUrl(contactData.profile_photo);
 
                                                     return (
                                                         <li 
@@ -548,7 +574,7 @@ export default function ChatApp() {
                             <div className="user-info">
                                 <div className="avatar">
                                                         <img 
-                                                            src={selectedContact.profile_photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedContact.business_name || selectedContact.first_name || 'U')}`} 
+                                                            src={resolveImageUrl(selectedContact.profile_photo)} 
                                                             alt={selectedContact.business_name || selectedContact.first_name} 
                                                         />
                                                         <span className="status-dot online"></span>
@@ -651,8 +677,7 @@ export default function ChatApp() {
                                                             const senderName = msg.sender?.business_name || 
                                                                              `${msg.sender?.first_name || ''} ${msg.sender?.last_name || ''}`.trim() ||
                                                                              'Unknown';
-                                                            const senderPhoto = msg.sender?.profile_photo || 
-                                                                              `https://ui-avatars.com/api/?name=${encodeURIComponent(senderName)}`;
+                                                            const senderPhoto = resolveImageUrl(msg.sender?.profile_photo);
 
                                                             return (
                                         <div 
