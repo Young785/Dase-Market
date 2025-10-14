@@ -56,7 +56,15 @@ export default function ChatApp() {
         const params = new URLSearchParams(window.location.search);
         const userParam = params.get('user');
         if (userParam) {
-            // Poll contacts briefly until loaded, then open
+            // Try fetch a single conversation directly in case contacts are empty
+            fetchConversation(userParam).then(() => {
+                // Set a synthetic selected contact object for header if not present in list
+                setReceiverId(userParam);
+                const found = contacts.find(c => (c.receiver_id || c.receiver?.account_id || c.account_id) == userParam);
+                setSelectedContact(found?.receiver || found || { account_id: userParam, first_name: 'User' });
+            }).catch(() => {});
+
+            // Also poll contacts briefly until loaded, then prefer the real contact
             const openWhenReady = setInterval(() => {
                 const contact = contacts.find(c => (c.receiver_id || c.receiver?.account_id || c.account_id) == userParam);
                 if (contact) {
@@ -129,15 +137,18 @@ export default function ChatApp() {
         if (!silent) setIsLoading(true);
         try {
             const response = await axiosInstance.get(`/user/messages/conversations/${contactId}`);
-            if (response.data.status) {
-                setMessages(response.data.data.messages || []);
-      } else {
+            if (response.data.success || response.data.status) {
+                setMessages(response.data.data?.messages || []);
+                if (!silent && response.data.data?.messages?.length === 0) {
+                    // Empty conversation - this is normal for new chats
+                }
+            } else {
                 if (!silent) toast.error(response.data.message);
-      }
-    } catch (error) {
+            }
+        } catch (error) {
             if (!silent) toast.error('Failed to fetch conversation');
             console.error(error);
-    } finally {
+        } finally {
             if (!silent) setIsLoading(false);
         }
     };
@@ -614,7 +625,28 @@ export default function ChatApp() {
                                 </div>
                             ) : (
                                 <div className="messages">
-                                                        {(showSearchResults ? searchResults : messages).map((msg) => {
+                                                        {(showSearchResults ? searchResults : messages).length === 0 ? (
+                                                            <div style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                height: '100%',
+                                                                color: '#999',
+                                                                textAlign: 'center',
+                                                                padding: '20px'
+                                                            }}>
+                                                                <div>
+                                                                    <i className="ri-chat-3-line" style={{ fontSize: '48px', marginBottom: '12px', opacity: 0.5 }}></i>
+                                                                    <p style={{ margin: 0, fontSize: '16px' }}>
+                                                                        {showSearchResults ? 'No messages found' : 'No messages yet'}
+                                                                    </p>
+                                                                    <p style={{ margin: '8px 0 0 0', fontSize: '14px', opacity: 0.7 }}>
+                                                                        {showSearchResults ? 'Try a different search term' : 'Start the conversation by sending a message'}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            (showSearchResults ? searchResults : messages).map((msg) => {
                                                             const isSent = msg.sender_id === currentUserId;
                                                             const senderName = msg.sender?.business_name || 
                                                                              `${msg.sender?.first_name || ''} ${msg.sender?.last_name || ''}`.trim() ||
@@ -736,7 +768,8 @@ export default function ChatApp() {
                                             </div>
                                         </div>
                                                             );
-                                                        })}
+                                                        })
+                                                        )}
                                                         <div ref={messagesEndRef} />
                             </div>
                           )}
