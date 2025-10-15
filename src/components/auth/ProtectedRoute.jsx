@@ -15,9 +15,20 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   if (Array.isArray(allowedRoles) && allowedRoles.length > 0) {
     try {
       const { user } = JSON.parse(authRaw);
-      const candidates = [user?.role, user?.account_type, user?.user_type]
-        .filter(Boolean)
-        .map(v => v.toString().toLowerCase());
+      // Normalize various possible shapes from backend
+      const rawCandidates = [
+        user?.role,
+        user?.role?.name,
+        user?.role_name,
+        user?.account_type,
+        user?.account_type?.name,
+        user?.user_type,
+        user?.user_type?.name,
+      ].filter(Boolean);
+
+      const candidates = rawCandidates.map((v) =>
+        typeof v === 'string' ? v.toLowerCase() : String(v).toLowerCase()
+      );
       const normalizedAllowed = allowedRoles.map(r => r.toString().toLowerCase());
       const isAllowed = candidates.some(c => normalizedAllowed.includes(c));
       if (!isAllowed) {
