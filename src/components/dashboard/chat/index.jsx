@@ -61,10 +61,14 @@ export default function ChatApp() {
     const [receiverRole, setReceiverRole] = useState(null);
     
     const messagesEndRef = useRef(null);
+    const messagesContainerRef = useRef(null);
     const fileInputRef = useRef(null);
     const messageInputRef = useRef(null);
     const pollingIntervalRef = useRef(null);
     const actionsMenuRef = useRef(null);
+    const lastMessageIdRef = useRef(null);
+    const userSentMessageRef = useRef(false);
+    const isNearBottomRef = useRef(true);
 
     useEffect(() => {
         // Prefer ProfileContext; fallback to localStorage
@@ -111,8 +115,25 @@ export default function ChatApp() {
     }, []);
 
     useEffect(() => {
-        // Auto-scroll to bottom when new messages arrive
-        scrollToBottom();
+        // Only scroll when there is a new message OR the user is already near the bottom
+        const container = messagesContainerRef.current;
+        if (!container) return;
+
+        const lastId = messages[messages.length - 1]?.id || null;
+        const lastChanged = lastId !== lastMessageIdRef.current;
+
+        // measure if user is near bottom (within 120px)
+        const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+        const nearBottomNow = distanceFromBottom < 120;
+        isNearBottomRef.current = nearBottomNow;
+
+        if (lastChanged) {
+            lastMessageIdRef.current = lastId;
+            if (userSentMessageRef.current || nearBottomNow) {
+                scrollToBottom();
+            }
+            userSentMessageRef.current = false;
+        }
     }, [messages]);
 
     useEffect(() => {
@@ -133,6 +154,18 @@ export default function ChatApp() {
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
+
+    // Keep track of user scroll position to prevent jumpiness while reading
+    useEffect(() => {
+        const container = messagesContainerRef.current;
+        if (!container) return;
+        const onScroll = () => {
+            const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+            isNearBottomRef.current = distanceFromBottom < 120;
+        };
+        container.addEventListener('scroll', onScroll, { passive: true });
+        return () => container.removeEventListener('scroll', onScroll);
+    }, []);
 
     const fetchContacts = async () => {
         setIsLoading(true);
@@ -177,7 +210,15 @@ export default function ChatApp() {
             
             if (response.data.success || response.data.status) {
                 const messagesData = response.data.data?.messages || [];
-                setMessages(messagesData);
+                // Avoid unnecessary re-renders when data didn't change (prevents scroll jumps)
+                setMessages(prev => {
+                    if (prev.length === messagesData.length) {
+                        const prevLast = prev[prev.length - 1]?.id;
+                        const nextLast = messagesData[messagesData.length - 1]?.id;
+                        if (prevLast === nextLast) return prev;
+                    }
+                    return messagesData;
+                });
                 console.log('Messages set:', messagesData.length, 'messages');
                 
                 // If user data is provided in the response, use it to set the selected contact
@@ -296,6 +337,7 @@ export default function ChatApp() {
 
             if (response.data.message === 'Message sent successfully') {
                 // Add the new message to the list
+                userSentMessageRef.current = true;
                 fetchConversation(receiverId, true);
                 toast.success('Message sent successfully');
                 setMessageToSend('');
@@ -647,8 +689,13 @@ export default function ChatApp() {
                                                             type="text"
                                                             placeholder="Search in chat..."
                                                             value={messageSearchQuery}
-                                                            onChange={(e) => setMessageSearchQuery(e.target.value)}
-                                                            onKeyPress={(e) => e.key === 'Enter' && handleSearchMessages()}
+                                        onChange={(e) => setMessageSearchQuery(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                handleSearchMessages();
+                                            }
+                                        }}
                                                             style={{
                                                                 padding: '6px 12px',
                                                                 borderRadius: '20px',
@@ -744,7 +791,7 @@ export default function ChatApp() {
                                             )}
                         
                         {/* Messages Area */}
-                        <div className="messages-container">
+                        <div className="messages-container" ref={messagesContainerRef}>
                             {isLoading ? (
                                 <div className="loading-spinner">
                                     <div className="spinner"></div>
@@ -773,7 +820,7 @@ export default function ChatApp() {
                                                             </div>
                                                         ) : (
                                                             (showSearchResults ? searchResults : messages).map((msg) => {
-                                                            const isSent = msg.sender_id === currentUserId;
+                                                            const isSent = String(msg.sender_id) === String(currentUserId);
                                                             const senderName = msg.sender?.business_name || 
                                                                              `${msg.sender?.first_name || ''} ${msg.sender?.last_name || ''}`.trim() ||
                                                                              'Unknown';

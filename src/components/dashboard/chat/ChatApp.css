@@ -347,11 +347,13 @@
   }
   
   .message.received {
-    align-self: flex-start;
+  align-self: flex-start;
+  margin-right: auto; /* stay on left */
   }
   
   .message.sent {
-    align-self: flex-end;
+  align-self: flex-end;
+  margin-left: auto; /* stay on right */
   }
   
   .message-content {
