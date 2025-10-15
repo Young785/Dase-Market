@@ -10,23 +10,24 @@
     /* overflow: hidden; */
   }
   
-  .chat-wrapper {
-    display: flex;
-    height: 100vh;
-    width: 100%;
-    overflow: hidden;
-  }
+.chat-wrapper {
+  display: flex;
+  /* Only fill the area below the fixed topbar so the page itself doesn't scroll */
+  height: calc(100vh - 70px);
+  width: 100%;
+  overflow: hidden;
+}
   
   /* Sidebar styles */
-  .chat-sidebar {
-    width: 320px;
-    height: 100vh;
-    background-color: #f8f9fa;
-    border-right: 1px solid #e9ecef;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+.chat-sidebar {
+  width: 320px;
+  height: 100%;
+  background-color: #f8f9fa;
+  border-right: 1px solid #e9ecef;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
   
   .sidebar-header {
     padding: 20px;
@@ -239,14 +240,14 @@
   }
   
   /* Main chat area */
-  .chat-main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    background-color: #fff;
-    position: relative;
-  }
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #fff;
+  position: relative;
+}
   
   .chat-header {
     padding: 15px 20px;
@@ -296,6 +297,42 @@
     padding: 20px;
     background-color: #f8f9fa;
   }
+
+/* Header action menu (custom dropdown) */
+.chat-header-actions {
+  position: relative;
+}
+
+.chat-action-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  z-index: 1000;
+  min-width: 220px;
+  padding: 6px;
+}
+
+.chat-action-menu .menu-item {
+  width: 100%;
+  background: transparent;
+  border: none;
+  text-align: left;
+  padding: 10px 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #343a40;
+  cursor: pointer;
+}
+
+.chat-action-menu .menu-item:hover {
+  background: #f8f9fa;
+}
   
   .messages {
     display: flex;

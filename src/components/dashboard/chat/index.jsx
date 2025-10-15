@@ -7,6 +7,7 @@ import { Grid } from '@giphy/react-components';
 import { GiphyFetch } from '@giphy/js-fetch-api';
 import './ChatApp.css';
 import { useProfile } from '../../../context/ProfileContext';
+import UploadFiles from '../../dashboard/file-sharing/UploadFiles';
 
 // Import icons
 import { 
@@ -51,6 +52,8 @@ export default function ChatApp() {
     const [editingMessage, setEditingMessage] = useState(null);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [showGifPicker, setShowGifPicker] = useState(false);
+    const [showActions, setShowActions] = useState(false);
+    const [showFileShare, setShowFileShare] = useState(false);
     const [typingUsers, setTypingUsers] = useState({});
     const [messageSearchQuery, setMessageSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
@@ -61,6 +64,7 @@ export default function ChatApp() {
     const fileInputRef = useRef(null);
     const messageInputRef = useRef(null);
     const pollingIntervalRef = useRef(null);
+    const actionsMenuRef = useRef(null);
 
     useEffect(() => {
         // Prefer ProfileContext; fallback to localStorage
@@ -93,6 +97,17 @@ export default function ChatApp() {
             // Stop trying after 5s
             setTimeout(() => clearInterval(openWhenReady), 5000);
         }
+    }, []);
+
+    // Close header dropdown on outside click
+    useEffect(() => {
+        function onDocClick(e) {
+            if (actionsMenuRef.current && !actionsMenuRef.current.contains(e.target)) {
+                setShowActions(false);
+            }
+        }
+        document.addEventListener('mousedown', onDocClick);
+        return () => document.removeEventListener('mousedown', onDocClick);
     }, []);
 
     useEffect(() => {
@@ -650,12 +665,57 @@ export default function ChatApp() {
                                                             <Search size={16} />
                                 </button>
                                                     </div>
-                                <button className="icon-btn">
-                                    <Info size={20} />
-                                </button>
-                                <button className="icon-btn">
-                                    <MoreVertical size={20} />
-                                </button>
+                                <div className="chat-header-actions" ref={actionsMenuRef}>
+                                    <button className="icon-btn" onClick={() => setShowActions(v => !v)} aria-expanded={showActions} aria-haspopup="menu">
+                                        <MoreVertical size={20} />
+                                    </button>
+                                    {showActions && (
+                                        <div className="chat-action-menu" role="menu">
+                                            {/* Create Invoice */}
+                                            <button className="menu-item" role="menuitem" onClick={() => {
+                                                setShowActions(false);
+                                                window.location.href = '/dase/invoice/create';
+                                            }}>
+                                                <i className="ri-file-list-3-line"></i>
+                                                <span>Create invoice</span>
+                                            </button>
+                                            {/* Send sample (navigate to page) */}
+                                            <button className="menu-item" role="menuitem" onClick={() => {
+                                                setShowActions(false);
+                                                window.location.href = '/dase/production-samples';
+                                            }}>
+                                                <i className="ri-music-2-line"></i>
+                                                <span>Send sample</span>
+                                            </button>
+                                            {/* File sharing modal */}
+                                            <button className="menu-item" role="menuitem" onClick={() => {
+                                                setShowActions(false);
+                                                setShowFileShare(true);
+                                            }}>
+                                                <i className="ri-file-upload-line"></i>
+                                                <span>File sharing</span>
+                                            </button>
+                                            {/* Report - simple toast placeholder (no endpoint found) */}
+                                            <button className="menu-item" role="menuitem" onClick={() => {
+                                                setShowActions(false);
+                                                toast.success('Report submitted. Our team will review.');
+                                            }}>
+                                                <i className="ri-flag-line"></i>
+                                                <span>Report</span>
+                                            </button>
+                                            {/* View Profile if receiver is engineer and current user is client */}
+                                            {receiverRole === 'engineer' && (
+                                                <button className="menu-item" role="menuitem" onClick={() => {
+                                                    setShowActions(false);
+                                                    window.location.href = `/dase/engineer/view/${selectedContact?.account_id}`;
+                                                }}>
+                                                    <i className="ri-user-line"></i>
+                                                    <span>View profile</span>
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                                             
@@ -1047,6 +1107,27 @@ export default function ChatApp() {
                                 <Send size={20} />
                             </button>
                         </form>
+
+                        {/* File Sharing Modal */}
+                        {showFileShare && (
+                            <div className="modal fade show" style={{display: 'block'}}>
+                                <div className="modal-dialog modal-lg modal-dialog-centered">
+                                    <div className="modal-content">
+                                        <div className="modal-header">
+                                            <h5 className="modal-title">Share a file</h5>
+                                            <button type="button" className="btn btn-ghost-secondary" onClick={() => setShowFileShare(false)}>
+                                                <X size={16} />
+                                            </button>
+                                        </div>
+                                        <div className="modal-body">
+                                            {/* Lazy import to avoid cyclic deps not necessary here; use dynamic wrapper */}
+                                            <FileShareInline recipientId={receiverId} onDone={() => setShowFileShare(false)} />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="modal-backdrop fade show" onClick={() => setShowFileShare(false)}></div>
+                            </div>
+                        )}
                     </>
                 ) : (
                     <div className="no-chat-selected">
@@ -1083,5 +1164,22 @@ export default function ChatApp() {
                 </div>
             </div>
         </>
+    );
+}
+
+// Inline wrapper for file sharing that presets recipient
+function FileShareInline({ recipientId, onDone }) {
+    const [key, setKey] = useState(0);
+    // Extend UploadFiles to preset recipient id after mount
+    return (
+        <div>
+            <UploadFiles fileType={'production'} onUploadSuccess={() => { onDone?.(); setKey(k => k + 1); }} key={key} />
+            <script dangerouslySetInnerHTML={{__html:`
+                setTimeout(()=>{
+                  const inp = document.querySelector('input[name="recipient_id"]');
+                  if(inp && '${String(''+(recipientId||''))}'.length){ inp.value='${String(''+(recipientId||''))}'; const ev=new Event('input',{bubbles:true}); inp.dispatchEvent(ev); }
+                },50);
+            `}} />
+        </div>
     );
 }

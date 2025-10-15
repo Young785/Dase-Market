@@ -524,7 +524,7 @@ export default function ProfileEditPage() {
                                                             <ul className="list-unstyled mb-0">
                                                                 <li className="d-flex">
                                                                     <div className="flex-grow-1">
-                                                                        <label for="directMessage" className="form-check-label fs-14">Direct messages</label>
+                                                                        <label for="directMessage" className="form-check-label fs-14"></label>
                                                                         <p className="text-muted">Messages from people you follow</p>
                                                                     </div>
                                                                     <div className="flex-shrink-0">

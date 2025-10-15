@@ -113,13 +113,13 @@ export default function Engineer() {
                                                 </div>
                                             </Link>
                                             <div className="card-footer bg-transparent border-top">
-                                                <a 
-                                                    href={`/dase/chat?user=${engineer.account_id}`}
+                                                <Link 
+                                                    to={`/dase/chat?user=${engineer.account_id}`}
                                                     className="btn btn-outline-primary btn-sm w-100"
                                                 >
                                                     <i className="ri-message-3-line me-1"></i>
                                                     Chat now
-                                                </a>
+                                                </Link>
                                             </div>
                                         </div>
                                     </div>

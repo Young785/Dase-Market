@@ -220,7 +220,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
 
                         {isEngineer && (
                         <li className={`nav-item ${isActive(["/dase/production-samples"])}`}>
-                            <Link to="/dase/production-samples" className={`nav-link ${isActive(["/dase/production-samples"])}`} data-key="t-samples">
+                            <Link to="/dase/production-samples" className={`nav-link ${isActive(["/da787se/production-samples"])}`} data-key="t-samples">
                                 <span data-key="t-samples">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M9 18V5l12-2v13" stroke="#6882B6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
