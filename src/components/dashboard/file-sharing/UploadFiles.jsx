@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../../axiosInstance';
 import toast from 'react-hot-toast';
 import { Upload, X, File, Loader } from 'lucide-react';
 import { useProfile } from '../../../context/ProfileContext';
 
-export default function UploadFiles({ fileType = 'production', onUploadSuccess }) {
+export default function UploadFiles({ fileType = 'production', onUploadSuccess, recipientId }) {
     const { profile } = useProfile();
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
@@ -14,6 +14,13 @@ export default function UploadFiles({ fileType = 'production', onUploadSuccess }
         recipient_id: '',
         file: null
     });
+
+    // Prefill recipient when provided (e.g., from chat)
+    useEffect(() => {
+        if (recipientId && String(recipientId).trim().length) {
+            setFormData(prev => ({ ...prev, recipient_id: String(recipientId) }));
+        }
+    }, [recipientId]);
 
     const isEngineer = profile?.role === 'engineer';
     

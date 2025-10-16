@@ -1236,13 +1236,7 @@ function FileShareInline({ recipientId, onDone }) {
     // Extend UploadFiles to preset recipient id after mount
     return (
         <div>
-            <UploadFiles fileType={'production'} onUploadSuccess={() => { onDone?.(); setKey(k => k + 1); }} key={key} />
-            <script dangerouslySetInnerHTML={{__html:`
-                setTimeout(()=>{
-                  const inp = document.querySelector('input[name="recipient_id"]');
-                  if(inp && '${String(''+(recipientId||''))}'.length){ inp.value='${String(''+(recipientId||''))}'; const ev=new Event('input',{bubbles:true}); inp.dispatchEvent(ev); }
-                },50);
-            `}} />
+            <UploadFiles recipientId={recipientId} fileType={'production'} onUploadSuccess={() => { onDone?.(); setKey(k => k + 1); }} key={key} />
         </div>
     );
 }
