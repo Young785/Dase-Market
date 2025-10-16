@@ -8,6 +8,14 @@ import { Toaster } from 'react-hot-toast';
 export default function CreateInvoice() {
     const navigate = useNavigate();
     const location = useLocation();
+    const generateInvoiceNumber = () => {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+        return `INV-${yyyy}${mm}${dd}-${rand}`;
+    };
     const notifyError = (text) => toast.error(text, {
         position: 'top-right',
         autoClose: 3000,
@@ -41,6 +49,16 @@ export default function CreateInvoice() {
         items: [],
         general_note: '',
     });
+
+    // Set sensible defaults on mount
+    useEffect(() => {
+        setFormData(prev => ({
+            ...prev,
+            invoice_number: prev.invoice_number || generateInvoiceNumber(),
+            date: prev.date || new Date().toISOString().slice(0, 10),
+        }));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Prefill from query params when coming from chat action
     useEffect(() => {
