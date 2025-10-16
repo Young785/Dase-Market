@@ -1171,24 +1171,33 @@ export default function ChatApp() {
                             </button>
                         </form>
 
-                                            {/* File Sharing Modal */}
+                        {/* File Sharing Modal */}
                         {showFileShare && (
-                            <div className="modal fade show" style={{display: 'block'}}>
-                                <div className="modal-dialog modal-lg modal-dialog-centered">
-                                    <div className="modal-content">
-                                        <div className="modal-header">
-                                            <h5 className="modal-title">Share a file</h5>
-                                            <button type="button" className="btn btn-ghost-secondary" onClick={() => setShowFileShare(false)}>
-                                                <X size={16} />
-                                            </button>
-                                        </div>
-                                        <div className="modal-body">
-                                            <FileShareInline recipientId={receiverId} onDone={() => setShowFileShare(false)} />
+                            <>
+                                {/* Backdrop behind the modal */}
+                                <div 
+                                    className="modal-backdrop fade show" 
+                                    style={{ zIndex: 1050 }} 
+                                    onClick={() => setShowFileShare(false)}
+                                ></div>
+                                {/* Modal above the backdrop */}
+                                <div className="modal fade show" style={{ display: 'block', zIndex: 1055 }}>
+                                    <div className="modal-dialog modal-lg modal-dialog-centered">
+                                        <div className="modal-content">
+                                            <div className="modal-header">
+                                                <h5 className="modal-title">Share a file</h5>
+                                                <button type="button" className="btn btn-ghost-secondary" onClick={() => setShowFileShare(false)}>
+                                                    <X size={16} />
+                                                </button>
+                                            </div>
+                                            <div className="modal-body">
+                                                {/* Lazy import to avoid cyclic deps not necessary here; use dynamic wrapper */}
+                                                <FileShareInline recipientId={receiverId} onDone={() => setShowFileShare(false)} />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="modal-backdrop fade show" onClick={() => setShowFileShare(false)}></div>
-                            </div>
+                            </>
                         )}
                     </>
                 ) : (
@@ -1232,10 +1241,16 @@ export default function ChatApp() {
 // Inline wrapper for file sharing that presets recipient
 function FileShareInline({ recipientId, onDone }) {
     const [key, setKey] = useState(0);
-    // Pass recipient id as prop to UploadFiles so it can prefill cleanly
+    // Extend UploadFiles to preset recipient id after mount
     return (
         <div>
-            <UploadFiles fileType={'production'} recipientId={recipientId} onUploadSuccess={() => { onDone?.(); setKey(k => k + 1); }} key={key} />
+            <UploadFiles fileType={'production'} onUploadSuccess={() => { onDone?.(); setKey(k => k + 1); }} key={key} />
+            <script dangerouslySetInnerHTML={{__html:`
+                setTimeout(()=>{
+                  const inp = document.querySelector('input[name="recipient_id"]');
+                  if(inp && '${String(''+(recipientId||''))}'.length){ inp.value='${String(''+(recipientId||''))}'; const ev=new Event('input',{bubbles:true}); inp.dispatchEvent(ev); }
+                },50);
+            `}} />
         </div>
     );
 }
