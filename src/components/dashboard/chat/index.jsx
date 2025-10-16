@@ -59,6 +59,7 @@ export default function ChatApp() {
     const [searchResults, setSearchResults] = useState([]);
     const [showSearchResults, setShowSearchResults] = useState(false);
     const [receiverRole, setReceiverRole] = useState(null);
+    const [showReport, setShowReport] = useState(false);
     
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
@@ -742,14 +743,6 @@ export default function ChatApp() {
                                                 <i className="ri-file-list-3-line"></i>
                                                 <span>Create invoice</span>
                                             </button>
-                                            {/* Send sample (navigate to page) */}
-                                            <button className="menu-item" role="menuitem" onClick={() => {
-                                                setShowActions(false);
-                                                window.location.href = '/dase/production-samples';
-                                            }}>
-                                                <i className="ri-music-2-line"></i>
-                                                <span>Send sample</span>
-                                            </button>
                                             {/* File sharing modal */}
                                             <button className="menu-item" role="menuitem" onClick={() => {
                                                 setShowActions(false);
@@ -758,10 +751,10 @@ export default function ChatApp() {
                                                 <i className="ri-file-upload-line"></i>
                                                 <span>File sharing</span>
                                             </button>
-                                            {/* Report - simple toast placeholder (no endpoint found) */}
+                                            {/* Report - open modal */}
                                             <button className="menu-item" role="menuitem" onClick={() => {
                                                 setShowActions(false);
-                                                toast.success('Report submitted. Our team will review.');
+                                                setShowReport(true);
                                             }}>
                                                 <i className="ri-flag-line"></i>
                                                 <span>Report</span>
@@ -1121,6 +1114,26 @@ export default function ChatApp() {
                                                 </div>
                                             )}
                         
+                        {/* Report Modal */}
+                        {showReport && (
+                            <>
+                                <div className="modal-backdrop fade show" style={{ zIndex: 1050 }} onClick={() => setShowReport(false)}></div>
+                                <div className="modal fade show" style={{ display: 'block', zIndex: 1055 }}>
+                                    <div className="modal-dialog modal-dialog-centered">
+                                        <div className="modal-content">
+                                            <div className="modal-header">
+                                                <h5 className="modal-title">Report conversation</h5>
+                                                <button type="button" className="btn btn-ghost-secondary" onClick={() => setShowReport(false)}>
+                                                    <X size={16} />
+                                                </button>
+                                            </div>
+                                            <ReportForm receiverId={receiverId} receiverName={selectedContact?.business_name || `${selectedContact?.first_name || ''} ${selectedContact?.last_name || ''}`.trim()} onDone={() => setShowReport(false)} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
                         {/* Message Input */}
                         <form className="message-input" onSubmit={sendMessage}>
                                                 <input
@@ -1252,5 +1265,67 @@ function FileShareInline({ recipientId, recipientName, onDone }) {
                 },50);
             `}} />
         </div>
+    );
+}
+
+// Inline Report form modal body
+function ReportForm({ receiverId, receiverName, onDone }) {
+    const [subject, setSubject] = useState('');
+    const [description, setDescription] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
+    const submitReport = async (e) => {
+        e.preventDefault();
+        if (!subject.trim() || !description.trim()) return;
+        try {
+            setSubmitting(true);
+            const payload = {
+                subject,
+                description,
+                reported_account_id: receiverId,
+                context: 'chat',
+                meta: { location: window.location.pathname }
+            };
+            const res = await axiosInstance.post('/reports', payload);
+            if (res.data?.status || res.data?.success) {
+                toast.success('Report submitted');
+                onDone?.();
+            } else {
+                toast.error(res.data?.message || 'Failed to submit report');
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to submit report');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <form onSubmit={submitReport}>
+            <div className="modal-body">
+                <div className="mb-3">
+                    <label className="form-label">Reporting</label>
+                    <input type="text" className="form-control" value={receiverName || `Account #${receiverId}`} disabled />
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Subject</label>
+                    <input type="text" className="form-control" value={subject} onChange={(e)=>setSubject(e.target.value)} placeholder="Short summary" required />
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Describe the issue</label>
+                    <textarea className="form-control" rows="4" value={description} onChange={(e)=>setDescription(e.target.value)} placeholder="Provide details, links or evidence" required />
+                </div>
+                <div className="alert alert-info">
+                    <i className="ri-information-line me-2"></i>
+                    Your report will be reviewed by our team. We may contact you for more details.
+                </div>
+            </div>
+            <div className="modal-footer">
+                <button type="button" className="btn btn-ghost-secondary" onClick={onDone} disabled={submitting}>Close</button>
+                <button type="submit" className="btn btn-danger" disabled={submitting || !subject.trim() || !description.trim()}>
+                    {submitting ? 'Submitting...' : 'Submit Report'}
+                </button>
+            </div>
+        </form>
     );
 }
