@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import axiosInstance from '../../../axiosInstance';
 import html2canvas from 'html2canvas';
 
-import { LogoDark, LogoLight } from '../../../assets/images';
+// Removed logo imports for cleaner design
 
 export default function ViewInvoice() {
     const { invoiceId } = useParams();
@@ -130,25 +130,15 @@ export default function ViewInvoice() {
                                             <div className="row">
                                                 <div className="col-lg-12">
                                                     <div className="card-header border-bottom-dashed p-4">
-                                                        <div className="row">
-                                                            <div className="col-lg-12">
-
-                                                                <img src={LogoDark} className="card-logo card-logo-dark" alt="logo dark" height="17"/>
-                                                                <img src={LogoLight} className="card-logo card-logo-light" alt="logo light" height="17"/>
-                                                            </div>
-                                                        </div>
                                                         <div className="d-flex py-4">
                                                             <div className="flex-grow-1">
                                                                 <div className="">
                                                                     <h6 className="text-muted text-uppercase fw-semibold">Address</h6>
                                                                     <p className="text-muted mb-1" id="address-details">{invoice.company_address}</p>
-                                                                    <p className="text-muted mb-0" id="zip-code"><span>Zip-code:</span> {invoice.postal_code}</p>
                                                                 </div>
                                                             </div>
                                                             <div className="flex-shrink-0">
-                                                                {/* <h6><span className="text-muted fw-normal">Legal Registration No:</span><span id="legal-register-no">{invoice.company_registration_no}</span></h6> */}
                                                                 <h6><span className="text-muted fw-normal">Email:</span><span id="email">{invoice.email_address}</span></h6>
-                                                                {/* <h6><span className="text-muted fw-normal">Website:</span> <a href="https://themesbrand.com/" className="link-primary" target="_blank" id="website">www.themesbrand.com</a></h6> */}
                                                                 <h6 className="mb-0"><span className="text-muted fw-normal">Contact No: </span><span id="contact-no"> {invoice.phone_number}</span></h6>
                                                             </div>
                                                         </div>
@@ -174,10 +164,6 @@ export default function ViewInvoice() {
                                                                 <span className="badge bg-success-subtle text-success fs-11" id="payment-status">{invoice.payment_status}</span>
                                                             </div>
                                                             
-                                                            <div className="col-lg-3 col-6">
-                                                                <p className="text-muted mb-2 text-uppercase fw-semibold">Total Amount</p>
-                                                                <h5 className="fs-14 mb-0">$<span id="total-amount">{invoice.total_amount}</span></h5>
-                                                            </div>
                                                             
                                                         </div>
                                                         
@@ -192,14 +178,6 @@ export default function ViewInvoice() {
                                                                 <p className="fw-medium mb-2" id="billing-name">Name:  {invoice.billing_full_name}</p>
                                                                 <p className="text-muted mb-1" id="billing-address-line-1">Address: {invoice.billing_address}</p>
                                                                 <p className="text-muted mb-1"><span>Phone: +</span><span id="billing-phone-no">{invoice.billing_phone_no}</span></p>
-                                                                <p className="text-muted mb-0"><span>Tax: </span><span id="billing-tax-no">{invoice.billing_tax_no}</span> </p>
-                                                            </div>
-                                                            
-                                                            <div className="col-lg-6 col-sm-12">
-                                                                <h6 className="text-muted text-uppercase fw-semibold mb-3">Shipping Address</h6>
-                                                                <p className="fw-medium mb-2" id="shipping-name">David Nichols</p>
-                                                                <p className="text-muted mb-1" id="shipping-address-line-1">305 S San Gabriel Blvd</p>
-                                                                <p className="text-muted mb-1"><span>Phone: +</span><span id="shipping-phone-no">(123) 456-7890</span></p>
                                                             </div>
                                                             
                                                         </div>
@@ -241,12 +219,11 @@ export default function ViewInvoice() {
                                                                 <tbody>
                                                                     <tr>
                                                                         <td>Sub Total</td>
-                                                                        <td className="text-end">${invoice.total_amount}</td>
+                                                                        <td className="text-end">${(invoice.total_amount / 1.125).toFixed(2)}</td>
                                                                     </tr>
-                                                                    {/* You may need to adjust these based on your data structure */}
                                                                     <tr>
                                                                         <td>Estimated Tax (12.5%)</td>
-                                                                        <td className="text-end">${(invoice.total_amount * 0.125).toFixed(2)}</td>
+                                                                        <td className="text-end">${(invoice.total_amount * 0.125 / 1.125).toFixed(2)}</td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td>Discount <small className="text-muted">(VELZON15)</small></td>
