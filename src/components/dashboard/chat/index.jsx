@@ -1171,7 +1171,7 @@ export default function ChatApp() {
                             </button>
                         </form>
 
-                        {/* File Sharing Modal */}
+                                            {/* File Sharing Modal */}
                         {showFileShare && (
                             <div className="modal fade show" style={{display: 'block'}}>
                                 <div className="modal-dialog modal-lg modal-dialog-centered">
@@ -1183,7 +1183,6 @@ export default function ChatApp() {
                                             </button>
                                         </div>
                                         <div className="modal-body">
-                                            {/* Lazy import to avoid cyclic deps not necessary here; use dynamic wrapper */}
                                             <FileShareInline recipientId={receiverId} onDone={() => setShowFileShare(false)} />
                                         </div>
                                     </div>
@@ -1233,10 +1232,10 @@ export default function ChatApp() {
 // Inline wrapper for file sharing that presets recipient
 function FileShareInline({ recipientId, onDone }) {
     const [key, setKey] = useState(0);
-    // Extend UploadFiles to preset recipient id after mount
+    // Pass recipient id as prop to UploadFiles so it can prefill cleanly
     return (
         <div>
-            <UploadFiles recipientId={recipientId} fileType={'production'} onUploadSuccess={() => { onDone?.(); setKey(k => k + 1); }} key={key} />
+            <UploadFiles fileType={'production'} recipientId={recipientId} onUploadSuccess={() => { onDone?.(); setKey(k => k + 1); }} key={key} />
         </div>
     );
 }

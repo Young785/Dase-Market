@@ -15,14 +15,15 @@ export default function UploadFiles({ fileType = 'production', onUploadSuccess, 
         file: null
     });
 
+    const isEngineer = profile?.role === 'engineer';
+    
     // Prefill recipient when provided (e.g., from chat)
     useEffect(() => {
-        if (recipientId && String(recipientId).trim().length) {
+        if (recipientId && !formData.recipient_id) {
             setFormData(prev => ({ ...prev, recipient_id: String(recipientId) }));
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [recipientId]);
-
-    const isEngineer = profile?.role === 'engineer';
     
     const handleChange = (e) => {
         const { name, value } = e.target;
