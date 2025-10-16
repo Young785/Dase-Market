@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {Link, useParams, useNavigate } from 'react-router-dom';
-import { LogoDark, LogoLight } from '../../../assets/images';
 import axiosInstance from '../../../axiosInstance';
-import Footer from '../footer';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 
@@ -28,26 +26,17 @@ export default function EditInvoice() {
         progress: undefined,
     });
     const [formData, setFormData] = useState({
-        image: '',
         company_address: '',
-        postal_code: '',
         email_address: '',
         phone_number: '',
         invoice_number: '',
         date: '',
         payment_status: '',
-        total_amount: '',
         billing_full_name: '',
         billing_address: '',
         billing_phone_no: '',
-        billing_tax_no: '',
-        shipping_full_name: '',
-        shipping_address: '',
-        shipping_phone_no: '',
-        shipping_tax_no: '',
         items: [],
         general_note: '',
-        
     });
     const [items, setItems] = useState([]); // Initialize items state
     const [errors, setErrors] = useState({});
@@ -105,25 +94,16 @@ export default function EditInvoice() {
                 setItems(JSON.parse(data.items)); // Assuming items are stored as a JSON string
                 setFormData({
                     company_address: data.company_address,
-                    postal_code: data.postal_code,
                     email_address: data.email_address,
                     phone_number: data.phone_number,
                     invoice_number: data.invoice_number,
-                    image: data.image,     
                     date: data.date,
                     payment_status: data.payment_status,
-                    total_amount: data.total_amount,
                     billing_full_name: data.billing_full_name,
                     billing_address: data.billing_address,
                     billing_phone_no: data.billing_phone_no,
-                    billing_tax_no: data.billing_tax_no,
-                    shipping_full_name: data.shipping_full_name,
-                    shipping_address: data.shipping_address,
-                    shipping_phone_no: data.shipping_phone_no,
-                    shipping_tax_no: data.shipping_tax_no,
                     items: [],
                     general_note: data.general_note,
-                    // Initialize other fields as necessary
                 });
             } catch (error) {
                 console.error('Error fetching invoice data:', error);
@@ -136,7 +116,7 @@ export default function EditInvoice() {
 
     const validate = () => {
         const newErrors = {};
-        const requiredText = ['company_address','postal_code','email_address','phone_number','invoice_number','date','payment_status','billing_full_name','billing_address','billing_phone_no'];
+        const requiredText = ['company_address','email_address','phone_number','invoice_number','date','payment_status','billing_full_name','billing_address','billing_phone_no'];
         requiredText.forEach((k)=>{ if(!String(formData[k]||'').trim()){ newErrors[k] = 'Required'; }});
         if (formData.email_address && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email_address)) newErrors.email_address = 'Invalid email';
         if (!items.length) newErrors.items = 'Add at least one item';
@@ -209,90 +189,34 @@ export default function EditInvoice() {
                             
 
                                 <div className="row px-0 mx-0">
-                                    <div className="col-12 px-0 mx-0">
+                                    <div className="col-12 mx-0 px-0">
                                         <div className="card">
                                         {invoiceData ? (
                                             <form onSubmit={handleSubmit} className="needs-validation" id="invoice_form">
                                                 <div className="card-body border-bottom border-bottom-dashed p-4">
                                                     <div className="row">
-                                                        <div className="col-lg-12">
-                                                            <div className="profile-user mx-auto  mb-3">
-                                                                <input id="profile-img-file-input" type="file" className="profile-img-file-input" />
-                                                                <label  className="d-block">
-                                                                    <span className="overflow-hidden border border-dashed d-flex align-items-center justify-content-center rounded" style={{ height: '60px', width: '256px' }}>
-                                                                        <img src={LogoDark} className="card-logo card-logo-dark user-profile-image img-fluid" alt="logo dark"/>
-                                                                        <img src={LogoLight} className="card-logo card-logo-light user-profile-image img-fluid" alt="logo light"/>
-                                                                    </span>
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="row">
                                                         <div className="col-lg-6">
-                                                            
                                                             <div>
-                                                                <div className="form-group mb-2">
-
-                                                                    <div>
-                                                                        <label>Contact Number</label>
-                                                                    </div>
-                                                                    <div>
-                                                                        <input onChange={handleInputChange} name="phone_number" value={formData.phone_number} type="text" className="form-control bg-light border-0" data-plugin="cleave-phone" id="compnayContactno" placeholder="Contact No" required />
-                                                                        <div className="invalid-feedback">
-                                                                            Please enter a contact number
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
                                                                 <div className="mb-2">
-                                                                    <label>Postal Code</label>
-                                                                </div>
-                                                                <div >
-                                                                    <input onChange={handleInputChange} name="postal_code" value={formData.postal_code} type="text" className="form-control bg-light border-0" id="companyaddpostalcode" minLength="5" maxLength="6" placeholder="Enter Postal Code" required />
+                                                                    <textarea onChange={handleInputChange} name="company_address" value={formData.company_address} className="form-control bg-light border-0" id="companyAddress" rows="3" placeholder="Company Address" required></textarea>
                                                                     <div className="invalid-feedback">
-                                                                        The US zip code must contain 5 digits, Ex. 45678
+                                                                        Please enter a address
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     
                                                         <div className="col-lg-6">
-                                                            <div className="form-group mb-2">
-                                                                <div>
-                                                                    <label>Registration Number</label>
-                                                                </div>
-                                                                <div>
-                                                                    <input onChange={handleInputChange} name="registration_number" value={formData.registration_number} type="text" className="form-control bg-light border-0" id="registrationNumber" maxLength="12" placeholder="Legal Registration No" required />
-                                                                    <div className="invalid-feedback">
-                                                                        Please enter a registration no, Ex., 012345678912
-                                                                    </div>
+                                                            <div className="mb-2">
+                                                                <input onChange={handleInputChange} name="email_address" value={formData.email_address} type="email" className="form-control bg-light border-0" id="companyEmail" placeholder="Email Address" required />
+                                                                <div className="invalid-feedback">
+                                                                    Please enter a valid email, Ex., example@gamil.com
                                                                 </div>
                                                             </div>
-                                                            <div className="form-group mb-2">
-
-                                                                <div>
-                                                                    <label>Email</label>
-                                                                </div>
-                                                                <div>
-                                                                    <input onChange={handleInputChange} name="email_address" value={formData.email_address} type="email" className="form-control bg-light border-0" id="companyEmail" placeholder="Email Address" required />
-                                                                    <div className="invalid-feedback">
-                                                                        Please enter a valid email, Ex., example@gamil.com
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                           
-                                                           
-                                                        </div>
-                                                        <div className="lg-12 mt-2">
-                                                            <div className="form-group mb-2">
-
-                                                                <div>
-                                                                    <label>CompanyAddress</label>
-                                                                </div>
-                                                                <div>
-                                                                    <textarea onChange={handleInputChange} name="company_address" value={formData.company_address} className="form-control bg-light border-0" id="companyAddress" rows="3" placeholder="Company Address" required></textarea>
-                                                                    <div className="invalid-feedback">
-                                                                        Please enter company address
-                                                                    </div>
+                                                            <div>
+                                                                <input onChange={handleInputChange} name="phone_number" value={formData.phone_number} type="text" className="form-control bg-light border-0" data-plugin="cleave-phone" id="compnayContactno" placeholder="Contact No" required />
+                                                                <div className="invalid-feedback">
+                                                                    Please enter a contact number
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -320,17 +244,12 @@ export default function EditInvoice() {
                                                                     <option value="">Select Payment Status</option>
                                                                     <option value="PENDING">PENDING</option>
                                                                     <option value="PAID">PAID</option>
-                                                                    
+                                                                   
                                                                 </select>
                                                             </div>
                                                         </div>
                                                     
-                                                        <div className="col-lg-3 col-sm-6">
-                                                            <div>
-                                                                <label >Total Amount</label>
-                                                                <input onChange={handleInputChange} name="total_amount" value={formData.total_amount} type="text" className="form-control bg-light border-0" id="totalamountInput" placeholder="$0.00"  />
-                                                            </div>
-                                                        </div>
+                                                        
                                                     
                                                     </div>
                                                     
@@ -354,58 +273,15 @@ export default function EditInvoice() {
                                                                 </div>
                                                             </div>
                                                             <div className="mb-2">
-                                                                <input onChange={handleInputChange} name="billing_phone_no" value={formData.billing_phone_no} type="text" className="form-control bg-light border-0" data-plugin="cleave-phone" id="billingPhoneno" placeholder="billing phone no" required />
+                                                                <input onChange={handleInputChange} name="billing_phone_no" value={formData.billing_phone_no} type="text" className="form-control bg-light border-0" data-plugin="cleave-phone" id="billingPhoneno" placeholder="(123)456-7890" required />
                                                                 <div className="invalid-feedback">
                                                                     Please enter a phone number
                                                                 </div>
                                                             </div>
-                                                            <div className="mb-3">
-                                                                <input onChange={handleInputChange} name="billing_tax_no" value={formData.billing_tax_no} type="text" className="form-control bg-light border-0" id="billingTaxno" placeholder="Tax Number" required />
-                                                                <div className="invalid-feedback">
-                                                                    Please enter a tax number
-                                                                </div>
-                                                            </div>
-                                                            <div className="form-check">
-                                                                <input  type="checkbox" className="form-check-input" id="same" name="same" onChange="billingFunction()" />
-                                                                <label className="form-check-label">
-                                                                    Will your Billing and Shipping address same?
-                                                                </label>
-                                                            </div>
+                                                            
                                                         </div>
                                                     
-                                                        <div className="col-sm-12 col-lg-6 ms-auto">
-                                                            <div className="row">
-                                                                <div className="">
-                                                                    <div>
-                                                                        <label className="text-muted text-uppercase fw-semibold">Shipping Address</label>
-                                                                    </div>
-                                                                    <div className="mb-2">
-                                                                        <input onChange={handleInputChange} name="shipping_full_name" value={formData.shipping_full_name} type="text" className="form-control bg-light border-0" id="shippingName" placeholder="Full Name" required />
-                                                                        <div className="invalid-feedback">
-                                                                            Please enter a full name
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="mb-2">
-                                                                        <textarea onChange={handleInputChange} name="shipping_address" value={formData.shipping_address} className="form-control bg-light border-0" id="shippingAddress" rows="3" placeholder="Address" required></textarea>
-                                                                        <div className="invalid-feedback">
-                                                                            Please enter a address
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="mb-2">
-                                                                        <input onChange={handleInputChange} name="shipping_phone_no" value={formData.shipping_phone_no} type="text" className="form-control bg-light border-0" data-plugin="cleave-phone" id="shippingPhoneno" placeholder="(123)456-7890" required />
-                                                                        <div className="invalid-feedback">
-                                                                            Please enter a phone number
-                                                                        </div>
-                                                                    </div>
-                                                                    <div>
-                                                                        <input onChange={handleInputChange} name="shipping_tax_no" value={formData.shipping_tax_no} type="text" className="form-control bg-light border-0" id="shippingTaxno" placeholder="Tax Number" required />
-                                                                        <div className="invalid-feedback">
-                                                                            Please enter a tax number
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                        
                                                     
                                                     </div>
                                                     
@@ -432,7 +308,7 @@ export default function EditInvoice() {
                                                                     </th>
                                                                     <th scope="col" style={{width: "120px"}}>Quantity</th>
                                                                     <th scope="col" className="text-end" style={{width: "150px"}}>Amount</th>
-                                                                    <th scope="col" className="text-end" style={{width: "105px"}}></th>
+                                                                    <th scope="col" className="text-end" style={{width: "105px"}}>Action</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody id="newlink" >
@@ -476,17 +352,13 @@ export default function EditInvoice() {
                                                                             </div>
                                                                         </td>
                                                                         <td>
-                                                                            <div className="input-step">
-                                                                                <button type="button" className='minus' onClick={() => handleItemChange(index, 'quantity', Math.max(0, item.quantity - 1))}>–</button>
-                                                                                <input
-                                                                                    type="number"
-                                                                                    className="product-quantity"
-                                                                                    value={item.quantity}
-                                                                                    onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                                                                                    required
-                                                                                />
-                                                                                <button type="button" className='plus' onClick={() => handleItemChange(index, 'quantity', item.quantity + 1)}>+</button>
-                                                                            </div>
+                                                                            <input
+                                                                                type="number"
+                                                                                className="form-control product-quantity"
+                                                                                value={item.quantity}
+                                                                                onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                                                                                required
+                                                                            />
                                                                         </td>
                                                                         <td className="text-end">
                                                                             <div>
@@ -503,9 +375,6 @@ export default function EditInvoice() {
                                                                         </td>
                                                                     </tr>
                                                                 ))}
-                                                            </tbody>
-                                                            <tbody>
-                                                                <tr id="newForm" style={{display: "none"}}><td className="d-none" colSpan="5"><p>Add New Form</p></td></tr>
                                                                 <tr>
                                                                     <td colSpan="5">
                                                                         <button type="button" id="add-item" className="btn btn-soft-secondary fw-medium" onClick={addItem}>
@@ -513,6 +382,8 @@ export default function EditInvoice() {
                                                                         </button>
                                                                     </td>
                                                                 </tr>
+                                                            </tbody>
+                                                            <tbody>
                                                                 <tr className="border border-dashed mt-2">
                                                                     <td colSpan="3"></td>
                                                                     <td colSpan="2" className="p-0">
@@ -542,10 +413,10 @@ export default function EditInvoice() {
                                                                                         <input type="text" className="form-control bg-light border-0" id="cart-shipping" placeholder="$0.00" readOnly />
                                                                                     </td>
                                                                                 </tr>
-                                                                                <tr className="border border-dashed">
+                                                                                <tr className="border border-top-dashed">
                                                                                     <th scope="row">Total Amount</th>
                                                                                     <td>
-                                                                                        <input type="text" value={totalAmount} className="form-control bg-light border-0" id="cart-total" placeholder="$0.00" readOnly />
+                                                                                        <input type="text" className="form-control bg-light border-0" value={totalAmount} readOnly />
                                                                                     </td>
                                                                                 </tr>
                                                                             </tbody>
@@ -584,7 +455,20 @@ export default function EditInvoice() {
                         </div>
 
 
-                        <Footer/>
+                        <footer className="footer">
+                            <div className="container-fluid">
+                                <div className="row">
+                                    <div className="col-sm-6">
+                                        <script>document.write(new Date().getFullYear())</script> © Velzon.
+                                    </div>
+                                    <div className="col-sm-6">
+                                        <div className="text-sm-end d-none d-sm-block">
+                                            Design & Develop by Themesbrand
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </footer>
                     </div>
                 </div>
             </div>
