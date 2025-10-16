@@ -1192,7 +1192,7 @@ export default function ChatApp() {
                                             </div>
                                             <div className="modal-body">
                                                 {/* Lazy import to avoid cyclic deps not necessary here; use dynamic wrapper */}
-                                                <FileShareInline recipientId={receiverId} onDone={() => setShowFileShare(false)} />
+                                                <FileShareInline recipientId={receiverId} recipientName={selectedContact?.business_name || `${selectedContact?.first_name || ''} ${selectedContact?.last_name || ''}`.trim()} onDone={() => setShowFileShare(false)} />
                                             </div>
                                         </div>
                                     </div>
@@ -1239,12 +1239,12 @@ export default function ChatApp() {
 }
 
 // Inline wrapper for file sharing that presets recipient
-function FileShareInline({ recipientId, onDone }) {
+function FileShareInline({ recipientId, recipientName, onDone }) {
     const [key, setKey] = useState(0);
     // Extend UploadFiles to preset recipient id after mount
     return (
         <div>
-            <UploadFiles fileType={'production'} onUploadSuccess={() => { onDone?.(); setKey(k => k + 1); }} key={key} />
+            <UploadFiles fileType={'production'} recipientId={recipientId} recipientName={recipientName} onUploadSuccess={() => { onDone?.(); setKey(k => k + 1); }} key={key} />
             <script dangerouslySetInnerHTML={{__html:`
                 setTimeout(()=>{
                   const inp = document.querySelector('input[name="recipient_id"]');

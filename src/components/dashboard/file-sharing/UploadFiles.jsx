@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../../axiosInstance';
 import toast from 'react-hot-toast';
 import { Upload, X, File, Loader } from 'lucide-react';
 import { useProfile } from '../../../context/ProfileContext';
 
-export default function UploadFiles({ fileType = 'production', onUploadSuccess, recipientId }) {
+export default function UploadFiles({ fileType = 'production', onUploadSuccess, recipientId: presetRecipientId, recipientName: presetRecipientName }) {
     const { profile } = useProfile();
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
@@ -17,13 +17,12 @@ export default function UploadFiles({ fileType = 'production', onUploadSuccess, 
 
     const isEngineer = profile?.role === 'engineer';
     
-    // Prefill recipient when provided (e.g., from chat)
+    // Prefill recipient when opened from chat
     useEffect(() => {
-        if (recipientId && !formData.recipient_id) {
-            setFormData(prev => ({ ...prev, recipient_id: String(recipientId) }));
+        if (presetRecipientId) {
+            setFormData(prev => ({ ...prev, recipient_id: String(presetRecipientId) }));
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [recipientId]);
+    }, [presetRecipientId]);
     
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -184,20 +183,38 @@ export default function UploadFiles({ fileType = 'production', onUploadSuccess, 
 
                     <div className="mb-3">
                         <label className="form-label">
-                            {fileType === 'production' ? 'Client Account ID (Optional)' : 'Engineer Account ID (Optional)'}
+                            {presetRecipientId 
+                                ? (fileType === 'production' ? 'Client Account' : 'Engineer Account')
+                                : (fileType === 'production' ? 'Client Account ID (Optional)' : 'Engineer Account ID (Optional)')}
                         </label>
-                        <input
-                            type="text"
-                            name="recipient_id"
-                            className="form-control"
-                            value={formData.recipient_id}
-                            onChange={handleChange}
-                            placeholder="Enter recipient's account ID to share directly"
-                            disabled={uploading}
-                        />
-                        <small className="text-muted">
-                            Leave empty to get a shareable link that you can send manually
-                        </small>
+                        {presetRecipientId ? (
+                            <>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    value={presetRecipientName || `Account #${presetRecipientId}`}
+                                    disabled
+                                />
+                                {/* keep id in state for backend */}
+                                <input type="hidden" name="recipient_id" value={formData.recipient_id} />
+                                <small className="text-muted">Recipient fixed because you opened from chat.</small>
+                            </>
+                        ) : (
+                            <>
+                                <input
+                                    type="text"
+                                    name="recipient_id"
+                                    className="form-control"
+                                    value={formData.recipient_id}
+                                    onChange={handleChange}
+                                    placeholder="Enter recipient's account ID to share directly"
+                                    disabled={uploading}
+                                />
+                                <small className="text-muted">
+                                    Leave empty to get a shareable link that you can send manually
+                                </small>
+                            </>
+                        )}
                     </div>
 
                     {uploading && (
