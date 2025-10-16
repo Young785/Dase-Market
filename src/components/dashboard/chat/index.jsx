@@ -721,7 +721,23 @@ export default function ChatApp() {
                                             {/* Create Invoice */}
                                             <button className="menu-item" role="menuitem" onClick={() => {
                                                 setShowActions(false);
-                                                window.location.href = '/dase/invoice/create';
+                                                try {
+                                                    const contact = selectedContact || {};
+                                                    const name = contact.business_name || `${contact.first_name || ''} ${contact.last_name || ''}`.trim();
+                                                    const email = contact.business_email || contact.email || '';
+                                                    const phone = contact.business_phone || contact.phone_number || contact.phone || '';
+                                                    const address = contact.business_address || contact.address || '';
+                                                    const params = new URLSearchParams();
+                                                    params.set('from', 'chat');
+                                                    if (receiverId) params.set('receiver_id', String(receiverId));
+                                                    if (name) params.set('name', name);
+                                                    if (email) params.set('email', email);
+                                                    if (phone) params.set('phone', phone);
+                                                    if (address) params.set('address', address);
+                                                    window.location.href = `/dase/invoice/create?${params.toString()}`;
+                                                } catch {
+                                                    window.location.href = '/dase/invoice/create';
+                                                }
                                             }}>
                                                 <i className="ri-file-list-3-line"></i>
                                                 <span>Create invoice</span>

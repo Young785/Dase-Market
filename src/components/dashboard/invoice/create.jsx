@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 // Removed logo upload on invoice form
 import axiosInstance from '../../../axiosInstance';
 import toast from 'react-hot-toast';
@@ -7,6 +7,7 @@ import { Toaster } from 'react-hot-toast';
 
 export default function CreateInvoice() {
     const navigate = useNavigate();
+    const location = useLocation();
     const notifyError = (text) => toast.error(text, {
         position: 'top-right',
         autoClose: 3000,
@@ -40,6 +41,33 @@ export default function CreateInvoice() {
         items: [],
         general_note: '',
     });
+
+    // Prefill from query params when coming from chat action
+    useEffect(() => {
+        try {
+            const params = new URLSearchParams(location.search);
+            if (params.get('from') !== 'chat') return;
+
+            const name = params.get('name') || '';
+            const email = params.get('email') || '';
+            const phone = params.get('phone') || '';
+            const address = params.get('address') || '';
+
+            setFormData(prev => ({
+                ...prev,
+                // Top section (company info) – prefill with contact details for convenience
+                company_address: prev.company_address || address,
+                email_address: prev.email_address || email,
+                phone_number: prev.phone_number || phone,
+                // Billing section – also prefill
+                billing_full_name: prev.billing_full_name || name,
+                billing_address: prev.billing_address || address,
+                billing_phone_no: prev.billing_phone_no || phone,
+            }));
+        } catch {}
+        // run only on initial mount or search change
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.search]);
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prevState => ({
