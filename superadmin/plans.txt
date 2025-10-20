@@ -1,0 +1,118 @@
+DIGITAL AUDIO SOUND ENGINEERS RECRUITER SUBSYSTEM.
+
+Engineer
+
+Subsystem Codename: DASE MARKET PLACE.
+DASE is an acronym for Digital Audio Sound Engineers.
+
+SIGN UP AS DASE MARKET PLACE PROFESSIONAL _-_ this is name/tag for a clickable button that allows user to register as a sound engineer expert.
+SIGN UP AS DASE MARKET PLACE CLIENT _-_ this is name/tag for a clickable button that allows potential customers register to use the system.
+BROWSE DASE MARKET PLACE DATABASE _-_ this is name/tag for a clickable button that allows visitors/users to browse database of registered sound engineers, read their profiles, listen to their production samples and connect directly.
+SEARCH & CONNECT _-_ this is name/tag for a “Search Bar/Field” with a clickable button which allows user to search and connect with any registered sound engineer, using their given names or business names to find them.
+
+SIGNING UP AS DASE MARKET PLACE PROFESSIONAL _-_ [The Registration Documentation].
+_All Starred Fields Are Required.
+*First Name 
+*Last Name 
+*Business Email 
+*Business Phone Number 
+*Profile Photo 
+*Bio 
+*Work Experience 
+*Business Name 
+_Business Website 
+_PROCEED TO REGISTRATION _-_ this shall be a clickable button that displays a window for a bilateral Contract agreement.
+*Content for the bilateral agreement window: 
+
+ATTESTATION.
+I attest that details of my registration as required and subsequently supplied by me are absolutely true, and that I shall operate on DASE MARKET PLACE platform within the scope of DASE MARKET PLACE regulations, and that I shall completely embrace the standard of professional conducts in relating with clients who request my professional “Digital Audio Sound Engineer” services.
+I pledge to always treat DASE MARKET PLACE clients just right, and that I shall steadily relate with my customers with mutual respect, and that I shall always do the best possible to help DASE MARKET PLACE clients attain their desires on every productions contracted to me in trust.
+I agree without reservation that with or without formal notice, my registered DASE MARKET PLACE account may be temporarily suspended or permanently deactivated with likely legal consequences with exclusive personal right of Appeal, should I violate any of the community rules of engagement on DASE MARKET PLACE.
+CAUTION: 
+Clicking on the “Sign Up” button below is officially considered your digital signature for formal registration on DASE MARKET PLACE, that you have read and understood the above note of Bilateral Contract between you and DASE MARKET PLACE, and that without any form of cohesion, you completely agree with content of the Contract without reservations. Should you for whatever reason disagree with content of the Contract as digitally made available, you may immediately discontinue with the registration process.
+*SIGN UP _-_ this shall be a clickable action button. After clicking the Sign Up button, the system displays a window with the content below.
+
+DEAR GREAT DIGITAL AUDIO SOUND ENGINEER, THANK YOU FOR SIGNING UP!
+As a valuable Contractor, you are warmly welcome to DASE MARKET PLACE, a division of Project BROADCASTERS COMMUNITY. DASE MARKET PLACE is a digital center intuitively designed to afford the professional DIGITAL AUDIO SOUND ENGINEERS the wings to fly and succeed without bounds in their creative trade as trained.
+We are glad to have you registered on DIGITAL AUDIO SOUND ENGINEERS MARKET PLACE. We enthusiastically look forward to have you fly and succeed in your unique trade of creatively designing audio sounds as trained.
+Now as a registered DASE MARKET PLACE Signee, kindly proceed to start uploading your great production samples [maximum of 10 audio files or less] at a time, in MP3 or WAV formats. You can remove and replace production samples from time-to-time.
+With those awesome production samples, let your First/Next customer find your creative productions and subsequently connect with you. DASE MARKET PLACE Best Wishes To You!
+
+**Upload Production Samples _-_ this shall be a clickable action button on the Contractor’s dashboard to allow users upload audio files onto the system from their devices.
+
+SYSTEM PERFORMANCE AND ACTIVITIES.
+_Account owner shall be able to upload up to ten production samples “maximum” in both MP3 and WAV formats.
+_Account owner shall be able to write caption and description for each production samples uploaded.
+_Account owner shall be able to [Add Face To The Voice] by uploading photo/graphics related to individual production uploaded.
+_Registered users shall be able to write reviews on production samples uploaded.
+_Registered users shall be able to Approve or Disapprove production samples uploaded.
+_Account owner shall be able to reply reviews and comments posted by other users.
+_Other registered users shall be able to reply, approve and disapprove the reviews/comments by other users.
+_Account owner shall be able to remove and replace production samples from time to time.
+
+*CHATROOM SYSTEM DOCUMENTATION 
+_CHAT NOW _-_ this shall be a clickable action button that is found right inside the homepages of both the registered Contractor and Clients respectively. This “Chat Now” button when clicked allows both parties to connect and talk business via text messaging.
+
+*INVOICE SYSTEM DOCUMENTATION 
+_PREPARE AND SEND INVOICES _-_ this shall be a clickable action button right on the dashboard of the Contractor. It is a folder for the invoices ever prepared. It’s also a place to send invoices to clients, using their details as registered on DASE MARKET PLACE. If invoice folder is empty, the system shows nothing to view.
+
+*SERVICE RATING FEATURE 
+RATE THIS DASE MARKET PLACE CONTRACTOR _-_ this shall be a clickable “frontend” action button with timestamps feature to rate the services of a given Contractor on the DASE MARKET PLACE platform from 1 to 5 stars.
+
+*STATUS UPDATES FEATURE 
+There shall be a status update feature with timestamps on every account created, where DASE MARKET PLACE Contractors can advertise their services, announce promotions and discounts, plus more related. Users using the feature are able to upload short videos, short audio files or photos, or text per post, and other users are able to view Status Updates, Approve or Disapprove posts, comment on and reply Status Update posts.
+
+*SENDING AUDIO FILES TO CLIENTS 
+_UPLOAD FINISHED PRODUCTION _-_ this shall be a clickable button on Contractor’s dashboard. When clicked, the system ask the user to upload files from their device. After upload is complete, user shall be able to copy and share the download link with the Client that paid for the audio production by pasting the URL onto the chatroom they both initiated the production deal and that’s how Client gets the finished production.
+
+
+
+
+
+
+
+
+Clients
+
+
+*SIGNING UP AS DASE MARKET PLACE CLIENT: [The Registration Documentation].
+_All Starred Fields Are Required.
+*First Name 
+*Last Name 
+*Profile Photo 
+*Business Email 
+*Business Phone Number 
+*Business Name 
+_Business Website 
+
+_PROCEED TO REGISTRATION _-_ this shall be a clickable button that displays a window for a bilateral Contract agreement.
+*Content for the bilateral agreement window: 
+
+ATTESTATION.
+I attest that details of my registration as required and subsequently supplied by me are absolutely true, and that I shall operate on DASE MARKET PLACE platform within the scope of DASE MARKET PLACE regulations, and that I shall completely embrace the professional standard of business conducts in relating with the Digital Audio Sound Engineer service providers contracted on DASE MARKET PLACE for my audio production needs.
+I pledge to always treat DASE MARKET PLACE Contractors just right, and that I shall steadily relate with my Digital Audio Sound Engineer service providers with mutual respect, and that I shall always do the best possible to help DASE MARKET PLACE Contractors serve my audio production needs better.
+I agree without reservation that with or without formal notice, my registered DASE MARKET PLACE account may be temporarily suspended or permanently deactivated with likely legal consequences with exclusive personal right of Appeal, should I violate any of the community rules of engagement on DASE MARKET PLACE.
+CAUTION: 
+Clicking on the “Sign Up” button below is officially considered your digital signature for formal registration on DASE MARKET PLACE, that you have read and understood the above note of Bilateral Contract between you and DASE MARKET PLACE, and that without any form of cohesion, you completely agree with content of the Contract without reservations. Should you for whatever reason disagree with content of the Contract as digitally made available, you may immediately discontinue with the registration process.
+*SIGN UP _-_ this shall be a clickable action button. After clicking the Sign Up button, the system displays a window with the content below.
+
+DEAR GREAT DASE MARKET PLACE REGISTRANT, THANK YOU FOR SIGNING UP!
+As a valuable Client, you are warmly welcome to DASE MARKET PLACE, a division of Project BROADCASTERS COMMUNITY. DASE MARKET PLACE is a digital space intuitively designed to steadily connect the experienced and professional Digital Audio Sound Engineers with potential clients like yourself in need of their creative audio production skills as trained.
+We are glad to have you registered on DIGITAL AUDIO SOUND ENGINEERS MARKET PLACE. We enthusiastically look forward to always have you find great match of your digital audio production desires on DASE MARKET PLACE platform.
+Now as a registered DASE MARKET PLACE Client, kindly proceed to start browsing the database of our Digital Audio Sound Engineers to find stuff that works best for you and your audio production budget.
+Do feel free to read through the DASE MARKET PLACE Contractor’s profiles and reviews, listen to their production samples, connect with them and subsequently go ahead to striking happy deals of digital audio productions you’d love. DASE MARKET PLACE Best Wishes To You!
+
+BROWSE DASE MARKET PLACE DATABASE _-_ this is name/tag for a clickable button that allows the new registrants to browse database of registered sound engineers, read their profiles, listen to their production samples and connect directly.
+
+*CHATROOM SYSTEM DOCUMENTATION 
+_CHAT NOW _-_ this shall be a clickable action button that is found right inside the homepages of both the registered Contractor and Clients respectively. This “Chat Now” button when clicked allows both parties to connect and talk business via text messaging.
+
+*INVOICE SYSTEM DOCUMENTATION 
+_CHECK INVOICES _-_ this shall be a clickable action button right on the dashboard of the client. It is a place to find every invoices ever received by the client, and if folder is empty, the system shows nothing to view.
+_CONFIRM AND PAY _-_ this shall be a clickable action button on the new invoice. When clicked open by client, a payment portal is displayed, and when transaction processed successfully, both Contractor and Client gets both dashboard and Email notification regarding the payment made.
+
+STATUS UPDATES FEATURE 
+There shall be a status update feature with timestamps on every account created, where DASE MARKET PLACE Clients can advertise some audio production services they are looking for, announce their thoughts and feelings, promote certain DASE MARKET PLACE Contractor that impress them, plus more related. Users using the feature are able to upload short videos, short audio files or photos, or text per post, and other users are able to view Status Updates, Approve or Disapprove posts, comment on and reply Status Update posts.
+
+*SENDING AUDIO FILES FOR PRODUCTION 
+_UPLOAD NEW RECORDINGS _-_ this shall be a clickable button on Client’s dashboard. When clicked, the system ask the user to upload files from their device. After upload is complete, user shall be able to copy and share the download link with the Contractor to work on the production by pasting the URL onto the chatroom they both initiated the production deal for further due actions.
