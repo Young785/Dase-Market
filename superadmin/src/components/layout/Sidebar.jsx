@@ -110,6 +110,7 @@ const Sidebar = ({ isOpen, isMobile, toggleSidebar }) => {
               e.preventDefault();
               toggleMenu(item.id);
             }}
+            style={{ color: hasActiveChild ? '#405189' : '#878a99' }}
           >
             <i className={item.icon}></i>
             <span>{item.title}</span>
@@ -125,6 +126,7 @@ const Sidebar = ({ isOpen, isMobile, toggleSidebar }) => {
                     to={subItem.link}
                     className={`nav-link ${isActive(subItem.link) ? 'active' : ''}`}
                     onClick={isMobile ? toggleSidebar : undefined}
+                    style={{ color: isActive(subItem.link) ? '#405189' : '#878a99' }}
                   >
                     {subItem.title}
                     {subItem.badge && (
@@ -145,6 +147,7 @@ const Sidebar = ({ isOpen, isMobile, toggleSidebar }) => {
           to={item.link}
           className={`nav-link menu-link ${isActive(item.link) ? 'active' : ''}`}
           onClick={isMobile ? toggleSidebar : undefined}
+          style={{ color: isActive(item.link) ? '#405189' : '#878a99' }}
         >
           <i className={item.icon}></i>
           <span>{item.title}</span>
@@ -206,7 +209,7 @@ const Sidebar = ({ isOpen, isMobile, toggleSidebar }) => {
           <div className="container-fluid">
             <div id="two-column-menu"></div>
             <ul className="navbar-nav" id="navbar-nav">
-              <li className="menu-title"><span>Menu</span></li>
+              <li className="menu-title"><span style={{ color: '#878a99' }}>Menu</span></li>
               {menuItems.map(renderMenuItem)}
             </ul>
           </div>
