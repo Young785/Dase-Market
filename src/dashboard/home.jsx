@@ -260,25 +260,32 @@ export default function Home() {
 								</div>
 							</div>
 
-							{/* Active Projects */}
+							{/* Active Projects / Production Samples */}
 							<div className="col-xl-3 col-md-6">
 								<div className="card card-animate border-0 shadow-sm">
 									<div className="card-body">
 										<div className="d-flex align-items-center">
 											<div className="flex-grow-1">
 												<p className="text-uppercase fw-medium text-muted mb-0">
-													Active Projects
+													{user?.role === 'engineer' ? 'Production Samples' : 'Active Projects'}
 												</p>
 												<h4 className="fs-22 fw-semibold mb-3">
-													{stats.activeProjects}
+													{user?.role === 'engineer' ? stats.totalSamples : stats.activeProjects}
 												</h4>
-												<Link to="/dase/projects" className="text-decoration-underline text-primary">
-													View All Projects →
+												<Link 
+													to={user?.role === 'engineer' ? '/dase/production-samples' : '/dase/projects'} 
+													className="text-decoration-underline text-primary"
+												>
+													{user?.role === 'engineer' ? 'Manage Samples →' : 'View All Projects →'}
 												</Link>
 											</div>
 											<div className="avatar-sm flex-shrink-0">
 												<span className="avatar-title bg-info-subtle rounded fs-3">
-													<Briefcase className="text-info" size={24} />
+													{user?.role === 'engineer' ? (
+														<Music className="text-info" size={24} />
+													) : (
+														<Briefcase className="text-info" size={24} />
+													)}
 												</span>
 											</div>
 										</div>
@@ -286,31 +293,25 @@ export default function Home() {
 								</div>
 							</div>
 
-							{/* Production Samples */}
+							{/* Messages / Communication */}
 							<div className="col-xl-3 col-md-6">
 								<div className="card card-animate border-0 shadow-sm">
 									<div className="card-body">
 										<div className="d-flex align-items-center">
 											<div className="flex-grow-1">
 												<p className="text-uppercase fw-medium text-muted mb-0">
-													Production Samples
+													Messages
 												</p>
-												<h4 className="fs-22 fw-semibold mb-1">
-													{stats.totalSamples}
+												<h4 className="fs-22 fw-semibold mb-3">
+													{stats.unreadMessages}
 												</h4>
-												<small className="text-muted">
-													<Eye size={14} className="me-1" />
-													{stats.totalPlays} total plays
-												</small>
-												<div className="mt-2">
-													<Link to="/dase/production-samples" className="text-decoration-underline text-success">
-														Manage Samples →
-													</Link>
-												</div>
+												<Link to="/dase/chat" className="text-decoration-underline text-success">
+													View Messages →
+												</Link>
 											</div>
 											<div className="avatar-sm flex-shrink-0">
 												<span className="avatar-title bg-success-subtle rounded fs-3">
-													<Music className="text-success" size={24} />
+													<MessageSquare className="text-success" size={24} />
 												</span>
 											</div>
 										</div>

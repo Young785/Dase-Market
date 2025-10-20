@@ -31,12 +31,14 @@ export default function EditInvoice() {
         phone_number: '',
         invoice_number: '',
         date: '',
-        payment_status: '',
+        payment_status: 'PENDING',
         billing_full_name: '',
         billing_address: '',
         billing_phone_no: '',
         items: [],
         general_note: '',
+        task_title: '',
+        task_description: '',
     });
     const [items, setItems] = useState([]); // Initialize items state
     const [errors, setErrors] = useState({});
@@ -104,6 +106,8 @@ export default function EditInvoice() {
                     billing_phone_no: data.billing_phone_no,
                     items: [],
                     general_note: data.general_note,
+                    task_title: data.task_title || '',
+                    task_description: data.task_description || '',
                 });
             } catch (error) {
                 console.error('Error fetching invoice data:', error);
@@ -138,7 +142,9 @@ export default function EditInvoice() {
         try {
             const response = await axiosInstance.put(`/user/invoices/edit/${invoiceId}`, {
                 ...formData,
-                items: JSON.stringify(items)
+                items: JSON.stringify(items),
+                task_title: formData.task_title || null,
+                task_description: formData.task_description || null,
             });
             
             if (response.data.status === false) {
@@ -240,13 +246,22 @@ export default function EditInvoice() {
                                                         <div className="col-lg-3 col-sm-6">
                                                             <label>Payment Status</label>
                                                             <div className="input-light">
-                                                                <select onChange={handleInputChange} name="payment_status" value={formData.payment_status} className="form-control bg-light border-0" data-choices data-choices-search-false id="choices-payment-status" required>
-                                                                    <option value="">Select Payment Status</option>
+                                                                <select name="payment_status" value={(formData.payment_status||'').toUpperCase()} className="form-control bg-light border-0" id="choices-payment-status" disabled>
                                                                     <option value="PENDING">PENDING</option>
                                                                     <option value="PAID">PAID</option>
-                                                                   
                                                                 </select>
+                                                                <small className="text-muted">Status is managed by the payment gateway.</small>
                                                             </div>
+                                                        </div>
+                                                        
+                                                        <div className="col-lg-6 col-sm-12">
+                                                            <label>Task Title</label>
+                                                            <input onChange={handleInputChange} name="task_title" value={formData.task_title} type="text" className="form-control bg-light border-0" placeholder="Enter task or project title" />
+                                                        </div>
+                                                        
+                                                        <div className="col-lg-6 col-sm-12">
+                                                            <label>Task Description</label>
+                                                            <textarea onChange={handleInputChange} name="task_description" value={formData.task_description} className="form-control bg-light border-0" rows="2" placeholder="Brief description of the task or project"></textarea>
                                                         </div>
                                                     
                                                         

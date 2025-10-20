@@ -20,16 +20,20 @@ export default function ManageFiles({ fileType = 'production', refreshTrigger })
                 params: {
                     type: fileType,
                     page: currentPage,
-                    limit: 10
+                    per_page: 10
                 }
             });
 
-            if (response.data.success) {
+            console.log('Files response:', response.data);
+
+            if (response.data.status) {
                 setFiles(response.data.data.files || []);
                 setTotalPages(response.data.data.pagination?.total_pages || 1);
+            } else {
+                toast.error(response.data.message || 'Failed to load files');
             }
         } catch (error) {
-            toast.error('Failed to load files');
+            toast.error(error.response?.data?.message || 'Failed to load files');
             console.error('Error:', error);
         } finally {
             setLoading(false);

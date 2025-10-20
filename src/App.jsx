@@ -31,6 +31,10 @@ import EngineerDetails from './dashboard/engineer/view/App'
 import ProductionSamples from './dashboard/production-samples/App'
 import FileSharing from './dashboard/file-sharing/App'
 import GettingStarted from './dashboard/getting-started/App'
+import TaskApp from './dashboard/task/App'
+import ActiveTasksApp from './dashboard/task/active/App'
+import CompletedTasksApp from './dashboard/task/completed/App'
+import PendingConfirmationTasksApp from './dashboard/task/pending-confirmation/App'
 import { loadExternalScripts } from './utils/external-scripts';
 
 // New component to wrap dashboard routes
@@ -58,6 +62,10 @@ const DashboardWrapper = () => {
       <Route path="production-samples" element={<ProtectedRoute allowedRoles={["engineer"]}><ProductionSamples /></ProtectedRoute>} />
       <Route path="file-sharing" element={<ProtectedRoute allowedRoles={["engineer"]}><FileSharing /></ProtectedRoute>} />
       <Route path="getting-started" element={<GettingStarted />} />
+      <Route path="tasks/active" element={<ActiveTasksApp />} />
+      <Route path="tasks/completed" element={<CompletedTasksApp />} />
+      <Route path="tasks/pending-confirmation" element={<PendingConfirmationTasksApp />} />
+      <Route path="task/confirm/:taskId" element={<TaskApp />} />
       {/* Redirect to dashboard home for any unmatched routes */}
       <Route path="*" element={<Navigate to="/dase/dashboard" replace />} />
     </Routes>

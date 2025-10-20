@@ -67,21 +67,25 @@ axiosInstance.interceptors.response.use(
     },
     error => {
         const { response } = error;
-        
-        // Log the error in development mode
+        const url = error.config?.url || '';
+
+        // In development, optionally mute expected 404s on endpoints we gracefully mock
         if (import.meta.env.DEV) {
-            console.error('❌ Response Error:', {
-                url: error.config?.url,
-                method: error.config?.method,
-                status: response?.status,
-                data: response?.data,
-                message: error.message
-            });
+            const mutedEndpoints = ['/dashboard/notifications', '/user/tasks', '/user/tasks/complete'];
+            const isMuted404 = response?.status === 404 && mutedEndpoints.some(p => url.includes(p));
+            if (!isMuted404) {
+                console.error('❌ Response Error:', {
+                    url: error.config?.url,
+                    method: error.config?.method,
+                    status: response?.status,
+                    data: response?.data,
+                    message: error.message
+                });
+            }
         }
         
         // Handle 401 Unauthorized - redirect to login unless on verification routes
         if (response?.status === 401) {
-            const url = error.config?.url || '';
             const isVerificationFlow = url.includes('/confirm-account') || url.includes('/verify-code');
             if (!isVerificationFlow) {
                 localStorage.clear();

@@ -72,8 +72,21 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
             case '/dase/getting-started':
                 setTitle('Getting Started');
                 break;
+            case '/dase/tasks/active':
+                setTitle('Active Tasks');
+                break;
+            case '/dase/tasks/completed':
+                setTitle('Completed Tasks');
+                break;
+            case '/dase/tasks/pending-confirmation':
+                setTitle('Pending Confirmation');
+                break;
             default:
-                setTitle('Welcome, Lawal Wahab');
+                if (location.pathname.includes('/dase/task/confirm/')) {
+                    setTitle('Task Confirmation');
+                } else {
+                    setTitle('Welcome, Lawal Wahab');
+                }
         }
     }, [location.pathname, setTitle]);
 
@@ -99,6 +112,11 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
 
     function isActive(paths) {
         return paths.some(path => window.location.pathname === path) ? "active" : "";
+    }
+
+    function isTasksActive() {
+        const taskPaths = ['/dase/tasks/active', '/dase/tasks/completed', '/dase/tasks/pending-confirmation'];
+        return taskPaths.includes(location.pathname) ? 'active' : '';
     }
   return (
     <>
@@ -216,6 +234,43 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar, setTitle }) {
                                     Notification
                                 </span>
                             </Link>
+                        </li>
+
+                        {/* Tasks Section */}
+                        <li className={`nav-item ${isTasksActive()}`}>
+                            <a className={`nav-link menu-link ${isTasksActive()}`} href="#sidebarTasks" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarTasks">
+                                <span data-key="t-tasks">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9 11l3 3L22 4" stroke="#6882B6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="#6882B6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                    Tasks
+                                </span>
+                                <div className="link-arrow">
+                                    <i className="ri-arrow-right-s-line"></i>
+                                </div>
+                            </a>
+                            <div className="collapse menu-dropdown" id="sidebarTasks">
+                                <ul className="nav nav-sm flex-column">
+                                    <li className="nav-item">
+                                        <Link to="/dase/tasks/active" className="nav-link" data-key="t-active-tasks">
+                                            Active Tasks
+                                        </Link>
+                                    </li>
+                                    <li className="nav-item">
+                                        <Link to="/dase/tasks/completed" className="nav-link" data-key="t-completed-tasks">
+                                            Completed Tasks
+                                        </Link>
+                                    </li>
+                                    {isClient && (
+                                        <li className="nav-item">
+                                            <Link to="/dase/tasks/pending-confirmation" className="nav-link" data-key="t-pending-confirmation">
+                                                Pending Confirmation
+                                            </Link>
+                                        </li>
+                                    )}
+                                </ul>
+                            </div>
                         </li>
 
                         {isEngineer && (

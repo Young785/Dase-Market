@@ -87,21 +87,21 @@ export default function Header({ title, onToggleSidebar }) {
 		}, 2000);
 	  };
 
-	useEffect(() => {
+    useEffect(() => {
         const fetchNotifications = async () => {
-			try {
-				setLoadingNotifications(true);
+            try {
+                setLoadingNotifications(true);
                 const res = await axiosInstance.get('/dashboard/notifications?per_page=10');
                 if (res.data && res.data.status) {
                     const payload = res.data.data;
                     setNotifications(payload.items || payload || []);
-				}
-			} catch (err) {
-				notifyError('Failed to fetch notifications');
-			} finally {
-				setLoadingNotifications(false);
-			}
-		};
+                }
+            } catch (err) {
+                notifyError('Failed to fetch notifications');
+            } finally {
+                setLoadingNotifications(false);
+            }
+        };
 		
 		const fetchUnreadMessageCount = async () => {
 			try {
@@ -174,7 +174,7 @@ export default function Header({ title, onToggleSidebar }) {
 								<div className="d-flex">
 									
 									<div className="navbar-brand-box horizontal-logo">
-										<a href="#" className="logo logo-dark">
+										{/* <a href="#" className="logo logo-dark">
 											<span className="logo-sm">
 												<h3>{ title }</h3>
 											</span>
@@ -190,7 +190,7 @@ export default function Header({ title, onToggleSidebar }) {
 											<span className='header-title'>
 												{title}
 											</span>
-										</a>
+										</a> */}
 									</div>
 
 									{/* Toggle button (visible on mobile) */}
@@ -513,7 +513,7 @@ export default function Header({ title, onToggleSidebar }) {
 									<div className="dropdown ms-sm-3 header-item topbar-user">
 										<button type="button" className="btn" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <span className="d-flex align-items-center">
-                                                <img className="rounded-circle header-profile-user" src={resolveImageUrl(profile_photo)} alt="" />
+                                                <img className="rounded-circle header-profile-user" src={resolveImageUrl(profile_photo)} alt="" onError={(e)=>{ e.currentTarget.src='/assets/user.png'; }} />
 												<span className="text-start ms-xl-2">
 													<span className="d-none d-xl-inline-block ms-1 fw-medium user-name-text">
 														{first_name && last_name ? `${first_name} ${last_name}` : 'Loading...'}

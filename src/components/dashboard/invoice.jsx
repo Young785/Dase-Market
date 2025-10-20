@@ -6,6 +6,7 @@ import axiosInstance from "../../axiosInstance"
 import { toast } from "react-toastify"
 import { ActiveFilters } from "./active-filters.jsx"
 import { LoadingSpinner } from "./loading-spinner.jsx"
+import PaymentModal from "./invoice/PaymentModal"
 // import * as bootstrap from "bootstrap"
 
 export default function DashboardInvoice() {
@@ -17,18 +18,16 @@ export default function DashboardInvoice() {
   const [analytics, setAnalytics] = useState(null)
   const [invoiceToDelete, setInvoiceToDelete] = useState(null)
   const [isFiltering, setIsFiltering] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [selectedInvoice, setSelectedInvoice] = useState(null)
 
-  // Filter states
+  // Filter states (combined - no separate input states needed for instant filtering)
   const [filters, setFilters] = useState({
     search: "",
     status: "all",
     date_issued: "",
+    role: "all",
   })
-
-  // Form input states (for controlled inputs)
-  const [searchInput, setSearchInput] = useState("")
-  const [statusInput, setStatusInput] = useState("all")
-  const [dateInput, setDateInput] = useState("")
 
   const notifyError = (text) =>
     toast.error(text, {
@@ -84,27 +83,92 @@ export default function DashboardInvoice() {
     }
   }
 
-  // Handle filter form submission
-  const handleFilterSubmit = (e) => {
-    e.preventDefault()
-    setFilters({
-      search: searchInput,
-      status: statusInput,
-      date_issued: dateInput,
-    })
+  const handleDownload = async (invoiceId) => {
+    try {
+      notifySuccess("Preparing download...")
+      
+      const response = await axiosInstance.get(`/user/invoices/download/${invoiceId}`, {
+        responseType: 'blob', // Important for file downloads
+      })
+
+      // Create blob link to download
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      
+      // Get filename from response headers or use default
+      const contentDisposition = response.headers['content-disposition']
+      let filename = `invoice_${invoiceId}.pdf`
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/)
+        if (filenameMatch) {
+          filename = filenameMatch[1]
+        }
+      }
+      
+      link.setAttribute('download', filename)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+      
+      notifySuccess("Invoice downloaded successfully!")
+    } catch (error) {
+      console.error('Download error:', error)
+      if (error.response?.status === 403) {
+        notifyError("You don't have permission to download this invoice")
+      } else if (error.response?.status === 404) {
+        notifyError("Invoice not found")
+      } else {
+        notifyError("Error downloading invoice. Please try again.")
+      }
+    }
+  }
+
+  const handlePayNow = (invoice) => {
+    setSelectedInvoice(invoice)
+    setShowPaymentModal(true)
+  }
+
+  const handlePaymentSuccess = async (data) => {
+    notifySuccess('Payment completed successfully!')
+    // Refresh invoices list
+    const params = new URLSearchParams()
+    if (filters.search) params.append("search", filters.search)
+    if (filters.status && filters.status !== "all") params.append("status", filters.status)
+    if (filters.date_issued) params.append("date_issued", filters.date_issued)
+    const url = `/user/invoices${params.toString() ? `?${params.toString()}` : ""}`
+    
+    try {
+      const response = await axiosInstance.get(url)
+      if (response.data.status !== false) {
+        let invoicesData = response.data.data.invoices || []
+        if (filters.role && filters.role !== "all") {
+          invoicesData = invoicesData.filter(invoice => invoice.user_role === filters.role)
+        }
+        setInvoices(invoicesData)
+        setAnalytics(response.data.data.analytics || null)
+      }
+    } catch (error) {
+      console.error('Error refreshing invoices:', error)
+    }
+  }
+
+  // Handle filter changes (instant filtering)
+  const handleFilterChange = (filterName, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [filterName]: value,
+    }))
   }
 
   // Clear a specific filter
   const handleClearFilter = (filterName) => {
     setFilters((prev) => ({
       ...prev,
-      [filterName]: filterName === "status" ? "all" : "",
+      [filterName]: filterName === "status" || filterName === "role" ? "all" : "",
     }))
-
-    // Also reset the corresponding input
-    if (filterName === "search") setSearchInput("")
-    if (filterName === "status") setStatusInput("all")
-    if (filterName === "date_issued") setDateInput("")
   }
 
   // Clear all filters
@@ -113,71 +177,80 @@ export default function DashboardInvoice() {
       search: "",
       status: "all",
       date_issued: "",
+      role: "all",
     })
-    setSearchInput("")
-    setStatusInput("all")
-    setDateInput("")
   }
 
   useEffect(() => {
     const controller = new AbortController()
     let isMounted = true
 
-    const fetchInvoices = async () => {
-      setIsFiltering(true)
-      try {
-        // Build query parameters based on active filters
-        const params = new URLSearchParams()
+    // Debounce search filter - wait 500ms after user stops typing
+    const timeoutId = setTimeout(() => {
+      const fetchInvoices = async () => {
+        setIsFiltering(true)
+        try {
+          // Build query parameters based on active filters
+          const params = new URLSearchParams()
 
-        if (filters.search) {
-          params.append("search", filters.search)
-        }
+          if (filters.search) {
+            params.append("search", filters.search)
+          }
 
-        if (filters.status && filters.status !== "all") {
-          params.append("status", filters.status)
-        }
+          if (filters.status && filters.status !== "all") {
+            params.append("status", filters.status)
+          }
 
-        if (filters.date_issued) {
-          params.append("date_issued", filters.date_issued)
-        }
+          if (filters.date_issued) {
+            params.append("date_issued", filters.date_issued)
+          }
 
-        // Construct the URL with query parameters
-        const url = `/user/invoices${params.toString() ? `?${params.toString()}` : ""}`
+          // Construct the URL with query parameters
+          const url = `/user/invoices${params.toString() ? `?${params.toString()}` : ""}`
 
-        // Add the signal to the request
-        const response = await axiosInstance.get(url, {
-          signal: controller.signal,
-        })
+          // Add the signal to the request
+          const response = await axiosInstance.get(url, {
+            signal: controller.signal,
+          })
 
-        if (!isMounted) return
+          if (!isMounted) return
 
-        if (response.data.status === false) {
-          setMessage(response.data.message)
-          setInvoices([])
-        } else {
-          setInvoices(response.data.data.invoices || [])
-          setAnalytics(response.data.data.analytics || null)
-        }
-      } catch (err) {
-        // Ignore abort errors
-        if (err.name === "AbortError") return
+          if (response.data.status === false) {
+            setMessage(response.data.message)
+            setInvoices([])
+          } else {
+            let invoicesData = response.data.data.invoices || []
+            
+            // Apply client-side role filtering
+            if (filters.role && filters.role !== "all") {
+              invoicesData = invoicesData.filter(invoice => invoice.user_role === filters.role)
+            }
+            
+            setInvoices(invoicesData)
+            setAnalytics(response.data.data.analytics || null)
+          }
+        } catch (err) {
+          // Ignore abort errors
+          if (err.name === "AbortError") return
 
-        if (!isMounted) return
-        setError("Failed to fetch invoices")
-        notifyError("Error fetching invoices")
-      } finally {
-        if (isMounted) {
-          setLoading(false)
-          setIsFiltering(false)
+          if (!isMounted) return
+          setError("Failed to fetch invoices")
+          notifyError("Error fetching invoices")
+        } finally {
+          if (isMounted) {
+            setLoading(false)
+            setIsFiltering(false)
+          }
         }
       }
-    }
 
-    fetchInvoices()
+      fetchInvoices()
+    }, filters.search ? 500 : 0) // Debounce search by 500ms, instant for other filters
 
     // Cleanup function
     return () => {
       isMounted = false
+      clearTimeout(timeoutId)
       controller.abort() // Cancel any pending requests
     }
   }, [filters]) // Dependency on filters to refetch when filters change
@@ -214,7 +287,7 @@ export default function DashboardInvoice() {
                     <div className="card-body">
                       <div className="d-flex align-items-center">
                         <div className="flex-grow-1">
-                          <p className="text-uppercase fw-medium text-muted mb-0">Invoices Sent</p>
+                          <p className="text-uppercase fw-medium text-muted mb-0">Total Invoices</p>
                         </div>
                       </div>
                       <div className="d-flex align-items-end justify-content-between mt-4">
@@ -222,8 +295,8 @@ export default function DashboardInvoice() {
                           <h4 className="fs-22 fw-semibold ff-secondary mb-4">
                             ${analytics ? analytics.all.sum.toFixed(2) : "0.00"}
                           </h4>
-                          <span className="badge bg-warning me-1">{analytics ? analytics.all.count : 0}</span>
-                          <span className="text-muted">Invoices sent</span>
+                          <span className="badge bg-success me-1">{analytics ? analytics.all.count : 0}</span>
+                          <span className="text-muted">Total invoices</span>
                         </div>
                         <div className="avatar-sm flex-shrink-0">
                           <span className="avatar-title bg-light rounded fs-3">
@@ -248,8 +321,8 @@ export default function DashboardInvoice() {
                           <h4 className="fs-22 fw-semibold ff-secondary mb-4">
                             ${analytics ? analytics.paid.sum.toFixed(2) : "0.00"}
                           </h4>
-                          <span className="badge bg-warning me-1">{analytics ? analytics.paid.count : 0}</span>
-                          <span className="text-muted">Paid by clients</span>
+                          <span className="badge bg-success me-1">{analytics ? analytics.paid.count : 0}</span>
+                          <span className="text-muted">Paid invoices</span>
                         </div>
                         <div className="avatar-sm flex-shrink-0">
                           <span className="avatar-title bg-light rounded fs-3">
@@ -275,7 +348,7 @@ export default function DashboardInvoice() {
                             ${analytics ? analytics.pending.sum.toFixed(2) : "0.00"}
                           </h4>
                           <span className="badge bg-warning me-1">{analytics ? analytics.pending.count : 0}</span>
-                          <span className="text-muted">Pending by clients</span>
+                          <span className="text-muted">Pending invoices</span>
                         </div>
                         <div className="avatar-sm flex-shrink-0">
                           <span className="avatar-title bg-light rounded fs-3">
@@ -300,7 +373,7 @@ export default function DashboardInvoice() {
                           <h4 className="fs-22 fw-semibold ff-secondary mb-4">
                             ${analytics ? analytics.expired.sum.toFixed(2) : "0.00"}
                           </h4>
-                          <span className="badge bg-warning me-1">{analytics ? analytics.expired.count : 0}</span>
+                          <span className="badge bg-danger me-1">{analytics ? analytics.expired.count : 0}</span>
                           <span className="text-muted">Expired invoices</span>
                         </div>
                         <div className="avatar-sm flex-shrink-0">
@@ -337,63 +410,71 @@ export default function DashboardInvoice() {
                       </div>
                     </div>
                     <div className="card-body bg-light-subtle border border-dashed border-start-0 border-end-0">
-                      <form onSubmit={handleFilterSubmit}>
-                        <div className="row g-3">
-                          <div className="col-xxl-5 col-sm-12">
-                            <div className="search-box">
-                              <input
-                                type="text"
-                                className="form-control search bg-light border-light"
-                                placeholder="Search for customer, email, country, status or something..."
-                                value={searchInput}
-                                onChange={(e) => setSearchInput(e.target.value)}
-                              />
-                              <i className="ri-search-line search-icon"></i>
-                            </div>
-                          </div>
-
-                          <div className="col-xxl-3 col-sm-4">
+                      <div className="row g-3">
+                        <div className="col-xxl-5 col-sm-12">
+                          <div className="search-box">
                             <input
-                              type="date"
-                              className="form-control bg-light border-light"
-                              placeholder="Select date"
-                              value={dateInput}
-                              onChange={(e) => setDateInput(e.target.value)}
+                              type="text"
+                              className="form-control search bg-light border-light"
+                              placeholder="Search for customer, email, country, status or something..."
+                              value={filters.search}
+                              onChange={(e) => handleFilterChange('search', e.target.value)}
                             />
-                          </div>
-
-                          <div className="col-xxl-3 col-sm-4">
-                            <div className="input-light">
-                              <select
-                                className="form-control"
-                                name="status"
-                                value={statusInput}
-                                onChange={(e) => setStatusInput(e.target.value)}
-                              >
-                                <option value="all">All</option>
-                                <option value="pending">Pending</option>
-                                <option value="paid">Paid</option>
-                                <option value="expired">Expired</option>
-                              </select>
-                            </div>
-                          </div>
-
-                          <div className="col-xxl-1 col-sm-4">
-                            <button type="submit" className="btn btn-primary w-100" disabled={isFiltering}>
-                              {isFiltering ? (
-                                <span
-                                  className="spinner-border spinner-border-sm me-1"
-                                  role="status"
-                                  aria-hidden="true"
-                                ></span>
-                              ) : (
-                                <i className="ri-equalizer-fill me-1 align-bottom"></i>
-                              )}
-                              Filters
-                            </button>
+                            <i className="ri-search-line search-icon"></i>
                           </div>
                         </div>
-                      </form>
+
+                        <div className="col-xxl-3 col-sm-4">
+                          <input
+                            type="date"
+                            className="form-control bg-light border-light"
+                            placeholder="Select date"
+                            value={filters.date_issued}
+                            onChange={(e) => handleFilterChange('date_issued', e.target.value)}
+                          />
+                        </div>
+
+                        <div className="col-xxl-2 col-sm-4">
+                          <div className="input-light">
+                            <select
+                              className="form-control"
+                              name="status"
+                              value={filters.status}
+                              onChange={(e) => handleFilterChange('status', e.target.value)}
+                            >
+                              <option value="all">All Status</option>
+                              <option value="pending">Pending</option>
+                              <option value="paid">Paid</option>
+                              <option value="expired">Expired</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="col-xxl-2 col-sm-4">
+                          <div className="input-light">
+                            <select
+                              className="form-control"
+                              name="role"
+                              value={filters.role}
+                              onChange={(e) => handleFilterChange('role', e.target.value)}
+                            >
+                              <option value="all">All Invoices</option>
+                              <option value="sender">Sent by Me</option>
+                              <option value="receiver">Received by Me</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="col-xxl-1 col-sm-4 d-flex align-items-center">
+                          {isFiltering && (
+                            <span
+                              className="spinner-border spinner-border-sm text-primary"
+                              role="status"
+                              aria-hidden="true"
+                            ></span>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
                     <div className="card-body">
@@ -436,6 +517,9 @@ export default function DashboardInvoice() {
                                   <th className="sort text-uppercase" data-sort="email">
                                     Email
                                   </th>
+                                  <th className="sort text-uppercase" data-sort="role">
+                                    Role
+                                  </th>
                                   <th className="sort text-uppercase" data-sort="country">
                                     Country
                                   </th>
@@ -476,14 +560,31 @@ export default function DashboardInvoice() {
                                     </td>
                                     <td className="customer_name">{invoice.billing_full_name}</td>
                                     <td className="email">{invoice.email_address}</td>
+                                    <td className="role">
+                                      <span
+                                        className={`badge ${
+                                          invoice.user_role === 'sender' 
+                                            ? 'bg-primary-subtle text-primary' 
+                                            : 'bg-success-subtle text-success'
+                                        } text-uppercase`}
+                                      >
+                                        {invoice.user_role === 'sender' ? 'Sent' : 'Received'}
+                                      </span>
+                                    </td>
                                     <td className="country">{invoice.country}</td>
                                     <td className="date">{invoice.date}</td>
                                     <td className="invoice_amount">${invoice.total_amount}</td>
                                     <td className="status">
                                       <span
-                                        className={`badge bg-${invoice.payment_status.toLowerCase()}-subtle text-${invoice.payment_status.toLowerCase()} text-uppercase`}
+                                        className={`badge ${
+                                          (invoice.payment_status || '').toUpperCase() === 'PAID'
+                                            ? 'bg-success-subtle text-success'
+                                            : (invoice.payment_status || '').toUpperCase() === 'PENDING'
+                                            ? 'bg-warning-subtle text-warning'
+                                            : 'bg-danger-subtle text-danger'
+                                        } text-uppercase`}
                                       >
-                                        {invoice.payment_status}
+                                        {invoice.payment_status || 'PENDING'}
                                       </span>
                                     </td>
                                     <td>
@@ -505,29 +606,56 @@ export default function DashboardInvoice() {
                                               <i className="ri-eye-fill align-bottom me-2 text-muted"></i> View
                                             </Link>
                                           </li>
+                                          {invoice.user_role === 'sender' && (
+                                            <li>
+                                              <Link
+                                                to={`/dase/invoice/edit/${invoice.invoice_id}`}
+                                                className="dropdown-item"
+                                              >
+                                                <i className="ri-pencil-fill align-bottom me-2 text-muted"></i> Edit
+                                              </Link>
+                                            </li>
+                                          )}
+                                          {invoice.user_role === 'receiver' && (invoice.payment_status || '').toUpperCase() === 'PENDING' && (
+                                            <li>
+                                              <a
+                                                className="dropdown-item text-success"
+                                                href="#"
+                                                onClick={(e) => {
+                                                  e.preventDefault()
+                                                  handlePayNow(invoice)
+                                                }}
+                                              >
+                                                <i className="ri-wallet-3-line align-bottom me-2"></i> Pay Now
+                                              </a>
+                                            </li>
+                                          )}
                                           <li>
-                                            <Link
-                                              to={`/dase/invoice/edit/${invoice.invoice_id}`}
-                                              className="dropdown-item"
+                                            <a 
+                                              className="dropdown-item" 
+                                              href="#"
+                                              onClick={(e) => {
+                                                e.preventDefault()
+                                                handleDownload(invoice.invoice_id)
+                                              }}
                                             >
-                                              <i className="ri-pencil-fill align-bottom me-2 text-muted"></i> Edit
-                                            </Link>
-                                          </li>
-                                          <li>
-                                            <a className="dropdown-item" href="#">
                                               <i className="ri-download-2-line align-bottom me-2 text-muted"></i>{" "}
                                               Download
                                             </a>
                                           </li>
-                                          <li className="dropdown-divider"></li>
-                                          <li>
-                                            <a
-                                              className="dropdown-item remove-item-btn"
-                                              onClick={() => handleDeleteClick(invoice.invoice_id)}
-                                            >
-                                              <i className="ri-delete-bin-fill align-bottom me-2 text-muted"></i> Delete
-                                            </a>
-                                          </li>
+                                          {invoice.user_role === 'sender' && (
+                                            <>
+                                              <li className="dropdown-divider"></li>
+                                              <li>
+                                                <a
+                                                  className="dropdown-item remove-item-btn"
+                                                  onClick={() => handleDeleteClick(invoice.invoice_id)}
+                                                >
+                                                  <i className="ri-delete-bin-fill align-bottom me-2 text-muted"></i> Delete
+                                                </a>
+                                              </li>
+                                            </>
+                                          )}
                                         </ul>
                                       </div>
                                     </td>
@@ -599,6 +727,20 @@ export default function DashboardInvoice() {
           </div>
         </div>
       </div>
+
+      {/* Payment Modal */}
+      {showPaymentModal && selectedInvoice && (
+        <PaymentModal
+          invoice={selectedInvoice}
+          show={showPaymentModal}
+          onClose={() => {
+            setShowPaymentModal(false)
+            setSelectedInvoice(null)
+          }}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </>
   )
 }
+  

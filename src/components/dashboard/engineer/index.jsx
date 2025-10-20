@@ -6,15 +6,22 @@ import { Link } from 'react-router-dom';
 
 // Resolve profile photo to full backend URL with fallback
 function resolveImageUrl(photo) {
-    if (!photo) return '/assets/user.png';
-    if (/^https?:\/\//i.test(photo)) return photo;
-    let origin = '';
+    const fallback = '/assets/user.png';
     try {
-        const base = axiosInstance?.defaults?.baseURL || '';
-        origin = base ? new URL(base).origin : '';
-    } catch {}
-    const path = photo.includes('/') ? photo.replace(/^\/+/, '') : `uploads/dase/users/${photo}`;
-    return origin ? `${origin}/${path}` : `/${path}`;
+        if (!photo) return fallback;
+        if (typeof photo !== 'string') return fallback;
+        if (/^https?:\/\//i.test(photo)) return photo;
+        let origin = '';
+        try {
+            const base = axiosInstance?.defaults?.baseURL || '';
+            origin = base ? new URL(base).origin : '';
+        } catch {}
+        const cleaned = photo.replace(/^\/+/, '');
+        const path = cleaned.includes('/') ? cleaned : `uploads/dase/users/${cleaned}`;
+        return origin ? `${origin}/${path}` : `/${path}`;
+    } catch {
+        return fallback;
+    }
 }
 
 export default function Engineer() {

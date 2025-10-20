@@ -1,23 +1,51 @@
 import React, { useEffect, useState } from 'react';
 import SimpleBar from 'simplebar-react';
 import 'simplebar-react/dist/simplebar.min.css';
-import { Bell } from 'lucide-react';
-import 'react-perfect-scrollbar/dist/css/styles.css';
+import { 
+    Bell, BellOff, Filter, Search, X, Calendar, FileText, 
+    MessageSquare, CreditCard, FolderOpen, User, CheckCircle,
+    AlertCircle, Info, Zap, Settings, ChevronDown
+} from 'lucide-react';
 import axiosInstance from '../../../axiosInstance';
-import '../style.css';
-import { UsersAvater2 } from '../../../assets/images';
-import toast from 'react-hot-toast';
-import { Toaster } from 'react-hot-toast';
+import mockDataService from '../../../utils/mockData';
+import toast, { Toaster } from 'react-hot-toast';
 import { useProfile } from '../../../context/ProfileContext';
+import '../style.css';
+
+const notificationTypeIcons = {
+    'new_message': { icon: MessageSquare, className: 'text-primary bg-primary' },
+    'invoice_received': { icon: CreditCard, className: 'text-success bg-success' },
+    'payment_successful': { icon: CheckCircle, className: 'text-success bg-success' },
+    'payment_received': { icon: CheckCircle, className: 'text-success bg-success' },
+    'file_shared': { icon: FileText, className: 'text-info bg-info' },
+    'project_update': { icon: FolderOpen, className: 'text-warning bg-warning' },
+    'login_successful': { icon: User, className: 'text-primary bg-primary' },
+    'message_edited': { icon: Info, className: 'text-secondary bg-secondary' },
+    'message_deleted': { icon: AlertCircle, className: 'text-danger bg-danger' },
+    'default': { icon: Bell, className: 'text-secondary bg-secondary' }
+};
 
 export default function NotificationPage() {
     const { profile, loading: profileLoading } = useProfile();
     const [notifications, setNotifications] = useState([]);
     const [meta, setMeta] = useState({ current_page: 1, last_page: 1, per_page: 10, total: 0 });
+    const [stats, setStats] = useState({ total: 0, unread: 0, read: 0, by_type: {} });
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [loading, setLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState('overview-tab');
+    const [activeTab, setActiveTab] = useState('notifications');
+    const [showFilters, setShowFilters] = useState(false);
+    
+    // Filter states
+    const [filters, setFilters] = useState({
+        type: 'all',
+        status: 'all',
+        search: '',
+        date_from: '',
+        date_to: ''
+    });
+
+    // Settings states
     const [prefLoading, setPrefLoading] = useState(false);
     const [prefs, setPrefs] = useState({
         notify_login: true,
@@ -32,62 +60,114 @@ export default function NotificationPage() {
         notify_engineer: true,
     });
 
-    const notifySuccess = (text) => toast.success(text, {
-        position: 'top-right',
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-    });
+    const notifySuccess = (text) => toast.success(text);
+    const notifyError = (text) => toast.error(text);
 
-    const notifyError = (text) => toast.error(text, {
-        position: 'top-right',
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-    });
+    // Fetch notifications
+    const fetchNotifications = async () => {
+        try {
+            setLoading(true);
+            const params = new URLSearchParams();
+            params.append('page', page);
+            params.append('per_page', perPage);
+            if (filters.type && filters.type !== 'all') params.append('type', filters.type);
+            if (filters.status && filters.status !== 'all') params.append('status', filters.status);
+            if (filters.search) params.append('search', filters.search);
+            if (filters.date_from) params.append('date_from', filters.date_from);
+            if (filters.date_to) params.append('date_to', filters.date_to);
 
-    // Fetch notifications and preferences
-    useEffect(() => {
-        const fetchAll = async () => {
             try {
-                setLoading(true);
-                const [notifRes, settingsRes] = await Promise.all([
-                    axiosInstance.get(`/dashboard/notifications?page=${page}&per_page=${perPage}`),
-                    axiosInstance.get('/user/settings'),
-                ]);
-
-                if (notifRes?.data?.data) {
-                    const { items, meta } = notifRes.data.data;
+                const response = await axiosInstance.get(`/dashboard/notifications?${params.toString()}`);
+                if (response?.data?.status && response?.data?.data) {
+                    const { items, meta, stats } = response.data.data;
                     setNotifications(items || []);
                     if (meta) setMeta(meta);
+                    if (stats) setStats(stats);
+                    return;
                 }
-
-                const settings = settingsRes?.data?.data;
-                if (settings?.notifications) {
-                    setPrefs((prev) => ({ ...prev, ...settings.notifications }));
+            } catch (apiErr) {
+                // Fallback to mock data
+                const mock = await mockDataService.getNotifications();
+                if (mock?.status) {
+                    setNotifications(mock.data.items || []);
+                    setMeta(mock.data.meta || { current_page: 1, last_page: 1, per_page: 10, total: mock.data.items.length });
+                    setStats(mock.data.stats || { total: mock.data.items.length, unread: mock.data.items.filter(n => !n.read_at).length, read: mock.data.items.filter(n => n.read_at).length });
+                    return;
                 }
-            } catch (error) {
-                console.error('Error loading notifications/settings:', error);
-                notifyError('Failed to load notifications');
-            } finally {
-                setLoading(false);
+                throw apiErr;
             }
-        };
-
-        if (!profileLoading && profile) {
-            fetchAll();
+        } catch (error) {
+            notifyError('Failed to load notifications');
+        } finally {
+            setLoading(false);
         }
-    }, [profileLoading, profile, page, perPage]);
+    };
 
-    
-    const handleTabClick = (tabId) => {
-        setActiveTab(tabId);
+    // Fetch settings
+    const fetchSettings = async () => {
+        try {
+            const response = await axiosInstance.get('/user/settings');
+            const settings = response?.data?.data;
+            if (settings?.notifications) {
+                setPrefs((prev) => ({ ...prev, ...settings.notifications }));
+            }
+        } catch (error) {
+            console.error('Error loading settings:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (!profileLoading && profile) {
+            fetchNotifications();
+            if (activeTab === 'settings') {
+                fetchSettings();
+            }
+        }
+    }, [profileLoading, profile, page, perPage, filters, activeTab]);
+
+    const handleFilterChange = (key, value) => {
+        setFilters(prev => ({ ...prev, [key]: value }));
+        setPage(1);
+    };
+
+    const clearFilters = () => {
+        setFilters({
+            type: 'all',
+            status: 'all',
+            search: '',
+            date_from: '',
+            date_to: ''
+        });
+        setPage(1);
+    };
+
+    const handleMarkAsRead = async (notificationId) => {
+        try {
+            await axiosInstance.post(`/dashboard/notifications/${notificationId}/read`);
+            setNotifications(prev => 
+                prev.map(notif => 
+                    notif.id === notificationId 
+                        ? { ...notif, read_at: new Date().toISOString() } 
+                        : notif
+                )
+            );
+            notifySuccess('Marked as read');
+        } catch (error) {
+            notifyError('Failed to mark as read');
+        }
+    };
+
+    const handleMarkAllAsRead = async () => {
+        try {
+            await axiosInstance.post('/dashboard/notifications/read-all');
+            setNotifications(prev => 
+                prev.map(notif => ({ ...notif, read_at: notif.read_at || new Date().toISOString() }))
+            );
+            notifySuccess('All notifications marked as read');
+            fetchNotifications();
+        } catch (error) {
+            notifyError('Failed to mark all as read');
+        }
     };
 
     const handleToggle = async (key) => {
@@ -105,135 +185,325 @@ export default function NotificationPage() {
         }
     };
 
-    if (profileLoading) {
-        return <div>Loading...</div>;
-    }
+    const getNotificationIcon = (type) => {
+        const config = notificationTypeIcons[type] || notificationTypeIcons.default;
+        const IconComponent = config.icon;
+        const [textClass, bgClass] = config.className.split(' ');
+        return (
+            <div className={`${bgClass} bg-opacity-10 rounded d-flex align-items-center justify-content-center flex-shrink-0`}
+                style={{ width: '48px', height: '48px' }}>
+                <IconComponent size={24} className={textClass} />
+            </div>
+        );
+    };
 
-    if (!profile) {
-        return <div>Error: Profile data could not be fetched.</div>;
+    const getFilteredNotificationTypes = () => {
+        return Object.keys(stats.by_type || {}).map(type => ({
+            value: type,
+            label: type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            count: stats.by_type[type]
+        }));
+    };
+
+    if (profileLoading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        );
     }
-  
-    const {
-        first_name,
-        last_name,
-        business_name,
-        street_address,
-        profile_photo,
-    } = profile;
 
     return (
         <>
-            <div>
-                <Toaster />
-                <div className='layout-wrapper'>
+            <Toaster position="top-right" />
+            <div className="layout-wrapper">
                     <div className="main-content">
                         <div className="page-content">
                             <div className="container-fluid">
-                                <div className="profile-foreground position-relative mx-n4 mt-n4">
-                                    <div className="profile-wid-bg">
-                                        <img src={profile_photo ? UsersAvater2 : UsersAvater2} alt="user-img" className="img-thumbnail rounded-circle" />
+                            {/* Header */}
+                            <div className="row mb-4">
+                                <div className="col-12">
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h4 className="mb-1">Notifications</h4>
+                                            <p className="text-muted mb-0">Stay updated with your latest activities</p>
+                                        </div>
+                                        <div className="d-flex gap-2">
+                                            <button
+                                                className="btn btn-outline-primary"
+                                                onClick={() => setActiveTab('notifications')}
+                                            >
+                                                <Bell size={18} className="me-2" />
+                                                Notifications
+                                            </button>
+                                            <button
+                                                className="btn btn-outline-secondary"
+                                                onClick={() => setActiveTab('settings')}
+                                            >
+                                                <Settings size={18} className="me-2" />
+                                                Settings
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="pt-4 mb-4 mb-lg-3 pb-lg-4 profile-wrapper">
-                                    <div className="row g-4">
-                                        <div className="col-auto">
-                                            <div className="avatar-lg">
-                                                <img src={profile_photo ? UsersAvater2 : UsersAvater2} alt="user-img" className="img-thumbnail rounded-circle" />
+                            </div>
+
+                            {/* Notifications Tab */}
+                            {activeTab === 'notifications' && (
+                                <>
+                                    {/* Stats Cards */}
+                                    <div className="row mb-4">
+                                        <div className="col-md-3">
+                                            <div className="card border-0 shadow-sm">
+                                                <div className="card-body">
+                                                    <div className="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <p className="text-muted mb-1 small">Total</p>
+                                                            <h3 className="mb-0 text-dark">{stats.total}</h3>
+                                                        </div>
+                                                        <div className="rounded-circle bg-primary bg-opacity-10 p-3">
+                                                            <Bell size={24} className="text-primary" />
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        
-                                        <div className="col">
-                                            <div className="p-2">
-                                                <h3 className="text-white mb-1">{`${first_name} ${last_name}`}</h3>
-                                                <p className="text-white text-opacity-75">{business_name}</p>
-                                                <div className="hstack text-white-50 gap-1">
-                                                    <div className="me-2"><i className="ri-map-pin-user-line me-1 text-white text-opacity-75 fs-16 align-middle"></i>{street_address || "Location not provided"}</div>
+                                        <div className="col-md-3">
+                                            <div className="card border-0 shadow-sm">
+                                                <div className="card-body">
+                                                    <div className="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <p className="text-muted mb-1 small">Unread</p>
+                                                            <h3 className="mb-0 text-danger">{stats.unread}</h3>
+                                                        </div>
+                                                        <div className="rounded-circle bg-danger bg-opacity-10 p-3">
+                                                            <Zap size={24} className="text-danger" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="col-md-3">
+                                            <div className="card border-0 shadow-sm">
+                                                <div className="card-body">
+                                                    <div className="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <p className="text-muted mb-1 small">Read</p>
+                                                            <h3 className="mb-0 text-success">{stats.read}</h3>
+                                                        </div>
+                                                        <div className="rounded-circle bg-success bg-opacity-10 p-3">
+                                                            <CheckCircle size={24} className="text-success" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="col-md-3">
+                                            <div className="card border-0 shadow-sm">
+                                                <div className="card-body">
+                                                    <div className="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <p className="text-muted mb-1 small">Types</p>
+                                                            <h3 className="mb-0 text-info">{Object.keys(stats.by_type || {}).length}</h3>
+                                                        </div>
+                                                        <div className="rounded-circle bg-info bg-opacity-10 p-3">
+                                                            <Filter size={24} className="text-info" />
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* Filters */}
+                                    <div className="card mb-4">
+                                        <div className="card-body">
+                                            <div className="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 className="mb-0">
+                                                    <Filter size={18} className="me-2" />
+                                                    Filters
+                                                </h6>
+                                                <button
+                                                    className="btn btn-sm btn-link"
+                                                    onClick={() => setShowFilters(!showFilters)}
+                                                >
+                                                    {showFilters ? 'Hide' : 'Show'}
+                                                    <ChevronDown size={16} className={`ms-1 ${showFilters ? 'rotate-180' : ''}`} />
+                                                </button>
                                 </div>
 
-                                <div className="row">
-                                    <div className="col-lg-12">
-                                        <div>
-                                            <div className="d-flex profile-wrapper">
-                                                <ul className="nav nav-pills animation-nav profile-nav gap-2 gap-lg-3 flex-grow-1" role="tablist">
-                                                    <li className="nav-item">
-                                                        <a 
-                                                            className={`nav-link fs-14 ${activeTab === 'overview-tab' ? 'active' : ''}`}
-                                                            href="#overview-tab" 
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                handleTabClick('overview-tab');
-                                                            }}
+                                            {showFilters && (
+                                                <div className="row g-3">
+                                                    <div className="col-md-3">
+                                                        <label className="form-label">Search</label>
+                                                        <div className="input-group">
+                                                            <span className="input-group-text">
+                                                                <Search size={16} />
+                                                            </span>
+                                                            <input
+                                                                type="text"
+                                                                className="form-control"
+                                                                placeholder="Search notifications..."
+                                                                value={filters.search}
+                                                                onChange={(e) => handleFilterChange('search', e.target.value)}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-2">
+                                                        <label className="form-label">Type</label>
+                                                        <select
+                                                            className="form-select"
+                                                            value={filters.type}
+                                                            onChange={(e) => handleFilterChange('type', e.target.value)}
                                                         >
-                                                            <i className="ri-airplay-fill d-inline-block d-md-none"></i> <span className="d-none d-md-inline-block">Notification</span>
-                                                        </a>
-                                                    </li>
-                                                   
-                                                    <li className="nav-item">
-                                                        <a 
-                                                            className={`nav-link fs-14 ${activeTab === 'settings' ? 'active' : ''}`}
-                                                            href="#settings" 
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                handleTabClick('settings');
-                                                            }}
+                                                            <option value="all">All Types</option>
+                                                            {getFilteredNotificationTypes().map(type => (
+                                                                <option key={type.value} value={type.value}>
+                                                                    {type.label} ({type.count})
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <div className="col-md-2">
+                                                        <label className="form-label">Status</label>
+                                                        <select
+                                                            className="form-select"
+                                                            value={filters.status}
+                                                            onChange={(e) => handleFilterChange('status', e.target.value)}
                                                         >
-                                                            <i className="ri-price-tag-line d-inline-block d-md-none"></i> <span className="d-none d-md-inline-block">Setting</span>
-                                                        </a>
-                                                    </li>
-                                                </ul>
+                                                            <option value="all">All</option>
+                                                            <option value="unread">Unread</option>
+                                                            <option value="read">Read</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="col-md-2">
+                                                        <label className="form-label">From Date</label>
+                                                        <input
+                                                            type="date"
+                                                            className="form-control"
+                                                            value={filters.date_from}
+                                                            onChange={(e) => handleFilterChange('date_from', e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-2">
+                                                        <label className="form-label">To Date</label>
+                                                        <input
+                                                            type="date"
+                                                            className="form-control"
+                                                            value={filters.date_to}
+                                                            onChange={(e) => handleFilterChange('date_to', e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-1 d-flex align-items-end">
+                                                        <button
+                                                            className="btn btn-outline-secondary w-100"
+                                                            onClick={clearFilters}
+                                                            title="Clear Filters"
+                                                        >
+                                                            <X size={16} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Notifications List */}
+                                    <div className="card">
+                                        <div className="card-header bg-white">
+                                            <div className="d-flex justify-content-between align-items-center">
+                                                <h6 className="mb-0">All Notifications</h6>
+                                                {stats.unread > 0 && (
+                                                    <button
+                                                        className="btn btn-sm btn-primary"
+                                                        onClick={handleMarkAllAsRead}
+                                                    >
+                                                        <CheckCircle size={16} className="me-1" />
+                                                        Mark All as Read
+                                                    </button>
+                                                )}
                                             </div>
-                                            
-                                            <div className="tab-content pt-4 text-muted">
-                                                <div className={`tab-pane ${activeTab === 'overview-tab' ? 'active' : 'fade'}`} id="overview-tab" role="tabpanel">
-                                                    <div className="row">
-                                                        <div className="col-12">
-                                                           
-                                                            <div className="card">
-                                                                <div className="card-body">
-                                                                    <div className="row mb-4 mt-2">
-                                                                        <h5 className='card-title'>Notification</h5>
-                                                                        <label className='' style={{fontSize:'12px', fontWeight:'500', color:'gray'}}>All notifications will be displayed here.</label>
                                                                     </div>
-                                                                    <div>
-                                                                        <SimpleBar style={{ maxHeight: 'calc(80vh - 110px)' }}> 
-                                                                            <div className="list-group list-group-flush" style={{ padding: '8px 24px 24px 24px'}}>
+                                        <div className="card-body p-0">
+                                            <SimpleBar style={{ maxHeight: '600px' }}>
                                                                                 {loading ? (
-                                                                                    <div className="text-center p-3">
+                                                    <div className="text-center p-5">
                                                                                         <div className="spinner-border text-primary" role="status">
                                                                                             <span className="visually-hidden">Loading...</span>
                                                                                         </div>
                                                                                     </div>
                                                                                 ) : notifications && notifications.length > 0 ? (
-                                                                                    notifications.map(notification => (
-                                                                                        <div className="list-group-item list-group-item-action" key={notification.id} style={{borderBottom: '1px solid #eee', padding: '12px 0'}}>
-                                                                                            <div className="d-flex">
-                                                                                                <div className="flex-shrink-0 me-3">
-                                                                                                    <Bell className="fs-16 text-primary" />
+                                                    <div className="list-group list-group-flush">
+                                                        {notifications.map(notification => (
+                                                            <div
+                                                                key={notification.id}
+                                                                className={`list-group-item ${!notification.read_at ? 'bg-light' : ''}`}
+                                                                style={{
+                                                                    borderLeft: notification.read_at ? 'none' : '3px solid var(--bs-primary)',
+                                                                    cursor: 'pointer',
+                                                                    transition: 'all 0.2s'
+                                                                }}
+                                                                onClick={() => !notification.read_at && handleMarkAsRead(notification.id)}
+                                                            >
+                                                                <div className="d-flex gap-3 align-items-start p-2">
+                                                                    {getNotificationIcon(notification.type)}
+                                                                    <div className="flex-grow-1">
+                                                                        <div className="d-flex justify-content-between align-items-start mb-1">
+                                                                            <h6 className="mb-0 fw-semibold">{notification.title}</h6>
+                                                                            {!notification.read_at && (
+                                                                                <span className="badge bg-primary">New</span>
+                                                                            )}
+                                                                        </div>
+                                                                        <p className="text-muted mb-2" style={{ fontSize: '0.9rem' }}>
+                                                                            {notification.message}
+                                                                        </p>
+                                                                        <div className="d-flex align-items-center gap-3 text-muted" style={{ fontSize: '0.85rem' }}>
+                                                                            <span>
+                                                                                <Calendar size={14} className="me-1" />
+                                                                                {new Date(notification.created_at).toLocaleDateString()}
+                                                                            </span>
+                                                                            <span>
+                                                                                {new Date(notification.created_at).toLocaleTimeString()}
+                                                                            </span>
+                                                                            <span className="badge bg-light text-dark">
+                                                                                {notification.type.replace(/_/g, ' ')}
+                                                                            </span>
                                                                                                 </div>
-                                                                                                <div className="flex-grow-1">
-                                                                                                    <h6 className="mb-1">{notification.title}</h6>
-                                                                                                    <p className="text-muted mb-1" style={{fontSize: '0.85rem'}}>{notification.message}</p>
-                                                                                                    <small className="text-muted">
-                                                                                                        {new Date(notification.created_at).toLocaleString()}
-                                                                                                    </small>
                                                                                                 </div>
                                                                                             </div>
                                                                                         </div>
-                                                                                    ))
-                                                                                ) : (
-                                                                                    <div className="list-group-item text-center">
-                                                                                        <p className="text-muted mb-0">No notifications.</p>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center p-5">
+                                                        <BellOff size={64} className="text-muted mb-3" />
+                                                        <h5 className="text-muted">No notifications found</h5>
+                                                        <p className="text-muted">
+                                                            {filters.search || filters.type !== 'all' || filters.status !== 'all'
+                                                                ? 'Try adjusting your filters'
+                                                                : 'You\'re all caught up!'}
+                                                        </p>
                                                                                     </div>
                                                                                 )}
+                                            </SimpleBar>
+                                        </div>
                                                                                 {/* Pagination */}
-                                                                                <div className="d-flex justify-content-between align-items-center mt-3">
+                                        {notifications.length > 0 && (
+                                            <div className="card-footer bg-white">
+                                                <div className="d-flex justify-content-between align-items-center">
                                                                                     <div className="d-flex align-items-center gap-2">
-                                                                                        <label htmlFor="perPage" className="me-2">Per page:</label>
-                                                                                        <select id="perPage" className="form-select form-select-sm" style={{ width: '90px' }} value={perPage} onChange={(e)=>{ setPerPage(parseInt(e.target.value)||10); setPage(1); }}>
+                                                        <label className="mb-0">Per page:</label>
+                                                        <select
+                                                            className="form-select form-select-sm"
+                                                            style={{ width: '80px' }}
+                                                            value={perPage}
+                                                            onChange={(e) => {
+                                                                setPerPage(parseInt(e.target.value) || 10);
+                                                                setPage(1);
+                                                            }}
+                                                        >
                                                                                             <option value={5}>5</option>
                                                                                             <option value={10}>10</option>
                                                                                             <option value={20}>20</option>
@@ -241,141 +511,73 @@ export default function NotificationPage() {
                                                                                         </select>
                                                                                     </div>
                                                                                     <div className="btn-group">
-                                                                                        <button className="btn btn-sm btn-outline-secondary" disabled={page<=1 || loading} onClick={()=> setPage((p)=> Math.max(1,p-1))}>Prev</button>
-                                                                                        <span className="btn btn-sm btn-outline-secondary disabled">{meta.current_page} / {meta.last_page}</span>
-                                                                                        <button className="btn btn-sm btn-outline-secondary" disabled={page>=meta.last_page || loading} onClick={()=> setPage((p)=> Math.min(meta.last_page,p+1))}>Next</button>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </SimpleBar>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                      
-                                                <div className={`tab-pane ${activeTab === 'settings' ? 'active' : 'fade'}`} id="settings" role="tabpanel">
-                                                    <div className="card">
-                                                        <div className="card-body">
-                                                            <div className="row">
-                                                                <h5 className="mb-3 col-12">Notification Setting</h5>
-                                                                <p className="text-muted mb-4">Select the Notification you're interested in and we'll stay in touch</p>
-                                                            </div>
-                                                              
-                                                            <div className="subscription-settings">
-                                                                <div className="subscription-item d-flex justify-content-between align-items-center py-3 border-bottom">
-                                                                    <div>
-                                                                        <h6 className="mb-1">Login Notifications</h6>
-                                                                        <p className="text-muted mb-0 small">Get notified when someone logs into your account</p>
-                                                                    </div>
-                                                                    <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="loginNotifications" checked={!!prefs.notify_login} onChange={()=>handleToggle('notify_login')} disabled={prefLoading} />
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                                <div className="subscription-item d-flex justify-content-between align-items-center py-3 border-bottom">
-                                                                    <div>
-                                                                        <h6 className="mb-1">Log Out Notifications</h6>
-                                                                        <p className="text-muted mb-0 small">Get notified when you log out of your account</p>
-                                                                    </div>
-                                                                    <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="logoutNotifications" checked={!!prefs.notify_logout} onChange={()=>handleToggle('notify_logout')} disabled={prefLoading} />
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                                <div className="subscription-item d-flex justify-content-between align-items-center py-3 border-bottom">
-                                                                    <div>
-                                                                        <h6 className="mb-1">Account Deletion Notifications</h6>
-                                                                        <p className="text-muted mb-0 small">Get notified when your account is deleted</p>
-                                                                    </div>
-                                                                    <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="deleteAccountNotifications" checked={!!prefs.notify_account_delete} onChange={()=>handleToggle('notify_account_delete')} disabled={prefLoading} />
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="subscription-item d-flex justify-content-between align-items-center py-3 border-bottom">
-                                                                    <div>
-                                                                        <h6 className="mb-1">Password Change Notifications</h6>
-                                                                        <p className="text-muted mb-0 small">Get notified when your password is changed.</p>
-                                                                    </div>
-                                                                    <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="passwordChangeNotifications" checked={!!prefs.notify_password_change} onChange={()=>handleToggle('notify_password_change')} disabled={prefLoading} />
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="subscription-item d-flex justify-content-between align-items-center py-3 border-bottom">
-                                                                    <div>
-                                                                        <h6 className="mb-1">Profile Update Notifications</h6>
-                                                                        <p className="text-muted mb-0 small">Get notified when your profile information is updated.</p>
-                                                                    </div>
-                                                                    <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="profileUpdateNotifications" checked={!!prefs.notify_profile_update} onChange={()=>handleToggle('notify_profile_update')} disabled={prefLoading} />
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="subscription-item d-flex justify-content-between align-items-center py-3 border-bottom">
-                                                                    <div>
-                                                                        <h6 className="mb-1">New Message Notifications</h6>
-                                                                        <p className="text-muted mb-0 small">Get notified when you receive a new message.</p>
-                                                                    </div>
-                                                                    <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="newMessageNotifications" checked={!!prefs.notify_new_message} onChange={()=>handleToggle('notify_new_message')} disabled={prefLoading} />
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="subscription-item d-flex justify-content-between align-items-center py-3 border-bottom">
-                                                                    <div>
-                                                                        <h6 className="mb-1">Invoice Notifications</h6>
-                                                                        <p className="text-muted mb-0 small">Get notified when a new invoice is generated.</p>
-                                                                    </div>
-                                                                    <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="invoiceNotifications" checked={!!prefs.notify_invoice} onChange={()=>handleToggle('notify_invoice')} disabled={prefLoading} />
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="subscription-item d-flex justify-content-between align-items-center py-3 border-bottom">
-                                                                    <div>
-                                                                        <h6 className="mb-1">Project Notifications</h6>
-                                                                        <p className="text-muted mb-0 small">Get notified about updates on your projects.</p>
-                                                                    </div>
-                                                                    <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="projectNotifications" checked={!!prefs.notify_project} onChange={()=>handleToggle('notify_project')} disabled={prefLoading} />
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="subscription-item d-flex justify-content-between align-items-center py-3 border-bottom">
-                                                                    <div>
-                                                                        <h6 className="mb-1">Chat Notifications</h6>
-                                                                        <p className="text-muted mb-0 small">Get notified when you receive a new chat message.</p>
-                                                                    </div>
-                                                                    <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="chatNotifications" checked={!!prefs.notify_chat} onChange={()=>handleToggle('notify_chat')} disabled={prefLoading} />
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="subscription-item d-flex justify-content-between align-items-center py-3 border-bottom">
-                                                                    <div>
-                                                                        <h6 className="mb-1">Engineer Notifications</h6>
-                                                                        <p className="text-muted mb-0 small">Get notified about updates from your engineering team.</p>
-                                                                    </div>
-                                                                    <div className="form-check form-switch">
-                                                                        <input className="form-check-input" type="checkbox" id="engineerNotifications" checked={!!prefs.notify_engineer} onChange={()=>handleToggle('notify_engineer')} disabled={prefLoading} />
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                                <div className="mt-4">
-                                                                    <p className="text-muted">Feel like you've got it all sorted already? <a href="#" className="text-primary" onClick={(e)=>{e.preventDefault(); Object.keys(prefs).forEach(k=> setPrefs((p)=> ({...p,[k]:false})));}}>Unsubscribe from all</a></p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                        <button
+                                                            className="btn btn-sm btn-outline-secondary"
+                                                            disabled={page <= 1 || loading}
+                                                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                                        >
+                                                            Previous
+                                                        </button>
+                                                        <span className="btn btn-sm btn-outline-secondary disabled">
+                                                            {meta.current_page} / {meta.last_page}
+                                                        </span>
+                                                        <button
+                                                            className="btn btn-sm btn-outline-secondary"
+                                                            disabled={page >= meta.last_page || loading}
+                                                            onClick={() => setPage((p) => Math.min(meta.last_page, p + 1))}
+                                                        >
+                                                            Next
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+                      
+                            {/* Settings Tab */}
+                            {activeTab === 'settings' && (
+                                                    <div className="card">
+                                                        <div className="card-body">
+                                        <h5 className="mb-3">Notification Settings</h5>
+                                        <p className="text-muted mb-4">
+                                            Select the notifications you're interested in and we'll stay in touch
+                                        </p>
+                                                              
+                                                            <div className="subscription-settings">
+                                            {[
+                                                { key: 'notify_login', title: 'Login Notifications', desc: 'Get notified when someone logs into your account' },
+                                                { key: 'notify_logout', title: 'Log Out Notifications', desc: 'Get notified when you log out of your account' },
+                                                { key: 'notify_account_delete', title: 'Account Deletion Notifications', desc: 'Get notified when your account is deleted' },
+                                                { key: 'notify_password_change', title: 'Password Change Notifications', desc: 'Get notified when your password is changed' },
+                                                { key: 'notify_profile_update', title: 'Profile Update Notifications', desc: 'Get notified when your profile information is updated' },
+                                                { key: 'notify_new_message', title: 'New Message Notifications', desc: 'Get notified when you receive a new message' },
+                                                { key: 'notify_invoice', title: 'Invoice Notifications', desc: 'Get notified when a new invoice is generated' },
+                                                { key: 'notify_project', title: 'Project Notifications', desc: 'Get notified about updates on your projects' },
+                                                { key: 'notify_chat', title: 'Chat Notifications', desc: 'Get notified when you receive a new chat message' },
+                                                { key: 'notify_engineer', title: 'Engineer Notifications', desc: 'Get notified about updates from your engineering team' },
+                                            ].map(({ key, title, desc }) => (
+                                                <div key={key} className="subscription-item d-flex justify-content-between align-items-center py-3 border-bottom">
+                                                                    <div>
+                                                        <h6 className="mb-1">{title}</h6>
+                                                        <p className="text-muted mb-0 small">{desc}</p>
+                                                                    </div>
+                                                                    <div className="form-check form-switch">
+                                                        <input
+                                                            className="form-check-input"
+                                                            type="checkbox"
+                                                            checked={!!prefs[key]}
+                                                            onChange={() => handleToggle(key)}
+                                                            disabled={prefLoading}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>

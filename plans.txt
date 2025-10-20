@@ -1,5 +1,7 @@
 DIGITAL AUDIO SOUND ENGINEERS RECRUITER SUBSYSTEM.
 
+Engineer
+
 Subsystem Codename: DASE MARKET PLACE.
 DASE is an acronym for Digital Audio Sound Engineers.
 
@@ -63,12 +65,22 @@ There shall be a status update feature with timestamps on every account created,
 *SENDING AUDIO FILES TO CLIENTS 
 _UPLOAD FINISHED PRODUCTION _-_ this shall be a clickable button on Contractor’s dashboard. When clicked, the system ask the user to upload files from their device. After upload is complete, user shall be able to copy and share the download link with the Client that paid for the audio production by pasting the URL onto the chatroom they both initiated the production deal and that’s how Client gets the finished production.
 
+
+
+
+
+
+
+
+Clients
+
+
 *SIGNING UP AS DASE MARKET PLACE CLIENT: [The Registration Documentation].
 _All Starred Fields Are Required.
 *First Name 
 *Last Name 
 *Profile Photo 
-*Business Email x
+*Business Email 
 *Business Phone Number 
 *Business Name 
 _Business Website 

@@ -8,6 +8,7 @@ import { GiphyFetch } from '@giphy/js-fetch-api';
 import './ChatApp.css';
 import { useProfile } from '../../../context/ProfileContext';
 import UploadFiles from '../../dashboard/file-sharing/UploadFiles';
+import TaskCompletionModal from './TaskCompletionModal';
 
 // Import icons
 import { 
@@ -22,15 +23,22 @@ const gf = new GiphyFetch(import.meta.env.VITE_GIPHY_API_KEY || 'YOUR_GIPHY_API_
 
 // Resolve profile photo to full backend URL with fallback
 function resolveImageUrl(photo) {
-    if (!photo) return '/assets/user.png';
-    if (/^https?:\/\//i.test(photo)) return photo;
-    let origin = '';
+    const fallback = '/assets/user.png';
     try {
-        const base = axiosInstance?.defaults?.baseURL || '';
-        origin = base ? new URL(base).origin : '';
-    } catch {}
-    const path = photo.includes('/') ? photo.replace(/^\/+/, '') : `uploads/dase/users/${photo}`;
-    return origin ? `${origin}/${path}` : `/${path}`;
+        if (!photo) return fallback;
+        if (typeof photo !== 'string') return fallback;
+        if (/^https?:\/\//i.test(photo)) return photo;
+        let origin = '';
+        try {
+            const base = axiosInstance?.defaults?.baseURL || '';
+            origin = base ? new URL(base).origin : '';
+        } catch {}
+        const cleaned = photo.replace(/^\/+/, '');
+        const path = cleaned.includes('/') ? cleaned : `uploads/dase/users/${cleaned}`;
+        return origin ? `${origin}/${path}` : `/${path}`;
+    } catch {
+        return fallback;
+    }
 }
 
 export default function ChatApp() {
@@ -60,6 +68,7 @@ export default function ChatApp() {
     const [showSearchResults, setShowSearchResults] = useState(false);
     const [receiverRole, setReceiverRole] = useState(null);
     const [showReport, setShowReport] = useState(false);
+    const [showTaskCompletion, setShowTaskCompletion] = useState(false);
     
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
@@ -445,6 +454,192 @@ export default function ChatApp() {
     };
 
     const renderMessageContent = (message) => {
+        // Render FILE type with metadata (new format)
+        if (message.type === 'file' && message.metadata) {
+            const meta = message.metadata;
+            return (
+                <div style={{
+                    background: '#ffffff',
+                    border: '2px solid #8b5cf6',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    maxWidth: '350px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                        <div style={{
+                            background: '#f5f3ff',
+                            borderRadius: '8px',
+                            padding: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#8b5cf6'
+                        }}>
+                            <File size={24} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', fontWeight: '600', color: '#1f2937' }}>
+                                {meta.title}
+                            </h4>
+                            {meta.description && (
+                                <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#6b7280' }}>
+                                    {meta.description}
+                                </p>
+                            )}
+                            <div style={{ display: 'flex', gap: '12px', fontSize: '12px', color: '#6b7280', marginBottom: '12px' }}>
+                                <span>📎 {meta.file_type?.toUpperCase()}</span>
+                                <span>💾 {meta.file_size_formatted}</span>
+                            </div>
+                            <a 
+                                href={meta.download_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '6px',
+                                    width: '100%',
+                                    background: '#8b5cf6',
+                                    color: '#ffffff',
+                                    padding: '10px 16px',
+                                    borderRadius: '8px',
+                                    textDecoration: 'none',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.target.style.background = '#7c3aed'}
+                                onMouseLeave={(e) => e.target.style.background = '#8b5cf6'}
+                            >
+                                <Download size={16} />
+                                Download File
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Render INVOICE type with metadata
+        if (message.type === 'invoice' && message.metadata) {
+            const meta = message.metadata;
+            const isPayment = meta.type === 'payment';
+            return (
+                <div style={{
+                    background: isPayment 
+                        ? '#ffffff'
+                        : '#ffffff',
+                    border: isPayment 
+                        ? '2px solid #10b981'
+                        : '2px solid #3b82f6',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    maxWidth: '350px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}>
+                    <div style={{ 
+                        marginBottom: '12px',
+                        paddingBottom: '12px',
+                        borderBottom: '1px solid #e5e7eb'
+                    }}>
+                        <h4 style={{ 
+                            margin: '0 0 4px 0', 
+                            fontSize: '15px', 
+                            fontWeight: '600', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px',
+                            color: isPayment ? '#10b981' : '#3b82f6'
+                        }}>
+                            <span style={{
+                                background: isPayment ? '#d1fae5' : '#dbeafe',
+                                borderRadius: '6px',
+                                padding: '4px 8px',
+                                fontSize: '12px'
+                            }}>
+                                {isPayment ? '✓ Payment Received' : '📄 New Invoice'}
+                            </span>
+                        </h4>
+                        <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
+                            Invoice #{meta.invoice_number}
+                        </p>
+                    </div>
+                    <div style={{
+                        background: isPayment ? '#f0fdf4' : '#eff6ff',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        marginBottom: '12px'
+                    }}>
+                        <div style={{ 
+                            fontSize: '24px', 
+                            fontWeight: '700', 
+                            marginBottom: '4px',
+                            color: isPayment ? '#059669' : '#2563eb'
+                        }}>
+                            {meta.amount_formatted}
+                        </div>
+                        {meta.due_date && (
+                            <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                                Due: {new Date(meta.due_date).toLocaleDateString()}
+                            </div>
+                        )}
+                        {isPayment && meta.payer_name && (
+                            <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                                From: {meta.payer_name}
+                            </div>
+                        )}
+                        {meta.status && (
+                            <div style={{ 
+                                marginTop: '8px',
+                                display: 'inline-block',
+                                padding: '4px 12px',
+                                background: isPayment ? '#10b981' : '#3b82f6',
+                                color: '#ffffff',
+                                borderRadius: '12px',
+                                fontSize: '11px',
+                                fontWeight: '600'
+                            }}>
+                                {meta.status === 'PAID' ? '✓ PAID' : meta.status}
+                            </div>
+                        )}
+                    </div>
+                    {meta.note && (
+                        <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#6b7280', fontStyle: 'italic' }}>
+                            "{meta.note}"
+                        </p>
+                    )}
+                    {meta.invoice_url && !isPayment && (
+                        <a 
+                            href={meta.invoice_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px',
+                                width: '100%',
+                                background: '#3b82f6',
+                                color: '#ffffff',
+                                padding: '10px 16px',
+                                borderRadius: '8px',
+                                textDecoration: 'none',
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.target.style.background = '#2563eb'}
+                            onMouseLeave={(e) => e.target.style.background = '#3b82f6'}
+                        >
+                            View Invoice
+                        </a>
+                    )}
+                </div>
+            );
+        }
+
         // Check if message is a GIF URL
         if (message.message && (message.message.includes('giphy.com') || message.message.includes('.gif'))) {
             return (
@@ -655,6 +850,7 @@ export default function ChatApp() {
                                             src={resolveImageUrl(selectedContact.profile_photo)} 
                                             alt={selectedContact.business_name || selectedContact.first_name}
                                             style={{ cursor: 'pointer' }}
+                                            onError={(e)=>{ e.currentTarget.src='/assets/user.png'; }}
                                         />
                                         <span className="status-dot online"></span>
                                     </Link>
@@ -663,6 +859,7 @@ export default function ChatApp() {
                                         <img 
                                             src={resolveImageUrl(selectedContact.profile_photo)} 
                                             alt={selectedContact.business_name || selectedContact.first_name} 
+                                            onError={(e)=>{ e.currentTarget.src='/assets/user.png'; }}
                                         />
                                         <span className="status-dot online"></span>
                                     </div>
@@ -743,6 +940,16 @@ export default function ChatApp() {
                                                 <i className="ri-file-list-3-line"></i>
                                                 <span>Create invoice</span>
                                             </button>
+                                            {/* Task completion modal - only for engineers */}
+                                            {profile?.account_type === 'Engineer' && receiverRole === 'client' && (
+                                                <button className="menu-item" role="menuitem" onClick={() => {
+                                                    setShowActions(false);
+                                                    setShowTaskCompletion(true);
+                                                }}>
+                                                    <i className="ri-check-double-line"></i>
+                                                    <span>Complete task</span>
+                                                </button>
+                                            )}
                                             {/* File sharing modal */}
                                             <button className="menu-item" role="menuitem" onClick={() => {
                                                 setShowActions(false);
@@ -1183,6 +1390,14 @@ export default function ChatApp() {
                                 <Send size={20} />
                             </button>
                         </form>
+
+                        {/* Task Completion Modal */}
+                        <TaskCompletionModal 
+                            isOpen={showTaskCompletion}
+                            onClose={() => setShowTaskCompletion(false)}
+                            receiverId={receiverId}
+                            receiverName={selectedContact?.business_name || `${selectedContact?.first_name || ''} ${selectedContact?.last_name || ''}`.trim()}
+                        />
 
                         {/* File Sharing Modal */}
                         {showFileShare && (

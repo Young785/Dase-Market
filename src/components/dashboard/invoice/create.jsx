@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axiosInstance from '../../../axiosInstance';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
+import NotificationService from '../notifications/NotificationService';
 
 export default function CreateInvoice() {
     const navigate = useNavigate();
@@ -42,12 +43,14 @@ export default function CreateInvoice() {
         phone_number: '',
         invoice_number: '',
         date: '',
-        payment_status: '',
+        payment_status: 'PENDING',
         billing_full_name: '',
         billing_address: '',
         billing_phone_no: '',
         items: [],
         general_note: '',
+        task_title: '',
+        task_description: '',
     });
 
     // Set sensible defaults on mount
@@ -56,6 +59,7 @@ export default function CreateInvoice() {
             ...prev,
             invoice_number: prev.invoice_number || generateInvoiceNumber(),
             date: prev.date || new Date().toISOString().slice(0, 10),
+            payment_status: 'PENDING',
         }));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -161,6 +165,8 @@ export default function CreateInvoice() {
                 billing_phone_no: formData.billing_phone_no,
                 items: JSON.stringify(items),
                 general_note: formData.general_note || null,
+                task_title: formData.task_title || null,
+                task_description: formData.task_description || null,
             };
             console.log('Data being sent to API:', dataToSend);
 
@@ -174,6 +180,14 @@ export default function CreateInvoice() {
             } 
             const data = response.data;
             notifySuccess(data.message);
+
+            // Send notification to client if invoice was created from chat
+            const params = new URLSearchParams(location.search);
+            const receiverId = params.get('receiver_id');
+            if (receiverId && data.data) {
+                await NotificationService.notifyInvoiceCreated(data.data, receiverId);
+            }
+
             setTimeout(() => {
                 navigate('/dase/invoice');
               }, 2000);
@@ -275,13 +289,22 @@ export default function CreateInvoice() {
                                                         <div className="col-lg-3 col-sm-6">
                                                             <label>Payment Status</label>
                                                             <div className="input-light">
-                                                                <select onChange={handleInputChange} name="payment_status" value={formData.payment_status} className="form-control bg-light border-0" data-choices data-choices-search-false id="choices-payment-status" required>
-                                                                    <option value="">Select Payment Status</option>
+                                                                <select name="payment_status" value={formData.payment_status} className="form-control bg-light border-0" id="choices-payment-status" disabled>
                                                                     <option value="PENDING">PENDING</option>
                                                                     <option value="PAID">PAID</option>
-                                                                   
                                                                 </select>
+                                                                <small className="text-muted">Status is set automatically by the payment gateway.</small>
                                                             </div>
+                                                        </div>
+                                                        
+                                                        <div className="col-lg-6 col-sm-12">
+                                                            <label>Task Title</label>
+                                                            <input onChange={handleInputChange} name="task_title" value={formData.task_title} type="text" className="form-control bg-light border-0" placeholder="Enter task or project title" />
+                                                        </div>
+                                                        
+                                                        <div className="col-lg-6 col-sm-12">
+                                                            <label>Task Description</label>
+                                                            <textarea onChange={handleInputChange} name="task_description" value={formData.task_description} className="form-control bg-light border-0" rows="2" placeholder="Brief description of the task or project"></textarea>
                                                         </div>
                                                     
                                                         

@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axiosInstance from '../../../axiosInstance';
 import html2canvas from 'html2canvas';
+import PaymentModal from './PaymentModal';
 
 // Removed logo imports for cleaner design
 
@@ -11,6 +12,7 @@ export default function ViewInvoice() {
     const { invoiceId } = useParams();
     const [invoice, setInvoice] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
 
     useEffect(() => {
         // Create abort controller
@@ -57,7 +59,50 @@ export default function ViewInvoice() {
         window.print();
     };
     
-    const handleDownload = () => {
+    const handleDownload = async () => {
+        try {
+            toast.success("Preparing PDF download...");
+            
+            const response = await axiosInstance.get(`/user/invoices/download/${invoice.invoice_id}`, {
+                responseType: 'blob', // Important for file downloads
+            });
+
+            // Create blob link to download
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            
+            // Get filename from response headers or use default
+            const contentDisposition = response.headers['content-disposition'];
+            let filename = `invoice_${invoice.invoice_number}.pdf`;
+            
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+                if (filenameMatch) {
+                    filename = filenameMatch[1];
+                }
+            }
+            
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            
+            toast.success("Invoice downloaded successfully!");
+        } catch (error) {
+            console.error('Download error:', error);
+            if (error.response?.status === 403) {
+                toast.error("You don't have permission to download this invoice");
+            } else if (error.response?.status === 404) {
+                toast.error("Invoice not found");
+            } else {
+                toast.error("Error downloading invoice. Please try again.");
+            }
+        }
+    };
+
+    const handleDownloadImage = () => {
         const element = document.getElementById('invoice-receipt');
         if (!element) {
             toast.error('Invoice element not found');
@@ -75,6 +120,27 @@ export default function ViewInvoice() {
         }).catch((error) => {
             toast.error('Error downloading invoice');
         });
+    };
+
+    const handlePayNow = () => {
+        setShowPaymentModal(true);
+    };
+
+    const handlePaymentSuccess = async (data) => {
+        toast.success('Payment completed successfully!');
+        setShowPaymentModal(false);
+        
+        // Refresh invoice data
+        try {
+            const response = await axiosInstance.get(`/user/invoices/${invoiceId}`);
+            const { data: invoiceData } = response.data;
+            setInvoice({
+                ...invoiceData,
+                items: JSON.parse(invoiceData.items)
+            });
+        } catch (error) {
+            console.error('Error refreshing invoice:', error);
+        }
     };
 
     if (loading) {
@@ -256,8 +322,17 @@ export default function ViewInvoice() {
                                                             </div>
                                                         </div>
                                                         <div className="hstack gap-2 justify-content-end d-print-none mt-4">
-                                                            <a href="#" className="btn btn-success" onClick={handlePrint}><i className="ri-printer-line align-bottom me-1"></i> Print</a>
-                                                            <a href="#" className="btn btn-primary" onClick={handleDownload}><i className="ri-download-2-line align-bottom me-1"></i> Download</a>
+                                                            {invoice.user_role === 'receiver' && (invoice.payment_status || '').toUpperCase() === 'PENDING' && (
+                                                                <a href="#" className="btn btn-success" onClick={(e) => { e.preventDefault(); handlePayNow(); }}>
+                                                                    <i className="ri-wallet-3-line align-bottom me-1"></i> Pay Now
+                                                                </a>
+                                                            )}
+                                                            <a href="#" className="btn btn-info" onClick={(e) => { e.preventDefault(); handlePrint(); }}>
+                                                                <i className="ri-printer-line align-bottom me-1"></i> Print
+                                                            </a>
+                                                            <a href="#" className="btn btn-primary" onClick={(e) => { e.preventDefault(); handleDownload(); }}>
+                                                                <i className="ri-download-2-line align-bottom me-1"></i> Download
+                                                            </a>
                                                         </div>
                                                     </div>
                                                     
@@ -278,6 +353,16 @@ export default function ViewInvoice() {
                     </div>
                 </div>
             </div>
+
+            {/* Payment Modal */}
+            {showPaymentModal && invoice && (
+                <PaymentModal
+                    invoice={invoice}
+                    show={showPaymentModal}
+                    onClose={() => setShowPaymentModal(false)}
+                    onSuccess={handlePaymentSuccess}
+                />
+            )}
         </>
     )
 

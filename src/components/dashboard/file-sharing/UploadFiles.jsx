@@ -77,10 +77,18 @@ export default function UploadFiles({ fileType = 'production', onUploadSuccess, 
                 }
             });
 
-            if (response.data.success) {
-                toast.success(fileType === 'production' 
-                    ? 'Production file uploaded successfully!' 
-                    : 'Recording uploaded successfully!');
+            if (response.data.status) {
+                const downloadLink = response.data.data?.download_link;
+                toast.success(
+                    fileType === 'production' 
+                        ? 'Production file uploaded successfully!' 
+                        : 'Recording uploaded successfully!'
+                );
+                
+                // Show download link if available
+                if (downloadLink) {
+                    toast.success(`Download link: ${downloadLink}`, { duration: 5000 });
+                }
                 
                 // Reset form
                 setFormData({
@@ -97,6 +105,8 @@ export default function UploadFiles({ fileType = 'production', onUploadSuccess, 
                 if (onUploadSuccess) {
                     onUploadSuccess(response.data.data);
                 }
+            } else {
+                toast.error(response.data.message || 'Upload failed');
             }
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to upload file');

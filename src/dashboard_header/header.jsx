@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Bell, LifeBuoy, Settings, Search, Sun, Moon } from 'lucide-react'; 
-import axiosInstance from '../auth/axios';
+import axiosInstance from '../axiosInstance';
+import mockDataService from '../utils/mockData';
 import SimpleBar from 'simplebar-react';
 import 'simplebar-react/dist/simplebar.min.css';
 import NotificationModal from '../components/dashboard/ui/NotificationModal';
@@ -11,14 +12,24 @@ function Header() {
     const [notifications, setNotifications] = useState([]);
 
     useEffect(() => {
-        // Fetch notifications
-        axiosInstance.get('/api/notifications')
-            .then(response => {
-                setNotifications(response.data);
-            })
-            .catch(error => {
-                console.error('Error fetching notifications:', error);
-            });
+        // Fetch notifications with graceful fallback
+        const load = async () => {
+            try {
+                const res = await axiosInstance.get('/dashboard/notifications?per_page=10');
+                if (res.data?.status) {
+                    const payload = res.data.data;
+                    setNotifications(payload.items || payload || []);
+                    return;
+                }
+            } catch (err) {
+                // Fallback to mock data
+                try {
+                    const mock = await mockDataService.getNotifications();
+                    if (mock?.status) setNotifications(mock.data.items || []);
+                } catch {}
+            }
+        };
+        load();
     }, []);
 
     return (
