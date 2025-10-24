@@ -61,7 +61,7 @@ export default function Posts() {
   const [playlists, setPlaylists] = useState([]);
   const [selectedPlaylists, setSelectedPlaylists] = useState([]);
   const [visibility, setVisibility] = useState("private");
-
+  
   useEffect(() => {
     getAuth = JSON.parse(localStorage.getItem("auth_data"));
     // console.log('getAuth in post', getAuth);
@@ -1087,7 +1087,16 @@ export default function Posts() {
             />
           </div>
         </div>
-
+        {(!Channels || Channels.length === 0) ? (
+          <div className="sign__group sign__group--row">
+            <label className="sign__label" htmlFor="name">
+              Channel:
+            </label>
+            <a href="/channels" className="btn btn-primary btn-sm">
+              Create Channel
+            </a>
+          </div>
+        ) : ( 
         <div className="sign__group sign__group--row">
           <label className="sign__label" htmlFor="name">
             Channel:
@@ -1107,7 +1116,7 @@ export default function Posts() {
             className="w-100 mb-2"
           />
         </div>
-
+        )}
         <div className="sign__group sign__group--row">
           <label className="sign__label" htmlFor="description">
             Description:
