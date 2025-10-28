@@ -73,6 +73,7 @@ const Home = () => {
 
   const stats = getStats()
 
+  // Static testimonials - Update these as needed
   const testimonials = [
     {
       name: 'Sarah Johnson',

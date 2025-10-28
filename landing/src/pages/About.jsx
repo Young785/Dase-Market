@@ -25,6 +25,7 @@ const About = () => {
     },
   ]
 
+  // Static team data - Update with your actual team members
   const team = [
     {
       name: 'David Martinez',

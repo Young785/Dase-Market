@@ -132,7 +132,24 @@ const Adverts = () => {
       const response = await landingAPI.getAdverts(params)
       
       if (response.data.success) {
-        setAdverts(response.data.data.data || [])
+        // Transform backend data to match frontend structure
+        const transformedData = (response.data.data.data || []).map(advert => ({
+          id: advert.id,
+          title: advert.title,
+          description: advert.description,
+          category: advert.category || 'General',
+          price: advert.price || advert.amount || 0,
+          views: advert.views || 0,
+          rating: advert.rating || 4.5,
+          image: getCategoryEmoji(advert.category),
+          producer: advert.user?.name || advert.user?.username || 'Provider',
+          featured: advert.is_featured || advert.featured || false,
+          duration: advert.delivery_time || advert.duration || 'Varies',
+          status: advert.status,
+          created_at: advert.created_at,
+        }))
+        
+        setAdverts(transformedData)
         setPagination({
           currentPage: response.data.data.current_page,
           totalPages: response.data.data.last_page || 1,
@@ -149,9 +166,28 @@ const Adverts = () => {
     }
   }
 
+  // Helper function to get emoji based on category
+  const getCategoryEmoji = (category) => {
+    const emojiMap = {
+      'Beats': '🎵',
+      'Mixing': '🎚️',
+      'Recording': '🎤',
+      'Melody': '🎹',
+      'Production': '🎼',
+      'Sound Design': '🔊',
+      'Mastering': '🎛️',
+      'Vocals': '🎙️',
+      'Streaming': '📺',
+      'Content Creation': '🎬',
+    }
+    return emojiMap[category] || '🎯'
+  }
+
   const categories = ['all', 'Beats', 'Mixing', 'Recording', 'Melody', 'Production', 'Sound Design']
 
-  const filteredAdverts = adverts.filter((ad) => {
+  // Note: Filtering is now done on the server side via API params
+  // But we keep client-side filtering for fallback mock data
+  const filteredAdverts = adverts.length > 0 && adverts[0].id ? adverts : adverts.filter((ad) => {
     const matchesFilter = filter === 'all' || ad.category === filter
     const matchesSearch =
       ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||

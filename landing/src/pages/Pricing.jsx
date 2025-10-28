@@ -5,6 +5,7 @@ import './Pricing.css'
 const Pricing = () => {
   const [billingCycle, setBillingCycle] = useState('monthly')
 
+  // Static pricing plans - Update these with your actual pricing
   const plans = [
     {
       name: 'Starter',
