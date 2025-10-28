@@ -200,7 +200,32 @@ const Producers = () => {
       const response = await landingAPI.getProducers(params)
       
       if (response.data.success) {
-        setProducers(response.data.data.data || [])
+        // Transform backend data to match frontend structure
+        const transformedData = (response.data.data.data || []).map(producer => ({
+          id: producer.id,
+          name: producer.name,
+          avatar: getAvatarEmoji(producer.specialty),
+          specialty: producer.specialty || 'Audio Engineer',
+          location: producer.location || 'Location not specified',
+          rating: parseFloat(producer.average_rating || 0).toFixed(1),
+          reviews: producer.total_reviews || 0,
+          completedProjects: producer.completed_projects || 0,
+          responseTime: 'Varies',
+          verified: producer.is_verified || false,
+          topRated: producer.average_rating >= 4.7 && producer.total_reviews >= 10,
+          price: producer.hourly_rate ? `$${producer.hourly_rate}+/hr` : 'Contact for pricing',
+          skills: extractSkills(producer),
+          recentReviews: (producer.project_reviews || []).slice(0, 2).map(review => ({
+            author: review.reviewer?.name || 'Anonymous',
+            rating: review.rating,
+            text: review.comment || review.review_text || '',
+            date: formatDate(review.created_at),
+          })),
+          bio: producer.bio || '',
+          profilePhoto: producer.profile_photo,
+        }))
+        
+        setProducers(transformedData)
         setPagination({
           currentPage: response.data.data.current_page,
           totalPages: response.data.data.last_page || 1,
@@ -215,6 +240,50 @@ const Producers = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Helper function to get avatar emoji based on specialty
+  const getAvatarEmoji = (specialty) => {
+    const emojiMap = {
+      'Hip-Hop Producer': '👨‍🎤',
+      'Mixing Engineer': '🎧',
+      'Vocal Producer': '🎤',
+      'Composer': '🎹',
+      'Full Production': '🎼',
+      'Sound Designer': '🔊',
+    }
+    return emojiMap[specialty] || '🎵'
+  }
+
+  // Helper function to extract skills from producer data
+  const extractSkills = (producer) => {
+    const skills = []
+    if (producer.specialty) skills.push(producer.specialty)
+    if (producer.skills) {
+      // If backend has a skills field (comma separated or array)
+      const backendSkills = Array.isArray(producer.skills) 
+        ? producer.skills 
+        : producer.skills.split(',').map(s => s.trim())
+      skills.push(...backendSkills)
+    }
+    return skills.slice(0, 4) // Limit to 4 skills
+  }
+
+  // Helper function to format date
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Recently'
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffTime = Math.abs(now - date)
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    
+    if (diffDays === 0) return 'Today'
+    if (diffDays === 1) return '1 day ago'
+    if (diffDays < 7) return `${diffDays} days ago`
+    if (diffDays < 14) return '1 week ago'
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
+    if (diffDays < 60) return '1 month ago'
+    return `${Math.floor(diffDays / 30)} months ago`
   }
 
   const specialties = ['all', 'Hip-Hop Producer', 'Mixing Engineer', 'Vocal Producer', 'Composer', 'Full Production', 'Sound Designer']
@@ -336,7 +405,13 @@ const ProducerCard = ({ producer, isTopRated }) => {
       {isTopRated && <div className="top-rated-badge">Top Rated</div>}
       
       <div className="producer-header">
-        <div className="producer-avatar">{producer.avatar}</div>
+        <div className="producer-avatar">
+          {producer.profilePhoto ? (
+            <img src={producer.profilePhoto} alt={producer.name} />
+          ) : (
+            producer.avatar
+          )}
+        </div>
         <div className="producer-basic-info">
           <div className="producer-name-wrapper">
             <h3 className="producer-name">{producer.name}</h3>
@@ -397,10 +472,10 @@ const ProducerCard = ({ producer, isTopRated }) => {
           onClick={() => setShowReviews(!showReviews)}
         >
           <ThumbsUp size={16} />
-          {showReviews ? 'Hide' : 'Show'} Recent Reviews ({producer.recentReviews.length})
+          {showReviews ? 'Hide' : 'Show'} Recent Reviews ({producer.recentReviews?.length || 0})
         </button>
 
-        {showReviews && (
+        {showReviews && producer.recentReviews && producer.recentReviews.length > 0 && (
           <div className="reviews-list">
             {producer.recentReviews.map((review, index) => (
               <div key={index} className="review-item">
