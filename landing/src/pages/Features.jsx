@@ -17,75 +17,75 @@ import './Features.css'
 const Features = () => {
   const mainFeatures = [
     {
-      icon: <Users />,
-      title: 'Producer Matching',
+      icon: <Video />,
+      title: 'Live Streaming & Content',
       description:
-        'Advanced AI-powered matching algorithm to find the perfect producer for your unique style and needs.',
-      image: '🤝',
+        'Stream live to your audience, upload videos and shorts, create playlists, and build your community with real-time engagement.',
+      image: '📺',
+    },
+    {
+      icon: <Users />,
+      title: 'DASE Marketplace',
+      description:
+        'Connect with professional Digital Audio Sound Engineers. Browse portfolios, listen to samples, and hire experts for your audio production needs.',
+      image: '🎵',
     },
     {
       icon: <BarChart3 />,
       title: 'Advanced Analytics',
       description:
-        'Comprehensive analytics dashboard to track your projects, earnings, and performance metrics in real-time.',
+        'Track stream views, engagement metrics, project progress, earnings, and performance across all your content and collaborations.',
       image: '📊',
     },
     {
       icon: <Shield />,
-      title: 'Secure Payments',
+      title: 'Secure Platform',
       description:
-        'Industry-leading payment security with escrow protection. Your money is safe until you\'re satisfied.',
+        'Industry-leading security with payment protection, content moderation, and professional billing through our invoice system.',
       image: '🔒',
-    },
-    {
-      icon: <Video />,
-      title: 'Live Collaboration',
-      description:
-        'Real-time collaboration tools including video chat, file sharing, and version control for seamless workflow.',
-      image: '🎥',
     },
   ]
 
   const additionalFeatures = [
     {
       icon: <Zap />,
-      title: 'Lightning Fast',
-      description: 'Optimized performance for quick loading and smooth experience.',
+      title: 'Lightning Fast Streaming',
+      description: 'Optimized infrastructure for smooth live streaming and instant content delivery.',
     },
     {
       icon: <Globe />,
-      title: 'Global Network',
-      description: 'Connect with producers and artists from over 50 countries.',
+      title: 'Global Community',
+      description: 'Connect with streamers, creators, and audio engineers from over 50 countries.',
     },
     {
       icon: <Headphones />,
       title: '24/7 Support',
-      description: 'Round-the-clock customer support to help you succeed.',
+      description: 'Round-the-clock customer support for technical and business inquiries.',
     },
     {
       icon: <CreditCard />,
-      title: 'Flexible Payments',
-      description: 'Multiple payment options including subscriptions and pay-as-you-go.',
+      title: 'Invoice System',
+      description: 'Professional invoice creation and management for audio engineers and clients.',
     },
     {
       icon: <Cloud />,
       title: 'Cloud Storage',
-      description: 'Unlimited cloud storage for all your project files and assets.',
+      description: 'Secure cloud storage for streams, videos, audio files, and project assets.',
     },
     {
       icon: <Lock />,
-      title: 'Privacy First',
-      description: 'Your data is encrypted and never shared without permission.',
+      title: 'Privacy & Security',
+      description: 'End-to-end encryption for messages, payments, and file transfers.',
     },
     {
       icon: <Bell />,
-      title: 'Smart Notifications',
-      description: 'Stay updated with intelligent notifications about your projects.',
+      title: 'Real-Time Notifications',
+      description: 'Get instant alerts for stream comments, new projects, and invoice updates.',
     },
     {
       icon: <FileText />,
-      title: 'Contract Templates',
-      description: 'Pre-made legal templates to protect your work and rights.',
+      title: 'Project Management',
+      description: 'Complete workflow tools for managing audio production projects and collaborations.',
     },
   ]
 
@@ -104,10 +104,10 @@ const Features = () => {
       <section className="features-hero">
         <div className="container">
           <div className="features-hero-content">
-            <h1 className="page-title">Powerful Features for Creators</h1>
+            <h1 className="page-title">Powerful Features for Every Creator</h1>
             <p className="page-subtitle">
-              Everything you need to create, collaborate, and succeed in the music
-              industry—all in one platform.
+              Everything you need to stream, create content, collaborate with audio professionals,
+              and succeed in the creative industry—all in one comprehensive platform.
             </p>
           </div>
         </div>

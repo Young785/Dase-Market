@@ -15,55 +15,55 @@ import './Home.css'
 const Home = () => {
   const features = [
     {
+      icon: <Play />,
+      title: 'Live Streaming',
+      description: 'Stream live to your audience, upload videos, shorts, and build your community with playlists.',
+    },
+    {
       icon: <Music />,
-      title: 'Top Producers',
-      description: 'Connect with award-winning music producers and sound engineers.',
+      title: 'DASE Marketplace',
+      description: 'Connect with professional Digital Audio Sound Engineers for your production needs.',
     },
     {
       icon: <TrendingUp />,
       title: 'Smart Analytics',
-      description: 'Track your performance with real-time analytics and insights.',
+      description: 'Track your performance with real-time analytics and insights for streams and projects.',
     },
     {
       icon: <Shield />,
-      title: 'Secure Payments',
-      description: 'Safe and secure payment processing for all transactions.',
-    },
-    {
-      icon: <Zap />,
-      title: 'Fast Delivery',
-      description: 'Quick turnaround times for all your production needs.',
+      title: 'Secure Platform',
+      description: 'Safe and secure platform with payment protection and content moderation.',
     },
   ]
 
   const stats = [
-    { number: '10K+', label: 'Active Producers' },
+    { number: '15K+', label: 'Active Creators' },
     { number: '50K+', label: 'Projects Completed' },
     { number: '98%', label: 'Satisfaction Rate' },
-    { number: '24/7', label: 'Support Available' },
+    { number: '24/7', label: 'Live Streaming' },
   ]
 
   const testimonials = [
     {
       name: 'Sarah Johnson',
-      role: 'Independent Artist',
+      role: 'Content Creator & Streamer',
       image: '👩‍🎤',
       rating: 5,
-      text: 'Dase Market connected me with an amazing producer who understood my vision perfectly. The entire process was seamless!',
+      text: 'This platform is incredible! I can stream, upload content, and even find audio engineers for my productions. Everything in one place!',
     },
     {
       name: 'Marcus Chen',
-      role: 'Record Label Owner',
+      role: 'Digital Audio Sound Engineer',
       image: '👨‍💼',
       rating: 5,
-      text: 'The quality of producers on this platform is outstanding. We\'ve found our go-to team for all our projects.',
+      text: 'The DASE Marketplace has transformed my business. I get consistent clients and the platform makes project management so easy.',
     },
     {
       name: 'Emily Rodriguez',
-      role: 'Music Producer',
+      role: 'Independent Artist',
       image: '👩‍🎨',
       rating: 5,
-      text: 'As a producer, this platform has helped me reach more clients and grow my business significantly.',
+      text: 'I love how I can showcase my music, stream live performances, and connect with professional engineers all on one platform.',
     },
   ]
 
@@ -83,15 +83,15 @@ const Home = () => {
               <span>Trusted by 10,000+ Creatives</span>
             </div>
             <h1 className="hero-title">
-              Connect with Top
-              <span className="gradient-text"> Music Producers</span>
+              The Ultimate Platform for
+              <span className="gradient-text"> Creators & Streamers</span>
               <br />
-              and Grow Your Sound
+              Audio Engineers & Artists
             </h1>
             <p className="hero-subtitle">
-              The premier marketplace for music producers, artists, and labels.
-              Find the perfect collaborator, manage your projects, and take your
-              music to the next level.
+              A complete creative ecosystem connecting streamers, digital audio sound engineers,
+              artists, and content creators. Stream live, showcase your work, find professional
+              audio engineers, and grow your creative career—all in one place.
             </p>
             <div className="hero-buttons">
               <Link to="/signup" className="btn btn-primary btn-large">
@@ -149,30 +149,30 @@ const Home = () => {
             <div className="step">
               <div className="step-number">1</div>
               <div className="step-content">
-                <h3>Create Your Profile</h3>
+                <h3>Create Your Account</h3>
                 <p>
-                  Sign up and set up your profile in minutes. Tell us about your
-                  music style and what you're looking for.
+                  Sign up as a Streamer, Audio Engineer, or Client. Set up your
+                  profile and tell us about your creative goals and expertise.
                 </p>
               </div>
             </div>
             <div className="step">
               <div className="step-number">2</div>
               <div className="step-content">
-                <h3>Browse Producers</h3>
+                <h3>Explore & Connect</h3>
                 <p>
-                  Explore our curated list of talented producers. Check reviews,
-                  listen to samples, and find your perfect match.
+                  Stream content, browse the DASE Marketplace, upload your work,
+                  and connect with other creatives in the community.
                 </p>
               </div>
             </div>
             <div className="step">
               <div className="step-number">3</div>
               <div className="step-content">
-                <h3>Start Creating</h3>
+                <h3>Grow Your Career</h3>
                 <p>
-                  Connect with producers, manage your projects, and create
-                  amazing music together.
+                  Build your audience, collaborate on projects, monetize your skills,
+                  and take your creative career to new heights.
                 </p>
               </div>
             </div>
@@ -215,9 +215,9 @@ const Home = () => {
       <section className="cta-section">
         <div className="container">
           <div className="cta-content">
-            <h2 className="cta-title">Ready to Elevate Your Music?</h2>
+            <h2 className="cta-title">Ready to Join Our Creative Community?</h2>
             <p className="cta-subtitle">
-              Join thousands of artists and producers already creating amazing music.
+              Join thousands of streamers, artists, and audio engineers already creating amazing content.
             </p>
             <Link to="/signup" className="btn btn-primary btn-large">
               Start Your Free Trial

@@ -6,22 +6,22 @@ const About = () => {
     {
       icon: <Target />,
       title: 'Mission Driven',
-      description: 'Empowering creators to connect, collaborate, and create exceptional music.',
+      description: 'Empowering creators, streamers, and audio professionals to thrive in the digital age.',
     },
     {
       icon: <Eye />,
       title: 'Visionary',
-      description: 'Building the future of music production and collaboration.',
+      description: 'Building the future of content creation, streaming, and audio production collaboration.',
     },
     {
       icon: <Heart />,
       title: 'Passionate',
-      description: 'Deeply committed to the success of every artist and producer.',
+      description: 'Deeply committed to the success of every creator, streamer, and audio engineer.',
     },
     {
       icon: <Users />,
       title: 'Community First',
-      description: 'Fostering a supportive and inclusive creative community.',
+      description: 'Fostering a supportive and inclusive community for all types of creators.',
     },
   ]
 
@@ -53,10 +53,10 @@ const About = () => {
   ]
 
   const milestones = [
-    { year: '2020', event: 'Company Founded', icon: <Award /> },
-    { year: '2021', event: '1,000 Producers Onboarded', icon: <Users /> },
-    { year: '2022', event: '10,000+ Projects Completed', icon: <TrendingUp /> },
-    { year: '2024', event: 'Expanded to 50+ Countries', icon: <Target /> },
+    { year: '2020', event: 'Platform Launched with DASE Marketplace', icon: <Award /> },
+    { year: '2021', event: 'Live Streaming Feature Introduced', icon: <Users /> },
+    { year: '2022', event: '10,000+ Creators & 50,000+ Projects', icon: <TrendingUp /> },
+    { year: '2024', event: 'Expanded to 50+ Countries Worldwide', icon: <Target /> },
   ]
 
   return (
@@ -67,8 +67,8 @@ const About = () => {
           <div className="about-hero-content">
             <h1 className="page-title">About Dase Market</h1>
             <p className="page-subtitle">
-              We're on a mission to revolutionize how music creators connect,
-              collaborate, and bring their artistic visions to life.
+              A comprehensive creative platform revolutionizing how content creators, streamers,
+              and audio professionals connect, collaborate, and bring their visions to life.
             </p>
           </div>
         </div>
@@ -86,19 +86,21 @@ const About = () => {
             <div className="story-content">
               <h2 className="section-title-left">Our Story</h2>
               <p>
-                Dase Market was born from a simple yet powerful observation: talented
-                artists and producers were struggling to find each other in an
-                increasingly fragmented music industry.
+                Dase Market was born from a vision to create a unified platform where content
+                creators, streamers, and audio professionals could thrive together. We recognized
+                the need for a space that combines live streaming, content sharing, and professional
+                audio engineering services.
               </p>
               <p>
-                Founded in 2020, we set out to create a platform that would bridge
-                this gap, making it easier than ever for creative professionals to
-                connect, collaborate, and create amazing music together.
+                Founded in 2020, we built two powerful ecosystems: a Live Streaming Platform for
+                content creators to broadcast, upload videos and shorts, and build communities; and
+                the DASE Marketplace (Digital Audio Sound Engineers) connecting audio professionals
+                with clients needing high-quality production services.
               </p>
               <p>
-                Today, we're proud to serve a community of over 10,000 producers and
-                artists across 50+ countries, facilitating thousands of successful
-                collaborations every month.
+                Today, we're proud to serve a vibrant community of over 15,000 creators including
+                streamers, artists, and audio engineers across 50+ countries, facilitating thousands
+                of streams, uploads, and professional collaborations every month.
               </p>
             </div>
           </div>

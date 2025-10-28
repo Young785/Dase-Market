@@ -120,9 +120,9 @@ const Adverts = () => {
   })
 
   const stats = [
-    { icon: <TrendingUp />, value: '2,500+', label: 'Active Ads' },
+    { icon: <TrendingUp />, value: '2,500+', label: 'Active Services' },
     { icon: <Eye />, value: '100K+', label: 'Monthly Views' },
-    { icon: <DollarSign />, value: '$50K+', label: 'Revenue Generated' },
+    { icon: <DollarSign />, value: '$500K+', label: 'Earned by Creators' },
     { icon: <Star />, value: '4.8', label: 'Average Rating' },
   ]
 
@@ -132,10 +132,10 @@ const Adverts = () => {
       <section className="adverts-hero">
         <div className="container">
           <div className="adverts-hero-content">
-            <h1 className="page-title">Discover Premium Services</h1>
+            <h1 className="page-title">Discover Creative Services & Opportunities</h1>
             <p className="page-subtitle">
-              Browse through thousands of professional music production services
-              and find the perfect match for your project.
+              Browse through thousands of services from streamers, content creators, and audio professionals.
+              Find the perfect collaboration or service for your project.
             </p>
           </div>
         </div>
@@ -289,12 +289,12 @@ const Adverts = () => {
       <section className="cta-section">
         <div className="container">
           <div className="cta-content">
-            <h2 className="cta-title">Ready to List Your Services?</h2>
+            <h2 className="cta-title">Ready to Offer Your Services?</h2>
             <p className="cta-subtitle">
-              Join thousands of producers earning with their skills
+              Join thousands of creators and professionals earning through our platform
             </p>
             <button className="btn btn-primary btn-large">
-              Create Your Ad
+              List Your Service
               <Play size={20} />
             </button>
           </div>

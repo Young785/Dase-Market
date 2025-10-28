@@ -34,7 +34,7 @@ const Producers = () => {
       verified: true,
       topRated: true,
       price: '$150-$500',
-      skills: ['Beat Making', 'Mixing', 'Mastering'],
+      skills: ['Beat Making', 'Mixing', 'Mastering', 'Audio Engineering'],
       recentReviews: [
         {
           author: 'Sarah K.',
@@ -192,10 +192,10 @@ const Producers = () => {
       <section className="producers-hero">
         <div className="container">
           <div className="producers-hero-content">
-            <h1 className="page-title">Find Top Music Producers</h1>
+            <h1 className="page-title">DASE Marketplace - Digital Audio Sound Engineers</h1>
             <p className="page-subtitle">
-              Connect with verified, professional music producers trusted by
-              thousands of artists worldwide.
+              Connect with verified, professional audio engineers and sound producers trusted by
+              thousands of artists and content creators worldwide.
             </p>
           </div>
         </div>
@@ -271,12 +271,12 @@ const Producers = () => {
       <section className="cta-section">
         <div className="container">
           <div className="cta-content">
-            <h2 className="cta-title">Are You a Producer?</h2>
+            <h2 className="cta-title">Are You an Audio Engineer?</h2>
             <p className="cta-subtitle">
-              Join our platform and start getting clients today
+              Join the DASE Marketplace and connect with clients who need your expertise
             </p>
             <button className="btn btn-primary btn-large">
-              Join as Producer
+              Join DASE Marketplace
               <Award size={20} />
             </button>
           </div>
