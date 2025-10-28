@@ -150,6 +150,16 @@
   animation: slideIn 0.3s ease-out;
 }
 
+.error-message {
+  padding: 1rem;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+  animation: slideIn 0.3s ease-out;
+}
+
 /* Sidebar */
 .contact-sidebar {
   display: flex;

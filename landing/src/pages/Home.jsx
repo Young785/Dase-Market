@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Music,
@@ -10,9 +11,26 @@ import {
   Play,
   ArrowRight,
 } from 'lucide-react'
+import { landingAPI } from '../config/api'
 import './Home.css'
 
 const Home = () => {
+  const [statistics, setStatistics] = useState(null)
+
+  useEffect(() => {
+    fetchStatistics()
+  }, [])
+
+  const fetchStatistics = async () => {
+    try {
+      const response = await landingAPI.getStatistics()
+      if (response.data.success) {
+        setStatistics(response.data.data)
+      }
+    } catch (err) {
+      console.error('Error fetching statistics:', err)
+    }
+  }
   const features = [
     {
       icon: <Play />,
@@ -36,12 +54,24 @@ const Home = () => {
     },
   ]
 
-  const stats = [
-    { number: '15K+', label: 'Active Creators' },
-    { number: '50K+', label: 'Projects Completed' },
-    { number: '98%', label: 'Satisfaction Rate' },
-    { number: '24/7', label: 'Live Streaming' },
-  ]
+  const getStats = () => {
+    if (statistics) {
+      return [
+        { number: `${Math.floor(statistics.total_producers / 1000)}K+`, label: 'Active Creators' },
+        { number: `${Math.floor(statistics.total_projects / 1000)}K+`, label: 'Projects Completed' },
+        { number: `${Math.round(statistics.average_rating * 20)}%`, label: 'Satisfaction Rate' },
+        { number: '24/7', label: 'Live Streaming' },
+      ]
+    }
+    return [
+      { number: '15K+', label: 'Active Creators' },
+      { number: '50K+', label: 'Projects Completed' },
+      { number: '98%', label: 'Satisfaction Rate' },
+      { number: '24/7', label: 'Live Streaming' },
+    ]
+  }
+
+  const stats = getStats()
 
   const testimonials = [
     {

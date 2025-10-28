@@ -10,6 +10,7 @@ import {
   Play,
   ExternalLink,
 } from 'lucide-react'
+import { landingAPI } from '../config/api'
 import './Adverts.css'
 
 const Adverts = () => {
@@ -17,6 +18,12 @@ const Adverts = () => {
   const [filter, setFilter] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    total: 0,
+  })
 
   // Mock data - Replace with actual API call
   const mockAdverts = [
@@ -101,13 +108,46 @@ const Adverts = () => {
   ]
 
   useEffect(() => {
-    // Simulate API call
+    fetchAdverts()
+  }, [filter, searchTerm])
+
+  const fetchAdverts = async (page = 1) => {
     setLoading(true)
-    setTimeout(() => {
+    setError('')
+    
+    try {
+      const params = {
+        page,
+        per_page: 12,
+      }
+      
+      if (filter !== 'all') {
+        params.category = filter
+      }
+      
+      if (searchTerm) {
+        params.search = searchTerm
+      }
+      
+      const response = await landingAPI.getAdverts(params)
+      
+      if (response.data.success) {
+        setAdverts(response.data.data.data || [])
+        setPagination({
+          currentPage: response.data.data.current_page,
+          totalPages: response.data.data.last_page || 1,
+          total: response.data.data.total,
+        })
+      }
+    } catch (err) {
+      console.error('Error fetching adverts:', err)
+      setError('Failed to load services. Please try again.')
+      // Fallback to mock data if API fails
       setAdverts(mockAdverts)
+    } finally {
       setLoading(false)
-    }, 500)
-  }, [])
+    }
+  }
 
   const categories = ['all', 'Beats', 'Mixing', 'Recording', 'Melody', 'Production', 'Sound Design']
 

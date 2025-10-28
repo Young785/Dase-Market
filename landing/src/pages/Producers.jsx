@@ -11,6 +11,7 @@ import {
   ExternalLink,
   TrendingUp,
 } from 'lucide-react'
+import { landingAPI } from '../config/api'
 import './Producers.css'
 
 const Producers = () => {
@@ -18,6 +19,12 @@ const Producers = () => {
   const [filter, setFilter] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    total: 0,
+  })
 
   // Mock data - Replace with actual API call
   const mockProducers = [
@@ -168,13 +175,47 @@ const Producers = () => {
   ]
 
   useEffect(() => {
-    // Simulate API call
+    fetchProducers()
+  }, [filter, searchTerm])
+
+  const fetchProducers = async (page = 1) => {
     setLoading(true)
-    setTimeout(() => {
+    setError('')
+    
+    try {
+      const params = {
+        page,
+        per_page: 12,
+        sort_by: 'rating',
+      }
+      
+      if (filter !== 'all') {
+        params.specialty = filter
+      }
+      
+      if (searchTerm) {
+        params.search = searchTerm
+      }
+      
+      const response = await landingAPI.getProducers(params)
+      
+      if (response.data.success) {
+        setProducers(response.data.data.data || [])
+        setPagination({
+          currentPage: response.data.data.current_page,
+          totalPages: response.data.data.last_page || 1,
+          total: response.data.data.total,
+        })
+      }
+    } catch (err) {
+      console.error('Error fetching producers:', err)
+      setError('Failed to load audio engineers. Please try again.')
+      // Fallback to mock data if API fails
       setProducers(mockProducers)
+    } finally {
       setLoading(false)
-    }, 500)
-  }, [])
+    }
+  }
 
   const specialties = ['all', 'Hip-Hop Producer', 'Mixing Engineer', 'Vocal Producer', 'Composer', 'Full Production', 'Sound Designer']
 

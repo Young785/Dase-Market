@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Mail, Phone, MapPin, Send, MessageCircle, Clock } from 'lucide-react'
+import { landingAPI } from '../config/api'
 import './Contact.css'
 
 const Contact = () => {
@@ -11,27 +12,38 @@ const Contact = () => {
   })
 
   const [status, setStatus] = useState('')
+  const [error, setError] = useState('')
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     })
+    // Clear error when user starts typing
+    if (error) setError('')
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setStatus('sending')
+    setError('')
     
-    // TODO: Replace with actual API endpoint
-    // await axios.post('/api/landing/contact', formData)
-    
-    // Simulating API call
-    setTimeout(() => {
-      setStatus('success')
-      setFormData({ name: '', email: '', subject: '', message: '' })
-      setTimeout(() => setStatus(''), 3000)
-    }, 1000)
+    try {
+      const response = await landingAPI.submitContact(formData)
+      
+      if (response.data.success) {
+        setStatus('success')
+        setFormData({ name: '', email: '', subject: '', message: '' })
+        setTimeout(() => setStatus(''), 5000)
+      }
+    } catch (err) {
+      setStatus('error')
+      setError(err.response?.data?.message || 'Failed to send message. Please try again.')
+      setTimeout(() => {
+        setStatus('')
+        setError('')
+      }, 5000)
+    }
   }
 
   const contactInfo = [
@@ -182,6 +194,12 @@ const Contact = () => {
                 {status === 'success' && (
                   <div className="success-message">
                     ✓ Message sent successfully! We'll get back to you soon.
+                  </div>
+                )}
+
+                {status === 'error' && error && (
+                  <div className="error-message">
+                    ✗ {error}
                   </div>
                 )}
               </form>
