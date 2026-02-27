@@ -38,26 +38,17 @@ const Transactions = () => {
         ...filters
       };
 
-      // TODO: Replace with actual API endpoint when available
-      // const response = await axiosInstance.get('/api/v1/superadmin/transactions', { params });
-      // setTransactions(response.data.data.items || []);
-      // setPagination(response.data.data.pagination);
-      // setStats(response.data.data.stats);
+      const response = await axiosInstance.get('/api/v1/superadmin/finance/transactions', { params });
       
-      // Mock data for now
-      setTimeout(() => {
-        setTransactions([]);
-        setStats({
-          total: 0,
-          pending: 0,
-          completed: 0,
-          failed: 0
-        });
-        setLoading(false);
-      }, 500);
+      if (response.data.success) {
+        setTransactions(response.data.data.items || []);
+        setPagination(response.data.data.pagination || pagination);
+        setStats(response.data.data.stats || stats);
+      }
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
       toast.error('Failed to load transactions');
+    } finally {
       setLoading(false);
     }
   };

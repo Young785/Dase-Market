@@ -16,11 +16,35 @@ const UserDetails = () => {
   const fetchUserDetails = async () => {
     try {
       const response = await axiosInstance.get(`/api/v1/superadmin/users/${id}`);
-      setUser(response.data.data);
+      if (response.data.success) {
+        setUser(response.data.data);
+      }
     } catch (error) {
+      console.error('Failed to load user details:', error);
       toast.error('Failed to load user details');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAction = async (action) => {
+    const actionText = action === 'suspend' ? 'suspend' : action === 'ban' ? 'ban' : 'update';
+    
+    if (!window.confirm(`Are you sure you want to ${actionText} this user?`)) {
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.post(`/api/v1/superadmin/users/${id}/${action}`);
+      
+      if (response.data.success) {
+        toast.success(response.data.message || `User ${actionText}ed successfully`);
+        fetchUserDetails(); // Refresh user data
+      }
+    } catch (error) {
+      console.error(`Failed to ${actionText} user:`, error);
+      const errorMessage = error.response?.data?.message || `Failed to ${actionText} user`;
+      toast.error(errorMessage);
     }
   };
 
@@ -118,9 +142,31 @@ const UserDetails = () => {
                   </div>
 
                   <div className="mt-3">
-                    <button className="btn btn-primary btn-sm me-2">Edit User</button>
-                    <button className="btn btn-warning btn-sm me-2">Suspend</button>
-                    <button className="btn btn-danger btn-sm">Ban User</button>
+                    <button 
+                      className="btn btn-warning btn-sm me-2"
+                      onClick={() => handleAction('suspend')}
+                      disabled={user.status === 'suspended'}
+                    >
+                      <i className="ri-pause-circle-line me-1"></i>
+                      {user.status === 'suspended' ? 'Suspended' : 'Suspend'}
+                    </button>
+                    <button 
+                      className="btn btn-danger btn-sm me-2"
+                      onClick={() => handleAction('ban')}
+                      disabled={user.status === 'banned'}
+                    >
+                      <i className="ri-forbid-line me-1"></i>
+                      {user.status === 'banned' ? 'Banned' : 'Ban User'}
+                    </button>
+                    {(user.status === 'suspended' || user.status === 'banned') && (
+                      <button 
+                        className="btn btn-success btn-sm"
+                        onClick={() => handleAction(user.status === 'suspended' ? 'unsuspend' : 'unban')}
+                      >
+                        <i className="ri-check-line me-1"></i>
+                        Reactivate
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

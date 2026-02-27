@@ -31,19 +31,16 @@ const Invoices = () => {
         ...filters
       };
 
-      // TODO: Replace with actual API endpoint when available
-      // const response = await axiosInstance.get('/api/v1/superadmin/invoices', { params });
-      // setInvoices(response.data.data.items || []);
-      // setPagination(response.data.data.pagination);
+      const response = await axiosInstance.get('/api/v1/superadmin/finance/invoices', { params });
       
-      // Mock data for now
-      setTimeout(() => {
-        setInvoices([]);
-        setLoading(false);
-      }, 500);
+      if (response.data.success) {
+        setInvoices(response.data.data.items || []);
+        setPagination(response.data.data.pagination || pagination);
+      }
     } catch (error) {
       console.error('Failed to fetch invoices:', error);
       toast.error('Failed to load invoices');
+    } finally {
       setLoading(false);
     }
   };

@@ -29,14 +29,16 @@ const Refunds = () => {
         ...filters
       };
 
-      // TODO: Replace with actual API endpoint when available
-      setTimeout(() => {
-        setRefunds([]);
-        setLoading(false);
-      }, 500);
+      const response = await axiosInstance.get('/api/v1/superadmin/finance/refunds', { params });
+      
+      if (response.data.success) {
+        setRefunds(response.data.data.items || []);
+        setPagination(response.data.data.pagination || pagination);
+      }
     } catch (error) {
       console.error('Failed to fetch refunds:', error);
       toast.error('Failed to load refunds');
+    } finally {
       setLoading(false);
     }
   };
@@ -53,10 +55,11 @@ const Refunds = () => {
     }
 
     try {
-      // TODO: Replace with actual API call
+      await axiosInstance.post(`/api/v1/superadmin/finance/refunds/${refundId}/approve`);
       toast.success('Refund approved successfully');
       fetchRefunds();
     } catch (error) {
+      console.error('Failed to approve refund:', error);
       toast.error('Failed to approve refund');
     }
   };
@@ -67,10 +70,11 @@ const Refunds = () => {
     }
 
     try {
-      // TODO: Replace with actual API call
+      await axiosInstance.post(`/api/v1/superadmin/finance/refunds/${refundId}/reject`);
       toast.success('Refund rejected');
       fetchRefunds();
     } catch (error) {
+      console.error('Failed to reject refund:', error);
       toast.error('Failed to reject refund');
     }
   };

@@ -37,20 +37,17 @@ const Posts = () => {
         ...filters
       };
 
-      // TODO: Replace with actual API endpoint
-      setTimeout(() => {
-        setPosts([]);
-        setStats({
-          total: 0,
-          published: 0,
-          pending: 0,
-          flagged: 0
-        });
-        setLoading(false);
-      }, 500);
+      const response = await axiosInstance.get('/api/v1/superadmin/manage/content/posts', { params });
+      
+      if (response.data.success) {
+        setPosts(response.data.data.items || []);
+        setStats(response.data.data.stats || stats);
+        setPagination(response.data.data.pagination || pagination);
+      }
     } catch (error) {
       console.error('Failed to fetch posts:', error);
       toast.error('Failed to load posts');
+    } finally {
       setLoading(false);
     }
   };
@@ -67,10 +64,15 @@ const Posts = () => {
     }
 
     try {
-      // TODO: API call
+      if (action === 'approve' || action === 'reject') {
+        await axiosInstance.post(`/api/v1/superadmin/manage/content/posts/${postId}/${action}`);
+      } else if (action === 'delete') {
+        await axiosInstance.delete(`/api/v1/superadmin/manage/content/posts/${postId}`);
+      }
       toast.success(`Post ${action}d successfully`);
       fetchPosts();
     } catch (error) {
+      console.error(`Failed to ${action} post:`, error);
       toast.error(`Failed to ${action} post`);
     }
   };
