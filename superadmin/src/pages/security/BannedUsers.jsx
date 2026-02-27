@@ -35,20 +35,25 @@ const BannedUsers = () => {
         per_page: pagination.per_page,
         ...filters
       };
-      // TODO: API call
-      setTimeout(() => {
-        setUsers([]);
-        setStats({
-          banned: 0,
-          suspended: 0,
-          temporary: 0,
-          permanent: 0
-        });
-        setLoading(false);
-      }, 500);
+      
+      const response = await axiosInstance.get('/api/v1/superadmin/security/banned-users', { params });
+      const data = response.data.data;
+      
+      setUsers(data.items || []);
+      setStats({
+        banned: data.stats?.banned || 0,
+        suspended: data.stats?.suspended || 0,
+        temporary: data.stats?.temporary || 0,
+        permanent: data.stats?.permanent || 0
+      });
+      setPagination(prev => ({
+        ...prev,
+        total: data.total || 0
+      }));
     } catch (error) {
       console.error('Failed to fetch banned users:', error);
       toast.error('Failed to load banned users');
+    } finally {
       setLoading(false);
     }
   };
@@ -65,22 +70,26 @@ const BannedUsers = () => {
     }
 
     try {
-      // TODO: API call
-      // await axiosInstance.post(`/api/v1/superadmin/users/${userId}/unban`);
+      await axiosInstance.post(`/api/v1/superadmin/users/${userId}/unban`);
       toast.success('User unbanned successfully');
       fetchBannedUsers();
     } catch (error) {
+      console.error('Failed to unban user:', error);
       toast.error('Failed to unban user');
     }
   };
 
   const handleUnsuspend = async (userId) => {
+    if (!window.confirm('Are you sure you want to unsuspend this user?')) {
+      return;
+    }
+
     try {
-      // TODO: API call
-      // await axiosInstance.post(`/api/v1/superadmin/users/${userId}/unsuspend`);
+      await axiosInstance.post(`/api/v1/superadmin/users/${userId}/unsuspend`);
       toast.success('User unsuspended successfully');
       fetchBannedUsers();
     } catch (error) {
+      console.error('Failed to unsuspend user:', error);
       toast.error('Failed to unsuspend user');
     }
   };

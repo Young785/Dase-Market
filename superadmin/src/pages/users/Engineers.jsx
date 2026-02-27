@@ -58,7 +58,7 @@ const Engineers = () => {
     }
 
     try {
-      await axiosInstance.post(`/api/v1/superadmin/manage/users/dase/${userId}/${action}`);
+      await axiosInstance.post(`/api/v1/superadmin/users/${userId}/${action}`);
       toast.success(`Engineer ${action}ed successfully`);
       fetchEngineers();
     } catch (error) {

@@ -36,20 +36,25 @@ const Reports = () => {
         per_page: pagination.per_page,
         ...filters
       };
-      // TODO: API call
-      setTimeout(() => {
-        setReports([]);
-        setStats({
-          pending: 0,
-          under_review: 0,
-          resolved: 0,
-          dismissed: 0
-        });
-        setLoading(false);
-      }, 500);
+      
+      const response = await axiosInstance.get('/api/v1/superadmin/security/reports', { params });
+      const data = response.data.data;
+      
+      setReports(data.items || []);
+      setStats({
+        pending: data.stats?.pending || 0,
+        under_review: data.stats?.under_review || 0,
+        resolved: data.stats?.resolved || 0,
+        dismissed: data.stats?.dismissed || 0
+      });
+      setPagination(prev => ({
+        ...prev,
+        total: data.total || 0
+      }));
     } catch (error) {
       console.error('Failed to fetch reports:', error);
       toast.error('Failed to load reports');
+    } finally {
       setLoading(false);
     }
   };
@@ -61,11 +66,16 @@ const Reports = () => {
   };
 
   const handleAction = async (reportId, action) => {
+    if (!window.confirm(`Are you sure you want to ${action} this report?`)) {
+      return;
+    }
+
     try {
-      // TODO: API call
+      await axiosInstance.post(`/api/v1/superadmin/security/reports/${reportId}/${action}`);
       toast.success(`Report ${action}d successfully`);
       fetchReports();
     } catch (error) {
+      console.error(`Failed to ${action} report:`, error);
       toast.error(`Failed to ${action} report`);
     }
   };

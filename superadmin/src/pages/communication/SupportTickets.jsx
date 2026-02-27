@@ -37,20 +37,24 @@ const SupportTickets = () => {
         ...filters
       };
 
-      // TODO: Replace with actual API endpoint
-      setTimeout(() => {
-        setTickets([]);
-        setStats({
-          open: 0,
-          in_progress: 0,
-          resolved_today: 0,
-          avg_response_time: 0
-        });
-        setLoading(false);
-      }, 500);
+      const response = await axiosInstance.get('/api/v1/superadmin/support/tickets', { params });
+      const data = response.data.data;
+      
+      setTickets(data.items || []);
+      setStats({
+        open: data.stats?.open || 0,
+        in_progress: data.stats?.in_progress || 0,
+        resolved_today: data.stats?.resolved_today || 0,
+        avg_response_time: data.stats?.avg_response_time || 0
+      });
+      setPagination(prev => ({
+        ...prev,
+        total: data.total || 0
+      }));
     } catch (error) {
       console.error('Failed to fetch tickets:', error);
       toast.error('Failed to load tickets');
+    } finally {
       setLoading(false);
     }
   };
@@ -62,21 +66,27 @@ const SupportTickets = () => {
   };
 
   const handleUpdateStatus = async (ticketId, status) => {
+    if (!window.confirm(`Are you sure you want to update this ticket status to ${status}?`)) {
+      return;
+    }
+
     try {
-      // TODO: API call
+      await axiosInstance.post(`/api/v1/superadmin/support/tickets/${ticketId}/status`, { status });
       toast.success(`Ticket status updated to ${status}`);
       fetchTickets();
     } catch (error) {
+      console.error('Failed to update ticket status:', error);
       toast.error('Failed to update ticket status');
     }
   };
 
   const handleAssignTicket = async (ticketId) => {
     try {
-      // TODO: API call
+      await axiosInstance.post(`/api/v1/superadmin/support/tickets/${ticketId}/assign`);
       toast.success('Ticket assigned successfully');
       fetchTickets();
     } catch (error) {
+      console.error('Failed to assign ticket:', error);
       toast.error('Failed to assign ticket');
     }
   };
