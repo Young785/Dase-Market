@@ -1,95 +1,43 @@
-import { Link } from 'react-router-dom'
-import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from 'lucide-react'
-import './Footer.css'
-
 const Footer = () => {
-  const currentYear = new Date().getFullYear()
+    const currentYear = new Date().getFullYear();
 
-  return (
-    <footer className="footer">
-      <div className="container">
-        <div className="footer-content">
-          {/* Brand Section */}
-          <div className="footer-section">
-            <Link to="/" className="footer-logo">
-              <span className="logo-icon">🎵</span>
-              <span className="logo-text">Dase Market</span>
-            </Link>
-            <p className="footer-description">
-              Your premier marketplace for connecting with talented producers,
-              managing adverts, and showcasing creative work.
-            </p>
-            <div className="social-links">
-              <a href="#" className="social-link" aria-label="Facebook">
-                <Facebook size={20} />
-              </a>
-              <a href="#" className="social-link" aria-label="Twitter">
-                <Twitter size={20} />
-              </a>
-              <a href="#" className="social-link" aria-label="Instagram">
-                <Instagram size={20} />
-              </a>
-              <a href="#" className="social-link" aria-label="Youtube">
-                <Youtube size={20} />
-              </a>
+    return (
+        <footer className="glass" style={{ padding: '4rem 0 2rem', marginTop: '4rem', borderTop: '1px solid var(--border-color)' }}>
+            <div className="container">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '3rem', marginBottom: '3rem' }}>
+                    <div>
+                        <h3 style={{ marginBottom: '1.5rem', color: 'white' }}>BCTV</h3>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                            BROADCASTERS COMMUNITY TELEVISION: The Revolutionary Machine Serving Your Visual Waves Interest.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 style={{ marginBottom: '1.5rem', color: 'white', fontSize: '0.9rem' }}>QUICK LINKS</h4>
+                        <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            <li><a href="/about" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.85rem' }}>About Us</a></li>
+                            <li><a href="/press" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.85rem' }}>Press Room</a></li>
+                            <li><a href="/career" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.85rem' }}>Careers</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style={{ marginBottom: '1.5rem', color: 'white', fontSize: '0.9rem' }}>LEGAL</h4>
+                        <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            <li><a href="/policy" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.85rem' }}>Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                        © {currentYear} PAVE BROADCASTERS COMMUNITY LIMITED. All rights reserved.
+                    </p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>
+                        Built for accessibility. All images contain alt text for screen readers.
+                    </p>
+                </div>
             </div>
-          </div>
+        </footer>
+    );
+};
 
-          {/* Quick Links */}
-          <div className="footer-section">
-            <h3 className="footer-title">Quick Links</h3>
-            <ul className="footer-links">
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/about">About Us</Link></li>
-              <li><Link to="/features">Features</Link></li>
-              <li><Link to="/pricing">Pricing</Link></li>
-            </ul>
-          </div>
-
-          {/* Resources */}
-          <div className="footer-section">
-            <h3 className="footer-title">Resources</h3>
-            <ul className="footer-links">
-              <li><Link to="/producers">Producers</Link></li>
-              <li><Link to="/adverts">Adverts</Link></li>
-              <li><a href="#">Blog</a></li>
-              <li><a href="#">Help Center</a></li>
-            </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div className="footer-section">
-            <h3 className="footer-title">Contact Us</h3>
-            <ul className="contact-info">
-              <li>
-                <Mail size={18} />
-                <span>info@dasemarket.com</span>
-              </li>
-              <li>
-                <Phone size={18} />
-                <span>+1 (555) 123-4567</span>
-              </li>
-              <li>
-                <MapPin size={18} />
-                <span>123 Market St, Suite 100<br />San Francisco, CA 94103</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="footer-bottom">
-          <p>&copy; {currentYear} Dase Market. All rights reserved.</p>
-          <div className="footer-bottom-links">
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
-            <a href="#">Cookie Policy</a>
-          </div>
-        </div>
-      </div>
-    </footer>
-  )
-}
-
-export default Footer
-
+export default Footer;

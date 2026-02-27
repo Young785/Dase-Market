@@ -1,199 +1,45 @@
-import { Target, Eye, Heart, Users, TrendingUp, Award } from 'lucide-react'
-import './About.css'
-
 const About = () => {
-  const values = [
-    {
-      icon: <Target />,
-      title: 'Mission Driven',
-      description: 'Empowering creators, streamers, and audio professionals to thrive in the digital age.',
-    },
-    {
-      icon: <Eye />,
-      title: 'Visionary',
-      description: 'Building the future of content creation, streaming, and audio production collaboration.',
-    },
-    {
-      icon: <Heart />,
-      title: 'Passionate',
-      description: 'Deeply committed to the success of every creator, streamer, and audio engineer.',
-    },
-    {
-      icon: <Users />,
-      title: 'Community First',
-      description: 'Fostering a supportive and inclusive community for all types of creators.',
-    },
-  ]
+    return (
+        <div className="container section animate-fade-in">
+            <h1 className="gradient-text" style={{ fontSize: '3rem', marginBottom: '3rem' }}>ABOUT</h1>
 
-  // Static team data - Update with your actual team members
-  const team = [
-    {
-      name: 'David Martinez',
-      role: 'Founder & CEO',
-      image: '👨‍💼',
-      bio: '15 years in music production',
-    },
-    {
-      name: 'Sarah Lee',
-      role: 'Head of Product',
-      image: '👩‍💻',
-      bio: 'Tech innovator & music lover',
-    },
-    {
-      name: 'James Wilson',
-      role: 'Community Manager',
-      image: '👨‍🎤',
-      bio: 'Connecting creators worldwide',
-    },
-    {
-      name: 'Lisa Chen',
-      role: 'Marketing Director',
-      image: '👩‍🎨',
-      bio: 'Brand strategist & artist',
-    },
-  ]
-
-  const milestones = [
-    { year: '2020', event: 'Platform Launched with DASE Marketplace', icon: <Award /> },
-    { year: '2021', event: 'Live Streaming Feature Introduced', icon: <Users /> },
-    { year: '2022', event: '10,000+ Creators & 50,000+ Projects', icon: <TrendingUp /> },
-    { year: '2024', event: 'Expanded to 50+ Countries Worldwide', icon: <Target /> },
-  ]
-
-  return (
-    <div className="about-page">
-      {/* Hero Section */}
-      <section className="about-hero">
-        <div className="container">
-          <div className="about-hero-content">
-            <h1 className="page-title">About Dase Market</h1>
-            <p className="page-subtitle">
-              A comprehensive creative platform revolutionizing how content creators, streamers,
-              and audio professionals connect, collaborate, and bring their visions to life.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Story Section */}
-      <section className="section story-section">
-        <div className="container">
-          <div className="story-grid">
-            <div className="story-image">
-              <div className="image-placeholder">
-                <Music size={80} />
-              </div>
+            <div className="glass" style={{ padding: '3rem', borderRadius: '24px', marginBottom: '4rem' }}>
+                <p style={{ fontSize: '1.1rem', marginBottom: '1.5rem', color: 'var(--text-main)' }}>
+                    A pained and disappointed but not defeated visionary individual is Sulaimon Salam Bamidele. He has proudly owned and successfully run internet powered (GREAT DREAMS RADIO) station consistently since 2015. Years before jumping-in on Project GDRStation, no established individuals in the industry or media companies approached were ready to employ him in mid-2000.
+                </p>
+                <p style={{ fontSize: '1.1rem', marginBottom: '1.5rem', color: 'var(--text-main)' }}>
+                    Today, project Broadcasters Community Television (BCTV) is birthed through the tearful pains of an inborn gifted and professionally trained Broadcast Journalist, who once had no way desired to showcase and use his Broadcast Journalism talents. The project (BCTV) as part of PAVE BROADCASTERS COMMUNITY family is designed to be the helpful solution and readymade digital media pavement for new Broadcast Journalism enthusiasts.
+                </p>
+                <p style={{ fontSize: '1.1rem', marginBottom: '1.5rem', color: 'var(--text-main)' }}>
+                    The Video Domain of PAVE BROADCASTERS COMMUNITY; (Project BCTV) is conceptualized to be a thoughtful solution resolving issues related to the limitations of free speech, individual self-expression, and restricted access to the space where useful information could be shared and delivered to a large audience of interest at a material time of given necessity.
+                </p>
+                <p style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>
+                    Intentionally, the creative concept of Project BCTV is designed to ensure no one else would have to go through the said personal experience of project BCTV Initiator. In addition, the PAVE BROADCASTERS COMMUNITY TV solution accommodates the livestream and pre-produced content creators, music artists and other related professionals who are mostly comfortable using the preference of video productions to creating broadcast content conveying their messages to the world.
+                </p>
             </div>
-            <div className="story-content">
-              <h2 className="section-title-left">Our Story</h2>
-              <p>
-                Dase Market was born from a vision to create a unified platform where content
-                creators, streamers, and audio professionals could thrive together. We recognized
-                the need for a space that combines live streaming, content sharing, and professional
-                audio engineering services.
-              </p>
-              <p>
-                Founded in 2020, we built two powerful ecosystems: a Live Streaming Platform for
-                content creators to broadcast, upload videos and shorts, and build communities; and
-                the DASE Marketplace (Digital Audio Sound Engineers) connecting audio professionals
-                with clients needing high-quality production services.
-              </p>
-              <p>
-                Today, we're proud to serve a vibrant community of over 15,000 creators including
-                streamers, artists, and audio engineers across 50+ countries, facilitating thousands
-                of streams, uploads, and professional collaborations every month.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Values Section */}
-      <section className="section values-section">
-        <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">Our Values</h2>
-            <p className="section-subtitle">
-              The principles that guide everything we do
-            </p>
-          </div>
-          <div className="grid grid-4">
-            {values.map((value, index) => (
-              <div key={index} className="value-card">
-                <div className="value-icon">{value.icon}</div>
-                <h3 className="value-title">{value.title}</h3>
-                <p className="value-description">{value.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Milestones Section */}
-      <section className="section milestones-section">
-        <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">Our Journey</h2>
-            <p className="section-subtitle">
-              Key milestones in our growth
-            </p>
-          </div>
-          <div className="timeline">
-            {milestones.map((milestone, index) => (
-              <div key={index} className="timeline-item">
-                <div className="timeline-icon">{milestone.icon}</div>
-                <div className="timeline-content">
-                  <div className="timeline-year">{milestone.year}</div>
-                  <div className="timeline-event">{milestone.event}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+                <div className="glass" style={{ padding: '2.5rem', borderRadius: '20px' }}>
+                    <h2 style={{ color: 'var(--primary-color)', marginBottom: '1rem', fontSize: '1.5rem' }}>Our Vision</h2>
+                    <p style={{ color: 'var(--text-muted)' }}>
+                        Provide a space for the gifted individuals to showcasing their media profession skills, and integrate digital technology with the system of television broadcasting toward building the community, connection, and independence every Talent deserves to shine.
+                    </p>
                 </div>
-              </div>
-            ))}
-          </div>
+                <div className="glass" style={{ padding: '2.5rem', borderRadius: '20px' }}>
+                    <h2 style={{ color: 'var(--primary-color)', marginBottom: '1rem', fontSize: '1.5rem' }}>Our Mission</h2>
+                    <p style={{ color: 'var(--text-muted)' }}>
+                        To be a referenced domain where exceptional TV broadcast talents are readily discovered and gainfully contracted by individuals and media companies looking for expertise to help run own establishments.
+                    </p>
+                </div>
+            </div>
+
+            <div style={{ marginTop: '4rem', textAlign: 'center' }}>
+                <p style={{ color: 'var(--text-muted)', maxWidth: '800px', margin: '0 auto', fontStyle: 'italic' }}>
+                    Herein domain of Broadcasters Community Television, we'd always remain committed towards the sustenance of our goals. You are warmly welcome to benefit onward as valued members of PAVE BROADCASTERS COMMUNITY.
+                </p>
+            </div>
         </div>
-      </section>
+    );
+};
 
-      {/* Team Section */}
-      <section className="section team-section">
-        <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">Meet Our Team</h2>
-            <p className="section-subtitle">
-              The passionate people behind Dase Market
-            </p>
-          </div>
-          <div className="grid grid-4">
-            {team.map((member, index) => (
-              <div key={index} className="team-card">
-                <div className="team-image">{member.image}</div>
-                <h3 className="team-name">{member.name}</h3>
-                <div className="team-role">{member.role}</div>
-                <p className="team-bio">{member.bio}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="cta-section">
-        <div className="container">
-          <div className="cta-content">
-            <h2 className="cta-title">Join Our Community</h2>
-            <p className="cta-subtitle">
-              Be part of a growing network of creative professionals
-            </p>
-            <button className="btn btn-primary btn-large">
-              Get Started Today
-            </button>
-          </div>
-        </div>
-      </section>
-    </div>
-  )
-}
-
-// Import at the top with other imports
-import { Music } from 'lucide-react'
-
-export default About
-
+export default About;

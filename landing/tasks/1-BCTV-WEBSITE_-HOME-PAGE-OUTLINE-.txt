@@ -1,0 +1,33 @@
+NB: kindly note the following important responsibility;
+*Every images, action buttons, icons and symbols across the BCTV system must be labelled properly, using "Alt Text" tools for the purpose of screen reader users. The goal and purpose is to make our digital products accessible for everyone, including the assistive technology dependent users.
+*Meaning, both the screen reader users, and non-screen reader tool users alike shall have no barrier to using our platforms and products independently. Therefore, consideration for the use of "Alt Texts" across board must be achieved both at the backend engineering, and the frontend set up without exceptions. Thank you.
+
+Moving forward:
+Note: the two lines below shall be what comes first on homepage of the website. Thanks.
+
+WELCOME TO THE (FACE FIREPOWER) DOMAIN OF TV BROADCASTING SOLUTIONS THAT MATTER.
+We are BROADCASTERS COMMUNITY TELEVISION: The Revolutionary (FACE FIREPOWER) Machine Serving Your Visual Waves Interest.
+
+*Note: below the two lines above, or as best befitting shall we have the BCTV/project's primary logo fixed boldly. Then, we should also have the parent logo, and that's the PBC primary logo design in order to relate/link both and say they are together.
+*Do remember to use alt text to tag the mentioned logo designs by writing: BROADCASTERS COMMUNITY TELEVISION BRAND LOGO, FACE FIREPOWER. And, PAVE BROADCASTERS COMMUNITY BRAND LOGO, DIGITAL FIREPOWER. Thank you.
+
+Next: the homepage dropdown menu. Please structure in the given order of arrangement below. Thanks.
+
+ABOUT
+PRESS ROOM
+CAREER
+CONNECT
+POLICY
+
+Hello to you the sweet, charming and endearing camera hogs! New hereon BCTV domain?
+Yikes! It's your best decision ever. Welcome, we are glad to have you. Please use the button below to create your independent Broadcasters Community Television Channel, start livestreaming, upload pre-produced audio content, explore the BCTV digital tools, experience the creative features thereon, grow your own unique community members, and share with the world. It's time to let the universe experience your FACE FIREPOWER of digital TV broadcasting!
+CLICK HERE TO SIGN UP
+*Note: the "sign up" phrase above shall become clickable once the livestream package developer finished creating everything related. Meaning, we shall embed the url beneath the line above. Thanks.
+
+Most Valued Returning member of BROADCASTERS COMMUNITY TELEVISION platform. We appreciate you and your ongoing loyalty. Thank you! Please use the button below to access and manage your existing BCTV account. Time to get the Beloved Community updated. Let's go!
+CLICK HERE TO SIGN-IN
+*Note: the "sign-in" phrase above shall become clickable once the livestream package developer finished creating everything related. Meaning, we shall embed the url beneath the line above. Thanks.
+
+BROADCASTERS COMMUNITY TELEVISION; THE FACE FIREPOWER SOLUTIONS.
+
+
