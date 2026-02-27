@@ -1,6 +1,38 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axiosInstance from '../../utils/axiosInstance';
+import toast from 'react-hot-toast';
 
 const ContentOverview = () => {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const response = await axiosInstance.get('/api/v1/superadmin/manage/content/statistics');
+      setStats(response.data.data);
+    } catch (error) {
+      console.error('Failed to fetch content statistics:', error);
+      toast.error('Failed to load content statistics');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="row">
@@ -30,7 +62,7 @@ const ContentOverview = () => {
               <div className="d-flex align-items-end justify-content-between mt-4">
                 <div>
                   <h4 className="fs-22 fw-semibold ff-secondary mb-4">
-                    <span className="counter-value">0</span>
+                    <span className="counter-value">{stats?.posts?.total || 0}</span>
                   </h4>
                   <Link to="/superadmin/content/posts" className="text-decoration-underline">Manage Posts</Link>
                 </div>
@@ -55,7 +87,7 @@ const ContentOverview = () => {
               <div className="d-flex align-items-end justify-content-between mt-4">
                 <div>
                   <h4 className="fs-22 fw-semibold ff-secondary mb-4">
-                    <span className="counter-value">0</span>
+                    <span className="counter-value">{stats?.shorts?.total || 0}</span>
                   </h4>
                   <Link to="/superadmin/content/shorts" className="text-decoration-underline">Manage Shorts</Link>
                 </div>
@@ -80,7 +112,7 @@ const ContentOverview = () => {
               <div className="d-flex align-items-end justify-content-between mt-4">
                 <div>
                   <h4 className="fs-22 fw-semibold ff-secondary mb-4">
-                    <span className="counter-value">0</span>
+                    <span className="counter-value">{stats?.projects?.total || 0}</span>
                   </h4>
                   <Link to="/superadmin/content/projects" className="text-decoration-underline">Manage Projects</Link>
                 </div>
@@ -105,7 +137,7 @@ const ContentOverview = () => {
               <div className="d-flex align-items-end justify-content-between mt-4">
                 <div>
                   <h4 className="fs-22 fw-semibold ff-secondary mb-4">
-                    <span className="counter-value badge bg-danger">0</span>
+                    <span className="counter-value badge bg-danger">{stats?.flagged || 0}</span>
                   </h4>
                   <Link to="/superadmin/content/moderation-queue" className="text-decoration-underline">Review Now</Link>
                 </div>
@@ -151,8 +183,8 @@ const ContentOverview = () => {
                           <span className="fw-medium">Posts</span>
                         </div>
                       </td>
-                      <td>0</td>
-                      <td>0</td>
+                      <td>{stats?.posts?.total || 0}</td>
+                      <td>{stats?.posts?.this_month || 0}</td>
                       <td><span className="badge bg-success">Active</span></td>
                       <td>
                         <Link to="/superadmin/content/posts" className="btn btn-sm btn-soft-primary">
@@ -171,8 +203,8 @@ const ContentOverview = () => {
                           <span className="fw-medium">Shorts</span>
                         </div>
                       </td>
-                      <td>0</td>
-                      <td>0</td>
+                      <td>{stats?.shorts?.total || 0}</td>
+                      <td>{stats?.shorts?.this_month || 0}</td>
                       <td><span className="badge bg-success">Active</span></td>
                       <td>
                         <Link to="/superadmin/content/shorts" className="btn btn-sm btn-soft-primary">
@@ -191,8 +223,8 @@ const ContentOverview = () => {
                           <span className="fw-medium">Projects</span>
                         </div>
                       </td>
-                      <td>0</td>
-                      <td>0</td>
+                      <td>{stats?.projects?.total || 0}</td>
+                      <td>{stats?.projects?.this_month || 0}</td>
                       <td><span className="badge bg-success">Active</span></td>
                       <td>
                         <Link to="/superadmin/content/projects" className="btn btn-sm btn-soft-primary">
@@ -211,8 +243,8 @@ const ContentOverview = () => {
                           <span className="fw-medium">Samples</span>
                         </div>
                       </td>
-                      <td>0</td>
-                      <td>0</td>
+                      <td>{stats?.samples?.total || 0}</td>
+                      <td>{stats?.samples?.this_month || 0}</td>
                       <td><span className="badge bg-success">Active</span></td>
                       <td>
                         <Link to="/superadmin/content/samples" className="btn btn-sm btn-soft-primary">
@@ -235,12 +267,14 @@ const ContentOverview = () => {
             <div className="card-body">
               <div className="text-center py-4">
                 <div className="avatar-md mx-auto mb-4">
-                  <div className="avatar-title bg-soft-success text-success rounded-circle fs-24">
-                    <i className="ri-checkbox-circle-line"></i>
+                  <div className={`avatar-title bg-soft-${stats?.flagged > 0 ? 'danger' : 'success'} text-${stats?.flagged > 0 ? 'danger' : 'success'} rounded-circle fs-24`}>
+                    <i className={`ri-${stats?.flagged > 0 ? 'alert' : 'checkbox-circle'}-line`}></i>
                   </div>
                 </div>
-                <h5>All Clear!</h5>
-                <p className="text-muted mb-3">No content waiting for review</p>
+                <h5>{stats?.flagged > 0 ? `${stats.flagged} Items Pending` : 'All Clear!'}</h5>
+                <p className="text-muted mb-3">
+                  {stats?.flagged > 0 ? 'Content waiting for review' : 'No content waiting for review'}
+                </p>
                 <Link to="/superadmin/content/moderation-queue" className="btn btn-sm btn-soft-primary">
                   View Queue
                 </Link>

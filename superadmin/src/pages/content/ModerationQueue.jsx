@@ -28,20 +28,24 @@ const ModerationQueue = () => {
   const fetchQueue = async () => {
     setLoading(true);
     try {
-      // TODO: Replace with actual API
-      setTimeout(() => {
-        setItems([]);
-        setStats({
-          pending: 0,
-          under_review: 0,
-          approved_today: 0,
-          rejected_today: 0
-        });
-        setLoading(false);
-      }, 500);
+      const params = {
+        ...filters
+      };
+      
+      const response = await axiosInstance.get('/api/v1/superadmin/manage/content/moderation-queue', { params });
+      const data = response.data.data;
+      
+      setItems(data.items || []);
+      setStats({
+        pending: data.stats?.pending || 0,
+        under_review: data.stats?.under_review || 0,
+        approved_today: data.stats?.approved_today || 0,
+        rejected_today: data.stats?.rejected_today || 0
+      });
     } catch (error) {
       console.error('Failed to fetch moderation queue:', error);
       toast.error('Failed to load moderation queue');
+    } finally {
       setLoading(false);
     }
   };
@@ -70,11 +74,11 @@ const ModerationQueue = () => {
   const handleApprove = async (itemId) => {
     setProcessing(itemId);
     try {
-      // TODO: API call
-      // await axiosInstance.post(`/api/v1/superadmin/content/moderation/${itemId}/approve`);
+      await axiosInstance.post(`/api/v1/superadmin/manage/content/moderation/${itemId}/approve`);
       toast.success('Content approved successfully');
       fetchQueue();
     } catch (error) {
+      console.error('Failed to approve content:', error);
       toast.error('Failed to approve content');
     } finally {
       setProcessing(null);
@@ -84,11 +88,11 @@ const ModerationQueue = () => {
   const handleReject = async (itemId, reason = '') => {
     setProcessing(itemId);
     try {
-      // TODO: API call
-      // await axiosInstance.post(`/api/v1/superadmin/content/moderation/${itemId}/reject`, { reason });
+      await axiosInstance.post(`/api/v1/superadmin/manage/content/moderation/${itemId}/reject`, { reason });
       toast.success('Content rejected successfully');
       fetchQueue();
     } catch (error) {
+      console.error('Failed to reject content:', error);
       toast.error('Failed to reject content');
     } finally {
       setProcessing(null);
@@ -102,12 +106,12 @@ const ModerationQueue = () => {
     }
 
     try {
-      // TODO: API call
-      // await axiosInstance.post('/api/v1/superadmin/content/moderation/bulk-approve', { ids: selectedItems });
+      await axiosInstance.post('/api/v1/superadmin/manage/content/moderation/bulk-approve', { ids: selectedItems });
       toast.success(`${selectedItems.length} items approved`);
       setSelectedItems([]);
       fetchQueue();
     } catch (error) {
+      console.error('Failed to approve items:', error);
       toast.error('Failed to approve items');
     }
   };
@@ -123,12 +127,12 @@ const ModerationQueue = () => {
     }
 
     try {
-      // TODO: API call
-      // await axiosInstance.post('/api/v1/superadmin/content/moderation/bulk-reject', { ids: selectedItems });
+      await axiosInstance.post('/api/v1/superadmin/manage/content/moderation/bulk-reject', { ids: selectedItems });
       toast.success(`${selectedItems.length} items rejected`);
       setSelectedItems([]);
       fetchQueue();
     } catch (error) {
+      console.error('Failed to reject items:', error);
       toast.error('Failed to reject items');
     }
   };
