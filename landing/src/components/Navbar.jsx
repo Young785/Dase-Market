@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, Sun, Moon, Monitor } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
+import { Menu, X } from 'lucide-react';
 import bctvLogo from '../assets/bctv_logo.png';
 
 const Navbar = () => {
-    const { theme, setTheme } = useTheme();
     const [isOpen, setIsOpen] = useState(false);
 
     const navLinks = [
@@ -16,20 +14,8 @@ const Navbar = () => {
         { name: 'POLICY', path: '/policy' },
     ];
 
-    const ThemeIcon = () => {
-        if (theme === 'light') return <Sun size={20} />;
-        if (theme === 'dark') return <Moon size={20} />;
-        return <Monitor size={20} />;
-    };
-
-    const toggleTheme = () => {
-        const modes = ['light', 'dark', 'system'];
-        const nextMode = modes[(modes.indexOf(theme) + 1) % modes.length];
-        setTheme(nextMode);
-    };
-
     return (
-        <nav className="glass sticky top-0 z-50 w-full" style={{ padding: '0.75rem 0', background: 'var(--nav-bg)' }}>
+        <nav className="glass sticky top-0 z-50 w-full" style={{ padding: '0.75rem 0', background: 'var(--nav-bg)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
             <div className="container flex items-center justify-between" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <img
@@ -58,41 +44,79 @@ const Navbar = () => {
                             {link.name}
                         </Link>
                     ))}
-
-                    <button
-                        onClick={toggleTheme}
-                        className="theme-toggle"
-                        style={{
-                            background: 'var(--surface-color)',
-                            border: '1px solid var(--border-color)',
-                            color: 'var(--text-main)',
-                            padding: '0.5rem',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: 'all 0.3s'
-                        }}
-                        title={`Current theme: ${theme}. Click to switch.`}
-                    >
-                        <ThemeIcon />
-                    </button>
                 </div>
 
                 {/* Mobile Toggle */}
-                <div className="mobile-toggle" style={{ display: 'none' }}>
-                    <Menu size={24} />
-                </div>
+                <button 
+                    className="mobile-toggle" 
+                    onClick={() => setIsOpen(!isOpen)}
+                    style={{ 
+                        display: 'none',
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'var(--text-main)',
+                        cursor: 'pointer',
+                        padding: '0.5rem'
+                    }}
+                    aria-label="Toggle menu"
+                >
+                    {isOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
             </div>
+
+            {/* Mobile Menu */}
+            {isOpen && (
+                <div className="mobile-menu glass" style={{
+                    display: 'none',
+                    flexDirection: 'column',
+                    gap: '1rem',
+                    padding: '1.5rem',
+                    marginTop: '1rem',
+                    borderRadius: '16px',
+                    background: 'var(--surface-color)'
+                }}>
+                    {navLinks.map((link) => (
+                        <Link
+                            key={link.name}
+                            to={link.path}
+                            onClick={() => setIsOpen(false)}
+                            style={{
+                                color: 'var(--text-muted)',
+                                textDecoration: 'none',
+                                fontWeight: '600',
+                                fontSize: '0.95rem',
+                                padding: '0.75rem',
+                                borderRadius: '8px',
+                                transition: 'all 0.3s'
+                            }}
+                            className="mobile-nav-link"
+                        >
+                            {link.name}
+                        </Link>
+                    ))}
+                </div>
+            )}
+
             <style>{`
-        .nav-link:hover { color: var(--primary-color) !important; }
-        .theme-toggle:hover { border-color: var(--primary-color); transform: scale(1.05); }
-        @media (max-width: 768px) {
-          .desktop-menu { display: none !important; }
-          .mobile-toggle { display: block !important; }
-        }
-      `}</style>
+                .nav-link:hover { 
+                    color: var(--primary-color) !important; 
+                }
+                .mobile-nav-link:hover {
+                    background: var(--surface-color);
+                    color: var(--primary-color) !important;
+                }
+                @media (max-width: 768px) {
+                    .desktop-menu { 
+                        display: none !important; 
+                    }
+                    .mobile-toggle { 
+                        display: block !important; 
+                    }
+                    .mobile-menu {
+                        display: flex !important;
+                    }
+                }
+            `}</style>
         </nav>
     );
 };
