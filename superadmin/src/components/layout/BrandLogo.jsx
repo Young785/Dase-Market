@@ -17,7 +17,7 @@ const BrandLogo = ({ className = "", size = "default", theme = "dark" }) => {
           <i className="ri-shield-star-line fs-18"></i>
         </div>
         <div className="text-start">
-          <div className={`fw-bold ${textColor}`} style={{ fontSize: size === 'small' ? '14px' : size === 'large' ? '18px' : '16px' }}>
+          <div className={`fw-bold ${textColor}`} style={{ height: '20px', fontSize: size === 'small' ? '14px' : size === 'large' ? '18px' : '16px' }}>
             Dase Market
           </div>
           <div className={subtextColor} style={{ fontSize: size === 'small' ? '9px' : '10px', marginTop: '-4px' }}>

@@ -1,6 +1,53 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axiosInstance from '../../utils/axiosInstance';
+import toast from 'react-hot-toast';
 
 const FinanceDashboard = () => {
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalRevenue: 0,
+    pendingPayouts: 0,
+    totalInvoices: 0,
+    refundRequests: 0
+  });
+  const [recentTransactions, setRecentTransactions] = useState([]);
+
+  useEffect(() => {
+    fetchFinancialData();
+  }, []);
+
+  const fetchFinancialData = async () => {
+    setLoading(true);
+    try {
+      const response = await axiosInstance.get('/api/v1/superadmin/dashboard/stats');
+      const data = response.data.data;
+      
+      setStats({
+        totalRevenue: data.revenue?.total || 0,
+        pendingPayouts: data.revenue?.pending || 0,
+        totalInvoices: 0, // TODO: Add invoice count from API
+        refundRequests: data.revenue?.refunds || 0
+      });
+
+      // Fetch recent transactions
+      // TODO: Add transactions endpoint
+      setRecentTransactions([]);
+    } catch (error) {
+      console.error('Failed to fetch financial data:', error);
+      toast.error('Failed to load financial data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
+
   return (
     <>
       <div className="row">
@@ -30,9 +77,13 @@ const FinanceDashboard = () => {
               <div className="d-flex align-items-end justify-content-between mt-4">
                 <div>
                   <h4 className="fs-22 fw-semibold ff-secondary mb-4">
-                    $<span className="counter-value">0.00</span>
+                    {loading ? (
+                      <span className="placeholder col-6"></span>
+                    ) : (
+                      <span className="counter-value">{formatCurrency(stats.totalRevenue)}</span>
+                    )}
                   </h4>
-                  <Link to="/finance/transactions" className="text-decoration-underline">View Transactions</Link>
+                  <Link to="/superadmin/finance/transactions" className="text-decoration-underline">View Transactions</Link>
                 </div>
                 <div className="avatar-sm flex-shrink-0">
                   <span className="avatar-title bg-soft-success rounded fs-3">
@@ -55,9 +106,13 @@ const FinanceDashboard = () => {
               <div className="d-flex align-items-end justify-content-between mt-4">
                 <div>
                   <h4 className="fs-22 fw-semibold ff-secondary mb-4">
-                    $<span className="counter-value">0.00</span>
+                    {loading ? (
+                      <span className="placeholder col-6"></span>
+                    ) : (
+                      <span className="counter-value">{formatCurrency(stats.pendingPayouts)}</span>
+                    )}
                   </h4>
-                  <Link to="/finance/transactions" className="text-decoration-underline">Process Now</Link>
+                  <Link to="/superadmin/finance/transactions" className="text-decoration-underline">Process Now</Link>
                 </div>
                 <div className="avatar-sm flex-shrink-0">
                   <span className="avatar-title bg-soft-warning rounded fs-3">
@@ -80,9 +135,13 @@ const FinanceDashboard = () => {
               <div className="d-flex align-items-end justify-content-between mt-4">
                 <div>
                   <h4 className="fs-22 fw-semibold ff-secondary mb-4">
-                    <span className="counter-value">0</span>
+                    {loading ? (
+                      <span className="placeholder col-6"></span>
+                    ) : (
+                      <span className="counter-value">{stats.totalInvoices}</span>
+                    )}
                   </h4>
-                  <Link to="/finance/invoices" className="text-decoration-underline">View Invoices</Link>
+                  <Link to="/superadmin/finance/invoices" className="text-decoration-underline">View Invoices</Link>
                 </div>
                 <div className="avatar-sm flex-shrink-0">
                   <span className="avatar-title bg-soft-info rounded fs-3">
@@ -105,9 +164,13 @@ const FinanceDashboard = () => {
               <div className="d-flex align-items-end justify-content-between mt-4">
                 <div>
                   <h4 className="fs-22 fw-semibold ff-secondary mb-4">
-                    <span className="counter-value">0</span>
+                    {loading ? (
+                      <span className="placeholder col-6"></span>
+                    ) : (
+                      <span className="counter-value">{stats.refundRequests}</span>
+                    )}
                   </h4>
-                  <Link to="/finance/refunds" className="text-decoration-underline">Review Requests</Link>
+                  <Link to="/superadmin/finance/refunds" className="text-decoration-underline">Review Requests</Link>
                 </div>
                 <div className="avatar-sm flex-shrink-0">
                   <span className="avatar-title bg-soft-danger rounded fs-3">
@@ -139,7 +202,7 @@ const FinanceDashboard = () => {
                 <div className="text-center">
                   <i className="ri-line-chart-line fs-1 text-muted mb-3"></i>
                   <p className="text-muted">Revenue chart will be displayed here</p>
-                  <small className="text-muted">Connect to backend API to see real-time data</small>
+                  <small className="text-muted">Chart integration coming soon</small>
                 </div>
               </div>
             </div>
@@ -150,17 +213,46 @@ const FinanceDashboard = () => {
           <div className="card card-height-100">
             <div className="card-header align-items-center d-flex">
               <h4 className="card-title mb-0 flex-grow-1">Recent Transactions</h4>
+              <Link to="/superadmin/finance/transactions" className="btn btn-soft-primary btn-sm">
+                View All
+              </Link>
             </div>
             <div className="card-body">
-              <div className="text-center py-5">
-                <div className="avatar-md mx-auto mb-4">
-                  <div className="avatar-title bg-soft-primary text-primary rounded-circle fs-24">
-                    <i className="ri-exchange-dollar-line"></i>
+              {loading ? (
+                <div className="text-center py-5">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
                   </div>
                 </div>
-                <h5>No transactions yet</h5>
-                <p className="text-muted">Transactions will appear here once they start flowing</p>
-              </div>
+              ) : recentTransactions.length > 0 ? (
+                <div className="list-group list-group-flush">
+                  {recentTransactions.map((transaction, idx) => (
+                    <div key={idx} className="list-group-item px-0">
+                      <div className="d-flex align-items-center">
+                        <div className="flex-grow-1">
+                          <h6 className="mb-1">{transaction.description}</h6>
+                          <p className="text-muted mb-0 fs-12">{transaction.date}</p>
+                        </div>
+                        <div className="flex-shrink-0">
+                          <span className={`badge bg-${transaction.status === 'completed' ? 'success' : 'warning'}`}>
+                            {formatCurrency(transaction.amount)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-5">
+                  <div className="avatar-md mx-auto mb-4">
+                    <div className="avatar-title bg-soft-primary text-primary rounded-circle fs-24">
+                      <i className="ri-exchange-dollar-line"></i>
+                    </div>
+                  </div>
+                  <h5>No transactions yet</h5>
+                  <p className="text-muted">Transactions will appear here once they start flowing</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

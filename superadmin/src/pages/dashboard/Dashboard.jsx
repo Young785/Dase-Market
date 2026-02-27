@@ -148,7 +148,7 @@ const Dashboard = () => {
                   <h4 className="fs-22 fw-semibold ff-secondary mb-4">
                     <span className="counter-value">{stats?.moderation?.pending || 0}</span>
                   </h4>
-                  <Link to="/content/moderation" className="text-decoration-underline">Review Now</Link>
+                  <Link to="/superadmin/content/moderation" className="text-decoration-underline">Review Now</Link>
                 </div>
                 <div className="avatar-sm flex-shrink-0">
                   <span className="avatar-title bg-soft-danger rounded fs-3">

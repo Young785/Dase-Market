@@ -19,15 +19,6 @@ const Header = ({ toggleSidebar }) => {
       <div className="layout-width">
         <div className="navbar-header">
           <div className="d-flex">
-            {/* Logo */}
-            <div className="navbar-brand-box horizontal-logo">
-              <Link to="/superadmin/dashboard" className="logo logo-dark">
-                <BrandLogo size="default" />
-              </Link>
-              <Link to="/superadmin/dashboard" className="logo logo-light">
-                <BrandLogo size="default" />
-              </Link>
-            </div>
 
             {/* Hamburger Menu */}
             <button
